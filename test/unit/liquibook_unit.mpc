@@ -1,0 +1,41 @@
+project (ut_order_book) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_order_book.cpp
+  }
+}
+
+project (ut_order_book_shared_ptr) : liquibook_test, liquibook_book, liquibook_impl, boost_base {
+  exename = *
+  Source_Files {
+    ut_order_book_shared_ptr.cpp
+  }
+}
+
+project (ut_bbo_order_book) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_bbo_order_book.cpp
+  }
+}
+
+project (ut_depth) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_depth.cpp
+  }
+}
+
+project (ut_all_or_none) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_all_or_none.cpp
+  }
+}
+
+project (ut_immediate_or_cancel) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_immediate_or_cancel.cpp
+  }
+}

@@ -1,0 +1,3 @@
+project : liquibook {
+  exeout = $(LIQUIBOOK_ROOT)/test
+}

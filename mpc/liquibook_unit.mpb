@@ -1,0 +1,7 @@
+project : liquibook, liquibook_test {
+  libs += gtest
+  libs += gtest_main
+  includes += $(GTEST_ROOT)/include
+  libpaths += /usr/local/lib
+  libpaths += $(GTEST_ROOT)/lib/.libs
+}

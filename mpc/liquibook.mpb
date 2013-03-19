@@ -1,0 +1,5 @@
+project {
+  includes += $(LIQUIBOOK_ROOT)/src
+  libpaths += $(LIQUIBOOK_ROOT)/lib
+}
+

@@ -1,0 +1,5 @@
+project : liquibook_lib, liquibook_book {
+  sharedname =
+  staticname = *
+}
+
