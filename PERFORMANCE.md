@@ -10,6 +10,12 @@ Performance Test Results, Inserts Per Second
     <th>Note</th>
   </tr>
   <tr>
+    <td>2,062,158</td>
+    <td>2,139,950</td>
+    <td>2,494,532</td>
+    <td>Now testing on a modern laptop (2.4 GHZ i7).</td>
+  </tr>
+  <tr>
     <td>1,231,959</td>
     <td>1,273,510</td>
     <td>1,506,066</td>

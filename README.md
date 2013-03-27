@@ -6,7 +6,7 @@ Open source limit order book matching engine from [OCI](http://ociweb.com)
 ## Features
 * Low-level components for order matching and aggregate depth tracking
 * Memory-efficiency: minimal copying of data to internal structures
-* Speed: between __1.2 million__ and __1.5 million__ inserts per second.  See full [performance history](PERFORMANCE.md).
+* Speed: between __2.0 million__ and __2.5 million__ inserts per second.  See full [performance history](PERFORMANCE.md).
 
 ## Flexibility
 * Works with or without aggregate depth tracking
