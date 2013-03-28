@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Liquibook</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Jeff Schmitz">
+
+    <!-- Le styles -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/liquibook.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="../assets/ico/favicon.png">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="index.html">Liquibook</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="index.html">Home</a></li>
+              <li><a href="#">Fast</a></li>
+              <li><a href="flexible.html">Flexible</a></li>
+              <li><a href="easy.html">Easy</a></li>
+              <li class="active"><a href="get-started.html">Get Started</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <h1>Liquibook is Fast</h1>
+      <p>Liquibook was designed to meet the needs of the most demanding customers.  This means:</p>
+
+      <ul>
+        <li>Written in C++</li>
+        <li>No floating point comparisons</li>
+        <li>Minimal copying of data from your order objects</li>
+      </ul>
+
+      <h2>How Fast?</h2>
+
+      <p>The included performance tests show Liquibook handling <b>over 2 million</b> orders per second.</p>
+
+      <h2>What Does the Performance Test Actually Do?</h2>
+
+      <p>The included performance test allocates a number of orders, and then runs for a given duration, measuring the time to handle them.  If the orders run out before the test completes, the test is rerun with double the number of orders until an iteration completes.</p>
+
+      <p>When complete, it checks the number of orders processed before the end of the test, and reports that, as well as the number of resulting matches (trades).</p>
+
+      <p>The test runs against three different order books:</p>
+
+      <ul>
+        <li>Raw order book matching engine</li>
+        <li>Order book matching engine with BBO tracking</li>
+        <li>Order book matching engine with 5 levels of aggregation (market depth)</li>
+      </ul>
+
+      <p>The quoted times is for the <b>slowest</b> of these, with 5 levels of aggregation.  You can see the performance history on <a href="https://github.com/objectcomputing/liquibook/blob/master/PERFORMANCE.md">GitHub</a>.</p>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
+
