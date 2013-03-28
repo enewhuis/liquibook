@@ -109,6 +109,9 @@ public:
   /// @brief access the asks container
   const Asks& asks() const { return asks_; };
 
+  /// @brief move callbacks to another thread's container
+  void move_callbacks(Callbacks& target);
+
   /// @brief perform all callbacks in the queue
   virtual void perform_callbacks();
 
@@ -597,6 +600,14 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
 
 template <class OrderPtr>
 inline void
+OrderBook<OrderPtr>::move_callbacks(Callbacks& target)
+{
+  target.insert(target.end(), callbacks_.begin(), callbacks_.end());
+  callbacks_.erase(callbacks_.begin(), callbacks_.end());
+}
+
+template <class OrderPtr>
+inline void
 OrderBook<OrderPtr>::perform_callbacks()
 {
   typename Callbacks::iterator cb;
@@ -610,6 +621,8 @@ template <class OrderPtr>
 inline void
 OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
 {
+  // NOTE - this is not yet handled in the parent class.  You are requried to
+  //        override in the child.
   // If this is an order callback and I know of an order listener
   if (cb.order && order_listener_) {
     switch (cb.type) {
