@@ -10,8 +10,8 @@ namespace liquibook { namespace impl {
 uint32_t SimpleOrder::last_order_id_(0);
 
 SimpleOrder::SimpleOrder(bool is_buy,
-                         Price price,
-                         Quantity qty)
+                         book::Price price,
+                         book::Quantity qty)
 : state_(os_new),
   is_buy_(is_buy),
   price_(price),
@@ -34,19 +34,19 @@ SimpleOrder::is_buy() const
   return is_buy_;
 }
 
-Price
+book::Price
 SimpleOrder::price() const
 {
   return price_;
 }
 
-Quantity
+book::Quantity
 SimpleOrder::order_qty() const
 {
   return order_qty_;
 }
 
-Quantity
+book::Quantity
 SimpleOrder::open_qty() const
 {
   // If not completely filled, calculate
@@ -58,22 +58,22 @@ SimpleOrder::open_qty() const
   }
 }
 
-const Quantity&
+const book::Quantity&
 SimpleOrder::filled_qty() const
 {
   return filled_qty_;
 }
 
-const Cost&
+const book::Cost&
 SimpleOrder::filled_cost() const
 {
   return filled_cost_;
 }
 
 void
-SimpleOrder::fill(Quantity fill_qty,
-                  Cost fill_cost,
-                  FillId /*fill_id*/)
+SimpleOrder::fill(book::Quantity fill_qty,
+                  book::Cost fill_cost,
+                  book::FillId /*fill_id*/)
 {
   filled_qty_ += fill_qty;
   filled_cost_ += fill_cost;
@@ -99,7 +99,7 @@ SimpleOrder::cancel()
 }
 
 void
-SimpleOrder::replace(Quantity new_order_qty, Price new_price)
+SimpleOrder::replace(book::Quantity new_order_qty, book::Price new_price)
 {
   if (os_accepted == state_) {
     order_qty_ = new_order_qty;

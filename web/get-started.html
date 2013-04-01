@@ -45,10 +45,10 @@
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li><a href="index.html">Home</a></li>
-              <li><a href="fast.html">Fast</a></li>
-              <li class="active"><a href="flexible.html">Flexible</a></li>
+              <li><a href="#">Fast</a></li>
+              <li><a href="flexible.html">Flexible</a></li>
               <li><a href="easy.html">Easy</a></li>
-              <li><a href="get-started.html">Get Started</a></li>
+              <li class="active"><a href="get-started.html">Get Started</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -57,34 +57,34 @@
 
     <div class="container">
 
-      <h1>Liquibook is flexible.  <span class="highlight">Acrobat Flexible</span></h1>
-      <p>Liquibook is desingned to meet a wide array of use cases.</p>
-      <p>This means you get to choose:</p>
+      <h1>Liquibook is Fast</h1>
+      <p>Liquibook was designed to meet the needs of the most demanding customers.  This means:</p>
 
       <ul>
-        <li>Your Order class</li>
-        <li>Your pointer preference (smart or standard)</li>
-        <li>Your threading model</li>
-        <li>Your identifiers</li>
-        <li>Your downstream handling</li>
-        <li>Your add-ons</li>
+        <li>Written in C++</li>
+        <li>No floating point comparisons</li>
+        <li>Minimal copying of data from your order objects</li>
       </ul>
 
-      <h2>How is it so Flexible?</h2>
+      <h2>How Fast?</h2>
 
-      <p>Your Order class is used, it must only implement a trivial interface.  If you don't have one, a sample one is included.</p>
+      <p>The included performance tests show Liquibook handling <b>over 2 million</b> orders per second.</p>
 
-      <p>The OrderBook class is a template, which accepts a pointer type as a parameter.  You can use any pointer type which dereferences using the -&gt; operator.</p>
+      <h2>What Does the Performance Test Actually Do?</h2>
 
-      <p>Liquibook is not an application, but a library, usable within your application.  As such, it has no synchronization, nor background threads.  You choose whether to have mutliple threads and how to synchronize them.</p>
+      <p>The included performance test allocates a number of orders, and then runs for a given duration, measuring the time to handle them.  If the orders run out before the test completes, the test is rerun with double the number of orders until an iteration completes.</p>
 
-      <p>Liquibook does not use order IDs, user IDs, account IDs, or symbols, just Order pointers.  Any mapping from order ID to pointer is done outside of Liquibook.</p>
+      <p>When complete, it checks the number of orders processed before the end of the test, and reports that, as well as the number of resulting matches (trades).</p>
 
-      <p>Liquibook further assumes all orders given to an order book are for the order book's symbol, and mapping from symbol to order book is  done outside of Liquibook.</p>
+      <p>The test runs against three different order books:</p>
 
-      <p>Liquibook does none of the downstream handling, such as feed publishing, resulting from a trade or a quote.  After all, that is feed-specific.  Instead, liquibook queues up callbacks, which you handle in your code.</p>
+      <ul>
+        <li>Raw order book matching engine</li>
+        <li>Order book matching engine with BBO tracking</li>
+        <li>Order book matching engine with 5 levels of aggregation (market depth)</li>
+      </ul>
 
-      <p>Liquibook includes optional add-on classes, for depth/BBO tracking, that can easily be integrated in the handling of callbacks.  For an example see SimpleOrderBook in the impl directory.</p>
+      <p>The quoted times is for the <b>slowest</b> of these, with 5 levels of aggregation.  You can see the performance history on <a href="https://github.com/objectcomputing/liquibook/blob/master/PERFORMANCE.md">GitHub</a>.</p>
 
     </div> <!-- /container -->
 

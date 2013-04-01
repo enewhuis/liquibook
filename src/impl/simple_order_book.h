@@ -28,7 +28,7 @@ public:
   const SimpleDepth& depth() const;
 
 private:
-  FillId fill_id_;
+  book::FillId fill_id_;
   SimpleDepth depth_;
 };
 
@@ -83,7 +83,7 @@ SimpleOrderBook<SIZE>::perform_callback(SimpleCallback& cb)
       // Increment fill ID once
       ++fill_id_;
       // Update the orders
-      Cost fill_cost = cb.fill_qty * cb.fill_price;
+      book::Cost fill_cost = cb.fill_qty * cb.fill_price;
       cb.matched_order->fill(cb.fill_qty, fill_cost, fill_id_);
       cb.order->fill(cb.fill_qty, fill_cost, fill_id_);
       break;
@@ -102,8 +102,8 @@ SimpleOrderBook<SIZE>::perform_callback(SimpleCallback& cb)
     case SimpleCallback::cb_order_replace:
     {
       // Remember current values
-      Price current_price = cb.order->price();
-      Quantity current_qty = cb.order->open_qty();
+      book::Price current_price = cb.order->price();
+      book::Quantity current_qty = cb.order->open_qty();
 
       // Modify the order itself
       cb.order->replace(cb.new_order_qty, cb.new_price);

@@ -7,6 +7,8 @@
 #include "impl/simple_order.h"
 #include "impl/simple_order_book.h"
 
+using namespace liquibook::book;
+
 namespace liquibook {
 
 using book::DepthLevel;

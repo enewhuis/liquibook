@@ -48,7 +48,7 @@
               <li><a href="fast.html">Fast</a></li>
               <li><a href="flexible.html">Flexible</a></li>
               <li class="active"><a href="easy.html">Easy</a></li>
-              <li><a href="getstarted.html">Get Started</a></li>
+              <li><a href="get-started.html">Get Started</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -70,8 +70,22 @@
       <h2>How do I...?</h2>
 
       <ul>
+        <li>Use my Order class - Just bind your <i>pointer to order</i> type to the OrderBook template.</li>
+        <pre>class MyOrderBook : public OrderBook&lt;MyOrder*&gt; { ... }</pre>
         <li>Use shared pointers - just pass a shared pointer type as the OrderBook template argument.</li>
+        <pre>typedef boost::shared_ptr<SimpleOrder> MyOrderPtr;
+class MyOrderBook : public OrderBook&lt;MyOrderPtr&gt; { ... }</pre>
         <li>Track aggregate depth levels - instantiate Depth in your child OrderBook, and manipulate it in the callback handling, like impl::SimpleOrderBook does.</li>
+        <pre>depth_.add_order(...);
+depth_.fill_order(...);
+depth_.close_order(...);
+depth_.replace_order(...);
+depth_.ignore_fill_qty(...);
+</pre>
+        <li>Track more than 5 depth levels - Just instantiate Depth with the number you want.</li>
+        <pre>typedef book::Depth<10> MyDepth</pre>
+        <li>Track BBO only - Just instantiate Depth with one level.</li>
+        <pre>typedef book::Depth<10> MyBBO</pre>
         <li></li>
         <li></li>
         <li></li>
@@ -84,7 +98,6 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="js/jquery-1.9.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <scriprt src="js/bootstrap.min.js"></script>
   </body>
 </html>
-
