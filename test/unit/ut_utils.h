@@ -8,10 +8,9 @@
 #include "impl/simple_order_book.h"
 #include "impl/simple_order.h"
 
-namespace liquibook {
+using namespace liquibook::book;
 
-using book::OrderBook;
-using book::DepthLevel;
+namespace liquibook {
 
 typedef impl::SimpleOrderBook<5> SimpleOrderBook;
 typedef SimpleOrderBook::SimpleDepth SimpleDepth;
