@@ -1,4 +1,0 @@
-// This file defines MPC features used to enable and disable portions of the build
-QuickFAST=1
-boost=1
-
