@@ -56,9 +56,6 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders, clock_t end) {
   do {
     order_book.add(*pp_order);
     order_book.perform_callbacks();
-// check_top_of_book(order_book);
-//std::cout << "Order Book" << std::endl;
-//order_book.log();
     ++pp_order;
     if (*pp_order == NULL) {
       return -1;
