@@ -104,10 +104,10 @@ public:
   /// @brief has the depth changed since the last publish
   bool changed() const;
 
-  /// @brief what was the last published change?
+  /// @brief what was the ID of the last published change?
   ChangeId last_published_change() const;
 
-  /// @beief note the if of last published change
+  /// @beief note the ID of last published change
   void published();
 
 private:
