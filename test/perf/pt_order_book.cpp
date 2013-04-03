@@ -12,42 +12,9 @@
 using namespace liquibook;
 using namespace liquibook::book;
 
-typedef impl::SimpleOrderBook<5> DepthOrderBook;
+typedef impl::SimpleOrderBook<5> FullDepthOrderBook;
 typedef impl::SimpleOrderBook<1> BboOrderBook;
 typedef book::OrderBook<impl::SimpleOrder*> NoDepthOrderBook;
-
-template <class TypedOrderBook>
-void check_top_of_book(TypedOrderBook& order_book)
-{
-  // Determine if there is top of book bid error
-  const book::DepthLevel& depth_best_bid = *order_book.depth().bids();
-  book::DepthLevel book_best_bid;
-  order_book.populate_bid_depth_level_after(MARKET_ORDER_BID_SORT_PRICE, 
-                                            book_best_bid);
-  if (book_best_bid.price() != depth_best_bid.price()) {
-    throw std::runtime_error("bid price mismatch");
-  }
-  if (book_best_bid.order_count() != depth_best_bid.order_count()) {
-    throw std::runtime_error("bid order_count mismatch");
-  }
-  if (book_best_bid.aggregate_qty() != depth_best_bid.aggregate_qty()) {
-    throw std::runtime_error("bid aggregate_qty mismatch");
-  }
-  // Determine if there is top of book ask error
-  const book::DepthLevel& depth_best_ask = *order_book.depth().asks();
-  book::DepthLevel book_best_ask;
-  order_book.populate_ask_depth_level_after(MARKET_ORDER_ASK_SORT_PRICE, 
-                                            book_best_ask);
-  if (book_best_ask.price() != depth_best_ask.price()) {
-    throw std::runtime_error("ask price mismatch");
-  }
-  if (book_best_ask.order_count() != depth_best_ask.order_count()) {
-    throw std::runtime_error("ask order_count mismatch");
-  }
-  if (book_best_ask.aggregate_qty() != depth_best_ask.aggregate_qty()) {
-    throw std::runtime_error("ask aggregate_qty mismatch");
-  }
-}
 
 template <class TypedOrderBook, class TypedOrder>
 int run_test(TypedOrderBook& order_book, TypedOrder** orders, clock_t end) {
@@ -144,7 +111,7 @@ int main(int argc, const char* argv[])
     std::cout << "testing order book with depth" << std::endl;
     uint32_t num_to_try = dur_sec * 125000;
     while (true) {
-      if (build_and_run_test<DepthOrderBook>(dur_sec, num_to_try)) {
+      if (build_and_run_test<FullDepthOrderBook>(dur_sec, num_to_try)) {
         break;
       } else {
         num_to_try *= 2;

@@ -6,7 +6,6 @@
 #include "changed_checker.h"
 #include "book/order_book.h"
 #include "impl/simple_order.h"
-#include "impl/simple_order_book.h"
 
 namespace liquibook {
 
