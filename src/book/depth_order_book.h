@@ -151,14 +151,14 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
       // Book was updated, see if the depth we track was effected
       if (depth_.changed()) {
         if (depth_listener_) {
-          depth_listener_->on_depth_change(*this, depth_);
+          depth_listener_->on_depth_change(this, &depth_);
         }
         if (bbo_listener_) {
           ChangeId last_change = depth_.last_published_change();
           // May have been the first level which changed
           if ((depth_.bids()->changed_since(last_change)) ||
               (depth_.asks()->changed_since(last_change))) {
-            bbo_listener_->on_bbo_change(*this, depth_);
+            bbo_listener_->on_bbo_change(this, &depth_);
           }
      
         }

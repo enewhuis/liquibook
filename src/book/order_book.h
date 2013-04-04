@@ -22,7 +22,7 @@ namespace liquibook { namespace book {
 template<class OrderPtr>
 class OrderListener;
 
-template<class OrderPtr>
+template<class OrderBook>
 class OrderBookListener;
 
 /// @brief Tracker of an order's state, to keep inside the OrderBook.  
@@ -76,7 +76,8 @@ public:
   typedef OrderTracker<OrderPtr > Tracker;
   typedef Callback<OrderPtr > TypedCallback;
   typedef OrderListener<OrderPtr > TypedOrderListener;
-  typedef OrderBookListener<OrderPtr > TypedOrderBookListener;
+  typedef OrderBook<OrderPtr > MyClass;
+  typedef OrderBookListener<MyClass > TypedOrderBookListener;
   typedef std::vector<TypedCallback > Callbacks;
   typedef std::multimap<Price, Tracker, std::greater<Price> >  Bids;
   typedef std::multimap<Price, Tracker, std::less<Price> >     Asks;
@@ -87,10 +88,10 @@ public:
   OrderBook();
 
   /// @brief set the order listener
-  void set_order_listener(TypedOrderListener* order_listener);
+  void set_order_listener(TypedOrderListener* listener);
 
   /// @brief set the order book listener
-  void set_book_listener(TypedOrderBookListener* book_listener);
+  void set_order_book_listener(TypedOrderBookListener* listener);
 
   /// @brief add an order to book
   /// @param order the order to add
@@ -188,7 +189,7 @@ private:
   DeferredAskCrosses deferred_ask_crosses_;
   Callbacks callbacks_;
   TypedOrderListener* order_listener_;
-  TypedOrderBookListener* book_listener_;
+  TypedOrderBookListener* order_book_listener_;
   TransId trans_id_;
 
   Price sort_price(const OrderPtr& order);
@@ -280,7 +281,7 @@ OrderTracker<OrderPtr>::immediate_or_cancel() const
 template <class OrderPtr>
 OrderBook<OrderPtr>::OrderBook()
 : order_listener_(NULL),
-  book_listener_(NULL),
+  order_book_listener_(NULL),
   trans_id_(0)
 {
   callbacks_.reserve(16);
@@ -295,9 +296,9 @@ OrderBook<OrderPtr>::set_order_listener(TypedOrderListener* listener)
 
 template <class OrderPtr>
 void
-OrderBook<OrderPtr>::set_book_listener(TypedOrderBookListener* listener)
+OrderBook<OrderPtr>::set_order_book_listener(TypedOrderBookListener* listener)
 {
-  book_listener_ = listener;
+  order_book_listener_ = listener;
 }
 
 template <class OrderPtr>
@@ -680,8 +681,8 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
         std::runtime_error("Unexpected callback type for order");
         break;
     }
-  } else if (cb.order_book && book_listener_) {
-    book_listener_->on_order_book_change(*cb.order_book);
+  } else if (cb.type == TypedCallback::cb_book_update && order_book_listener_) {
+    order_book_listener_->on_order_book_change(this);
   }
 }
 

@@ -9,13 +9,11 @@
 namespace liquibook { namespace book {
 
 /// @brief generic listener of order book events
-template <class OrderPtr = Order*>
+template <class OrderBook >
 class OrderBookListener {
 public:
-  typedef OrderBook<OrderPtr> TypedOrderBook;
-
   /// @brief callback for change anywhere in order book
-  virtual void on_order_book_change(const TypedOrderBook& book) = 0;
+  virtual void on_order_book_change(const OrderBook* book) = 0;
 };
 
 } }

@@ -11,8 +11,8 @@ template <class OrderBook, class DepthTracker >
 class BboListener {
 public:
   /// @brief callback for top of book change
-  virtual void on_bbo_change(const OrderBook& book, 
-                             const DepthTracker& depth) = 0;
+  virtual void on_bbo_change(const OrderBook* book, 
+                             const DepthTracker* depth) = 0;
 };
 
 } }
