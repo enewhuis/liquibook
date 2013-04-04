@@ -104,10 +104,13 @@ public:
   /// @brief has the depth changed since the last publish
   bool changed() const;
 
-  /// @brief what was the last published change?
+  /// @brief what was the ID of the last change?
+  ChangeId last_change() const;
+
+  /// @brief what was the ID of the last published change?
   ChangeId last_published_change() const;
 
-  /// @beief note the if of last published change
+  /// @beief note the ID of last published change
   void published();
 
 private:
@@ -223,9 +226,14 @@ Depth<SIZE>::add_order(Price price, Quantity qty, bool is_bid)
   ChangeId last_change_copy = last_change_;
   DepthLevel* level = find_level(price, is_bid);
   if (level) {
-    last_change_ = last_change_copy + 1; // Ensure incremented
     level->add_order(qty);
-    level->last_change(last_change_);
+    // If this is a visible level
+    if (!level->is_excess()) {
+      // The depth changed
+      last_change_ = last_change_copy + 1; // Ensure incremented
+      level->last_change(last_change_copy + 1);
+    }
+    // The level is not marked as changed if it is not visible
   }
 }
 
@@ -539,6 +547,13 @@ Depth<SIZE>::changed() const
   return last_change_ > last_published_change_;
 }
 
+
+template <int SIZE> 
+ChangeId
+Depth<SIZE>::last_change() const
+{
+  return last_change_;
+}
 
 template <int SIZE> 
 ChangeId

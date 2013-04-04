@@ -7,6 +7,7 @@
 #include "callback.h"
 #include "order.h"
 #include "order_listener.h"
+#include "order_book_listener.h"
 #include "depth_level.h"
 #include <map>
 #include <vector>
@@ -19,10 +20,10 @@
 namespace liquibook { namespace book {
 
 template<class OrderPtr>
-class OrderBookListener;
-
-template<class OrderPtr>
 class OrderListener;
+
+template<class OrderBook>
+class OrderBookListener;
 
 /// @brief Tracker of an order's state, to keep inside the OrderBook.  
 ///   Kept separate from the order itself.
@@ -75,7 +76,8 @@ public:
   typedef OrderTracker<OrderPtr > Tracker;
   typedef Callback<OrderPtr > TypedCallback;
   typedef OrderListener<OrderPtr > TypedOrderListener;
-  typedef OrderBookListener<OrderPtr > TypedOrderBookListener;
+  typedef OrderBook<OrderPtr > MyClass;
+  typedef OrderBookListener<MyClass > TypedOrderBookListener;
   typedef std::vector<TypedCallback > Callbacks;
   typedef std::multimap<Price, Tracker, std::greater<Price> >  Bids;
   typedef std::multimap<Price, Tracker, std::less<Price> >     Asks;
@@ -84,6 +86,12 @@ public:
 
   /// @brief construct
   OrderBook();
+
+  /// @brief set the order listener
+  void set_order_listener(TypedOrderListener* listener);
+
+  /// @brief set the order book listener
+  void set_order_book_listener(TypedOrderBookListener* listener);
 
   /// @brief add an order to book
   /// @param order the order to add
@@ -180,8 +188,8 @@ private:
   DeferredBidCrosses deferred_bid_crosses_;
   DeferredAskCrosses deferred_ask_crosses_;
   Callbacks callbacks_;
-  TypedOrderBookListener* book_listener_;
   TypedOrderListener* order_listener_;
+  TypedOrderBookListener* order_book_listener_;
   TransId trans_id_;
 
   Price sort_price(const OrderPtr& order);
@@ -272,11 +280,25 @@ OrderTracker<OrderPtr>::immediate_or_cancel() const
 
 template <class OrderPtr>
 OrderBook<OrderPtr>::OrderBook()
-: book_listener_(NULL),
-  order_listener_(NULL),
+: order_listener_(NULL),
+  order_book_listener_(NULL),
   trans_id_(0)
 {
   callbacks_.reserve(16);
+}
+
+template <class OrderPtr>
+void
+OrderBook<OrderPtr>::set_order_listener(TypedOrderListener* listener)
+{
+  order_listener_ = listener;
+}
+
+template <class OrderPtr>
+void
+OrderBook<OrderPtr>::set_order_book_listener(TypedOrderBookListener* listener)
+{
+  order_book_listener_ = listener;
 }
 
 template <class OrderPtr>
@@ -307,6 +329,7 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
     if (inbound.immediate_or_cancel() && !inbound.filled()) {
       callbacks_.push_back(TypedCallback::cancel(order, trans_id_));
     }
+    callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
   }
   return matched;
 }
@@ -341,6 +364,7 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
   // If the cancel was found, issue callback
   if (found) {
     callbacks_.push_back(TypedCallback::cancel(order, trans_id_));
+    callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
   } else {
     callbacks_.push_back(
         TypedCallback::cancel_reject(order, "not found", trans_id_));
@@ -377,6 +401,7 @@ OrderBook<OrderPtr>::replace(
         // Accept the replace
         callbacks_.push_back(
             TypedCallback::replace(order, new_order_qty, price, trans_id_));
+        callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
         Quantity new_open_qty = bid->second.open_qty() + size_delta;
         bid->second.change_qty(size_delta);  // Update my copy
         // If the size change will close the order
@@ -403,6 +428,7 @@ OrderBook<OrderPtr>::replace(
         // Accept the replace
         callbacks_.push_back(
             TypedCallback::replace(order, new_order_qty, price, trans_id_));
+        callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
         Quantity new_open_qty = ask->second.open_qty() + size_delta;
         ask->second.change_qty(size_delta);  // Update my copy
         // If the size change will close the order
@@ -628,8 +654,8 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
     switch (cb.type) {
       case TypedCallback::cb_order_fill: {
         Cost fill_cost = cb.fill_price * cb.fill_qty;
-        order_listener_->on_fill(cb.order, cb.fill_qty, fill_cost);
-        order_listener_->on_fill(cb.matched_order, cb.fill_qty, fill_cost);
+        order_listener_->on_fill(cb.order, cb.matched_order, 
+                                 cb.fill_qty, fill_cost);
         break;
       }
       case TypedCallback::cb_order_accept:
@@ -651,14 +677,12 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
         order_listener_->on_replace_reject(cb.order, cb.reject_reason);
         break;
       case TypedCallback::cb_unknown:
-      case TypedCallback::cb_depth_update:
-      case TypedCallback::cb_bbo_update:
         // Error
         std::runtime_error("Unexpected callback type for order");
         break;
     }
-  } else if (book_listener_) {
-    // TODO
+  } else if (cb.type == TypedCallback::cb_book_update && order_book_listener_) {
+    order_book_listener_->on_order_book_change(this);
   }
 }
 

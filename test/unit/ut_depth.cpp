@@ -38,28 +38,29 @@ bool verify_level(const DepthLevel*& level,
 TEST(TestAddBid)
 {
   SizedDepth depth;
+  ChangedChecker cc(depth);
   depth.add_order(1234, 100, true);
   const DepthLevel* first_bid = depth.bids();
   ASSERT_TRUE(verify_level(first_bid, 1234, 1, 100));
-  ChangedChecker cc(depth);
   ASSERT_TRUE(cc.verify_bid_changed(1, 0, 0, 0, 0));
 }
 
 TEST(TestAddBids)
 {
   SizedDepth depth;
+  ChangedChecker cc(depth);
   depth.add_order(1234, 100, true);
   depth.add_order(1234, 200, true);
   depth.add_order(1234, 300, true);
   const DepthLevel* first_bid = depth.bids();
   ASSERT_TRUE(verify_level(first_bid, 1234, 3, 600));
-  ChangedChecker cc(depth);
   ASSERT_TRUE(cc.verify_bid_changed(1, 0, 0, 0, 0));
 }
 
 TEST(TestAppendBidLevels)
 {
   SizedDepth depth;
+  ChangedChecker cc(depth);
   depth.add_order(1236, 300, true);
   depth.add_order(1235, 200, true);
   depth.add_order(1232, 100, true);
@@ -68,7 +69,6 @@ TEST(TestAppendBidLevels)
   ASSERT_TRUE(verify_level(bid, 1236, 1, 300));
   ASSERT_TRUE(verify_level(bid, 1235, 2, 600));
   ASSERT_TRUE(verify_level(bid, 1232, 1, 100));
-  ChangedChecker cc(depth);
   ASSERT_TRUE(cc.verify_bid_changed(1, 1, 1, 0, 0));
 }
 
@@ -360,10 +360,10 @@ TEST(TestIncreaseDecreaseBid)
 TEST(TestAddAsk)
 {
   SizedDepth depth;
+  ChangedChecker cc(depth);
   depth.add_order(1234, 100, false);
   const DepthLevel* first_ask = depth.asks();
   ASSERT_TRUE(verify_level(first_ask, 1234, 1, 100));
-  ChangedChecker cc(depth);
   ASSERT_TRUE(cc.verify_ask_changed(1, 0, 0, 0, 0)); cc.reset();
 }
 

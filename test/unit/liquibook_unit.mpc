@@ -39,3 +39,10 @@ project (ut_immediate_or_cancel) : liquibook_test, liquibook_book, liquibook_imp
     ut_immediate_or_cancel.cpp
   }
 }
+
+project (ut_listeners) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_listeners.cpp
+  }
+}
