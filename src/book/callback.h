@@ -91,7 +91,7 @@ public:
                                         const TransId& trans_id);
   CbType type;
   OrderPtr order;
-  const TypedOrderBook* order_book;
+  const TypedOrderBook* order_book;  // In case the cb is handled externally
   OrderPtr matched_order; // fill
   TransId trans_id;
   union {
