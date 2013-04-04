@@ -103,7 +103,7 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
         bool matched_order_filled = 
                  cb.fill_flags & DobCallback::ff_matched_filled;
         // Inform the depth
-        depth_.new_fill_order(cb.matched_order->price(), 
+        depth_.fill_order(cb.matched_order->price(), 
                           cb.fill_qty,
                           matched_order_filled,
                           cb.matched_order->is_buy());
@@ -113,7 +113,7 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
         bool inbound_order_filled = 
                  cb.fill_flags & DobCallback::ff_inbound_filled;
         // Inform the depth
-        depth_.new_fill_order(cb.order->price(), 
+        depth_.fill_order(cb.order->price(), 
                           cb.fill_qty,
                           inbound_order_filled,
                           cb.order->is_buy());

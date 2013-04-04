@@ -57,16 +57,10 @@ public:
 
   /// @brief handle an order fill
   /// @param price the price level of the order
-  /// @param open_qty the open quantity of the order (prior to this fill)
   /// @param fill_qty the quantity of this fill
-  /// @param is_bid indicator of bid or ask
-  void old_fill_order(Price price, 
-                  Quantity open_qty, 
-                  Quantity fill_qty, 
-                  bool is_bid);
-
   /// @param filled was this order completely filled?
-  void new_fill_order(Price price, 
+  /// @param is_bid indicator of bid or ask
+  void fill_order(Price price, 
                   Quantity fill_qty, 
                   bool filled,
                   bool is_bid);
@@ -261,7 +255,7 @@ Depth<SIZE>::ignore_fill_qty(Quantity qty, bool is_bid)
 
 template <int SIZE> 
 inline void
-Depth<SIZE>::new_fill_order(
+Depth<SIZE>::fill_order(
   Price price, 
   Quantity fill_qty, 
   bool filled,
