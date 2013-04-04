@@ -14,6 +14,8 @@ using impl::SimpleOrder;
 
 typedef SimpleOrder* OrderPtr;
 typedef OrderBook<OrderPtr> TypedOrderBook;
+typedef DepthOrderBook<OrderPtr> TypedDepthOrderBook;
+typedef TypedDepthOrderBook::DepthTracker DepthTracker;
 
 class OrderCbListener : public OrderListener<OrderPtr>
 {
@@ -202,4 +204,189 @@ TEST(TestOrderBookCallbacks)
   order_book.perform_callbacks();
   ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
 }
+
+class DepthCbListener 
+      : public TypedDepthOrderBook::TypedDepthListener
+{
+public:
+  virtual void on_depth_change(const TypedDepthOrderBook* book,
+                               const DepthTracker* depth)
+  {
+    changes_.push_back(book);
+  }
+
+  void reset()
+  {
+    changes_.erase(changes_.begin(), changes_.end());
+  }
+  typedef std::vector<const TypedDepthOrderBook*> OrderBooks;
+  OrderBooks changes_;
+};
+
+TEST(TestDepthCallbacks)
+{
+  SimpleOrder buy0(true, 3250, 100);
+  SimpleOrder buy1(true, 3249, 800);
+  SimpleOrder buy2(true, 3248, 300);
+  SimpleOrder buy3(true, 3247, 200);
+  SimpleOrder buy4(true, 3246, 600);
+  SimpleOrder buy5(true, 3245, 300);
+  SimpleOrder buy6(true, 3244, 100);
+  SimpleOrder sell0(false, 3250, 300);
+  SimpleOrder sell1(false, 3251, 200);
+  SimpleOrder sell2(false, 3252, 200);
+  SimpleOrder sell3(false, 3253, 400);
+  SimpleOrder sell4(false, 3254, 300);
+  SimpleOrder sell5(false, 3255, 100);
+  SimpleOrder sell6(false, 3255, 100);
+
+  DepthCbListener listener;
+  TypedDepthOrderBook order_book;
+  order_book.set_depth_listener(&listener);
+  // Add buy orders, should be accepted
+  order_book.add(&buy0);
+  order_book.add(&buy1);
+  order_book.add(&buy2);
+  order_book.add(&buy3);
+  order_book.add(&buy4);
+  order_book.perform_callbacks();
+  ASSERT_EQ(5, listener.changes_.size());
+  listener.reset();
+
+  // Add buy orders past end, should be accepted, but not affect depth
+  order_book.add(&buy5);
+  order_book.add(&buy6);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+
+  // Add sell orders, should be accepted and affect depth
+  order_book.add(&sell5);
+  order_book.perform_callbacks();
+  order_book.add(&sell4);
+  order_book.perform_callbacks();
+  order_book.add(&sell3);
+  order_book.perform_callbacks();
+  order_book.add(&sell2);
+  order_book.perform_callbacks();
+  order_book.add(&sell1);
+  order_book.perform_callbacks();
+  order_book.add(&sell0);
+  order_book.perform_callbacks();
+  ASSERT_EQ(6, listener.changes_.size());
+  listener.reset();
+
+  // Add sell order past end, should be accepted, but not affect depth
+  order_book.add(&sell6);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+}
+
+class BboCbListener 
+      : public TypedDepthOrderBook::TypedBboListener
+{
+  public:
+  virtual void on_bbo_change(const TypedDepthOrderBook* book,
+                             const DepthTracker* depth)
+  {
+    changes_.push_back(book);
+  }
+
+  void reset()
+  {
+    changes_.erase(changes_.begin(), changes_.end());
+  }
+
+  typedef std::vector<const TypedDepthOrderBook*> OrderBooks;
+  OrderBooks changes_;
+};
+
+TEST(TestBboCallbacks)
+{
+  SimpleOrder buy0(true, 3250, 100);
+  SimpleOrder buy1(true, 3249, 800);
+  SimpleOrder buy2(true, 3248, 300);
+  SimpleOrder buy3(true, 3247, 200);
+  SimpleOrder buy4(true, 3246, 600);
+  SimpleOrder buy5(true, 3245, 300);
+  SimpleOrder buy6(true, 3244, 100);
+  SimpleOrder sell0(false, 3250, 300);
+  SimpleOrder sell1(false, 3251, 200);
+  SimpleOrder sell2(false, 3252, 200);
+  SimpleOrder sell3(false, 3253, 400);
+  SimpleOrder sell4(false, 3254, 300);
+  SimpleOrder sell5(false, 3255, 100);
+  SimpleOrder sell6(false, 3255, 100);
+
+  BboCbListener listener;
+  TypedDepthOrderBook order_book;
+  order_book.set_bbo_listener(&listener);
+  // Add buy orders, should be accepted
+  order_book.add(&buy0);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  order_book.add(&buy1);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.add(&buy2);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.add(&buy3);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.add(&buy4);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.perform_callbacks();
+
+  // Add buy orders past end, should be accepted, but not affect depth
+  order_book.add(&buy5);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.add(&buy6);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+
+  // Add sell orders, should be accepted and affect bbo
+  order_book.add(&sell2);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  order_book.add(&sell1);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  order_book.add(&sell0);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  // Add sell orders worse than best bid, should not effect bbo
+  order_book.add(&sell5);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.add(&sell4);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+  order_book.add(&sell3);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+
+  // Add sell order past end, should be accepted, but not affect depth
+  order_book.add(&sell6);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());
+  listener.reset();
+}
+
 } // namespace liquibook
