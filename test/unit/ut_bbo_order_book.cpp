@@ -1719,6 +1719,7 @@ TEST(TestReplaceSizeDecrease)
 
   // Verify changed stamps
   ASSERT_TRUE(cc.verify_bbo_changed(1, 1));
+  cc.reset();
 
   // Replace size
   ASSERT_TRUE(replace_and_verify(order_book, &bid0, -60));

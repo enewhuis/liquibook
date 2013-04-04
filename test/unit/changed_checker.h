@@ -19,10 +19,11 @@ public:
   ChangedChecker(SizedDepth& depth)
   : depth_(depth)
   {
+    reset();
   }
 
   void reset() {
-    depth_.published();
+    last_change_ = depth_.last_change();
   }
 
   bool verify_bid_changed(int l0, int l1, int l2, int l3, int l4)
@@ -51,17 +52,15 @@ public:
   bool verify_bbo_changed(int bid_changed, int ask_changed)
   {
     bool matched = true;
-    ChangeId last_change = depth_.last_published_change();
     
-    if (depth_.bids()->changed_since(last_change) != bool(bid_changed == 1)) {
+    if (depth_.bids()->changed_since(last_change_) != bool(bid_changed == 1)) {
       std::cout << "best bid changed incorrect" << std::endl;
       matched = false;
     }
-    if (depth_.asks()->changed_since(last_change) != bool(ask_changed == 1)) {
+    if (depth_.asks()->changed_since(last_change_) != bool(ask_changed == 1)) {
       std::cout << "best ask changed incorrect" << std::endl;
       matched = false;
     }
-    reset();
     return matched;
   }
 
@@ -81,6 +80,7 @@ public:
     return matched;
   }
   private:
+  ChangeId last_change_;
   bool verify_side_stamps(const DepthLevel* start, 
                    ChangeId l0, ChangeId l1, ChangeId l2, 
                    ChangeId l3, ChangeId l4)
@@ -113,25 +113,24 @@ public:
                            bool l0, bool l1, bool l2, bool l3, bool l4)
   {
     bool matched = true;
-    ChangeId last_change = depth_.last_published_change();
     
-    if (start[0].changed_since(last_change) != l0) {
+    if (start[0].changed_since(last_change_) != l0) {
       std::cout << "changed[0] mismatch" << std::endl;
       matched = false;
     }
-    if (start[1].changed_since(last_change) != l1) {
+    if (start[1].changed_since(last_change_) != l1) {
       std::cout << "changed[1] mismatch" << std::endl;
       matched = false;
     }
-    if (start[2].changed_since(last_change) != l2) {
+    if (start[2].changed_since(last_change_) != l2) {
       std::cout << "changed[2] mismatch" << std::endl;
       matched = false;
     }
-    if (start[3].changed_since(last_change) != l3) {
+    if (start[3].changed_since(last_change_) != l3) {
       std::cout << "changed[3] mismatch" << std::endl;
       matched = false;
     }
-    if (start[4].changed_since(last_change) != l4) {
+    if (start[4].changed_since(last_change_) != l4) {
       std::cout << "changed[4] mismatch" << std::endl;
       matched = false;
     }
