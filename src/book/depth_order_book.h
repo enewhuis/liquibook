@@ -4,8 +4,11 @@
 #ifndef depth_order_book_h
 #define depth_order_book_h
 
-#include "book/order_book.h"
-#include "book/depth.h"
+#include "order_book.h"
+#include "depth.h"
+#include "bbo_listener.h"
+#include "depth_listener.h"
+
 #include <iostream>
 
 namespace liquibook { namespace book {
@@ -14,32 +17,65 @@ namespace liquibook { namespace book {
 ///        aggregate depth tracking.  Overrides perform_callback() method to 
 //         track depth aggregated by price.
 template <class OrderPtr = Order*, int SIZE = 5>
-class DepthOrderBook : public book::OrderBook<OrderPtr> {
+class DepthOrderBook : public OrderBook<OrderPtr> {
 public:
-  typedef typename book::Depth<SIZE> DepthTracker;
-  typedef book::Callback<OrderPtr> DobCallback;
+  typedef Depth<SIZE> DepthTracker;
+  typedef BboListener<OrderBook<OrderPtr >, DepthTracker > TypedBboListener;
+  typedef DepthListener<OrderBook<OrderPtr >, DepthTracker > TypedDepthListener;
+  typedef Callback<OrderPtr> DobCallback;
 
+  /// @brief construct
   DepthOrderBook();
 
+  /// @brief set the BBO listener
+  void set_bbo_listener(TypedBboListener* bbo_listener);
+
+  /// @brief set the depth listener
+  void set_depth_listener(TypedDepthListener* depth_listener);
+
+  /// @brief handle a single callback
   virtual void perform_callback(DobCallback& cb);
+
+  // @brief access the depth tracker
   DepthTracker& depth();
+
+  // @brief access the depth tracker
   const DepthTracker& depth() const;
 
 private:
-  book::FillId fill_id_;
+  FillId fill_id_;
   DepthTracker depth_;
+  TypedBboListener* bbo_listener_;
+  TypedDepthListener* depth_listener_;
 };
 
 template <class OrderPtr, int SIZE>
 DepthOrderBook<OrderPtr, SIZE>::DepthOrderBook()
-: fill_id_(0)
+: fill_id_(0),
+  bbo_listener_(NULL),
+  depth_listener_(NULL)
 {
+}
+
+template <class OrderPtr, int SIZE>
+void
+DepthOrderBook<OrderPtr, SIZE>::set_bbo_listener(TypedBboListener* listener)
+{
+  bbo_listener_ = listener;
+}
+
+template <class OrderPtr, int SIZE>
+void
+DepthOrderBook<OrderPtr, SIZE>::set_depth_listener(TypedDepthListener* listener)
+{
+  depth_listener_ = listener;
 }
 
 template <class OrderPtr, int SIZE>
 inline void
 DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
 {
+  OrderBook<OrderPtr>::perform_callback(cb);
   switch(cb.type) {
     case DobCallback::cb_order_accept:
       cb.order->accept();
@@ -80,7 +116,7 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
       // Increment fill ID once
       ++fill_id_;
       // Update the orders
-      book::Cost fill_cost = cb.fill_qty * cb.fill_price;
+      Cost fill_cost = cb.fill_qty * cb.fill_price;
       cb.matched_order->fill(cb.fill_qty, fill_cost, fill_id_);
       cb.order->fill(cb.fill_qty, fill_cost, fill_id_);
       break;
@@ -99,8 +135,8 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
     case DobCallback::cb_order_replace:
     {
       // Remember current values
-      book::Price current_price = cb.order->price();
-      book::Quantity current_qty = cb.order->open_qty();
+      Price current_price = cb.order->price();
+      Quantity current_qty = cb.order->open_qty();
 
       // Modify the order itself
       cb.order->replace(cb.new_order_qty, cb.new_price);
@@ -111,6 +147,25 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
                            cb.order->is_buy());
       break;
     }
+    case DobCallback::cb_book_update:
+      // Book was updated, see if the depth we track was effected
+      if (depth_.changed()) {
+        if (depth_listener_) {
+          depth_listener_->on_depth_change(*this, depth_);
+        }
+        if (bbo_listener_) {
+          ChangeId last_change = depth_.last_published_change();
+          // May have been the first level which changed
+          if ((depth_.bids()->changed_since(last_change)) ||
+              (depth_.asks()->changed_since(last_change))) {
+            bbo_listener_->on_bbo_change(*this, depth_);
+          }
+     
+        }
+        // Start tracking changes again...
+        depth_.published();
+      }
+
     default:
       // Nothing
       break;

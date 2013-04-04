@@ -52,8 +52,7 @@ public:
     cb_order_cancel_reject,
     cb_order_replace,
     cb_order_replace_reject,
-    cb_depth_update,
-    cb_bbo_update
+    cb_book_update
   };
 
   Callback();
@@ -88,8 +87,11 @@ public:
                                            const char* reason,
                                            const TransId& trans_id);
 
+  static Callback<OrderPtr> book_update(const TypedOrderBook* book,
+                                        const TransId& trans_id);
   CbType type;
   OrderPtr order;
+  const TypedOrderBook* order_book;
   OrderPtr matched_order; // fill
   TransId trans_id;
   union {
@@ -111,6 +113,7 @@ public:
 template <class OrderPtr>
 Callback<OrderPtr>::Callback()
 : type(cb_unknown),
+  order_book(0),
   trans_id(0),
   fill_qty(0),
   fill_price(0)
@@ -213,6 +216,18 @@ Callback<OrderPtr> Callback<OrderPtr>::replace_reject(
   result.type = cb_order_replace_reject;
   result.order = order;
   result.reject_reason = reason;
+  result.trans_id = trans_id;
+  return result;
+}
+
+template <class OrderPtr>
+Callback<OrderPtr>
+Callback<OrderPtr>::book_update(const OrderBook<OrderPtr>* book,
+                                const TransId& trans_id)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_book_update;
+  result.order_book = book;
   result.trans_id = trans_id;
   return result;
 }
