@@ -1,4 +1,7 @@
 
-project(*) : QuickFASTApplication {
+project(*) : QuickFASTApplication, liquibook_book {
+  Source_Files {
+    ^publisher.cpp
+  }
 }
 
