@@ -13,6 +13,7 @@ using book::OrderBook;
 using impl::SimpleOrder;
 
 typedef SimpleOrder* OrderPtr;
+typedef OrderBook<OrderPtr> TypedOrderBook;
 
 class OrderCbListener : public OrderListener<OrderPtr>
 {
@@ -81,7 +82,7 @@ TEST(TestOrderCallbacks)
   SimpleOrder order4(true,  3250, 600);
 
   OrderCbListener listener;
-  OrderBook<OrderPtr> order_book;
+  TypedOrderBook order_book;
   order_book.set_order_listener(&listener);
   // Add order, should be accepted
   order_book.add(&order0);
@@ -130,4 +131,75 @@ TEST(TestOrderCallbacks)
   ASSERT_EQ(1, listener.replace_rejects_.size());
 }
 
+class OrderBookCbListener : public OrderBookListener<TypedOrderBook>
+{
+public:
+
+  virtual void on_order_book_change(const TypedOrderBook* book)
+  {
+    changes_.push_back(book);
+  }
+
+  void reset()
+  {
+    changes_.erase(changes_.begin(), changes_.end());
+  }
+
+  typedef std::vector<const TypedOrderBook*> OrderBookVector;
+  OrderBookVector changes_;
+};
+
+TEST(TestOrderBookCallbacks)
+{
+  SimpleOrder order0(false, 3250, 100);
+  SimpleOrder order1(true,  3250, 800);
+  SimpleOrder order2(false, 3230, 0);
+  SimpleOrder order3(false, 3240, 200);
+  SimpleOrder order4(true,  3250, 600);
+
+  OrderBookCbListener listener;
+  OrderBook<OrderPtr> order_book;
+  order_book.set_order_book_listener(&listener);
+  // Add order, should be accepted
+  order_book.add(&order0);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  // Add matching order, should be accepted, followed by a fill
+  order_book.add(&order1);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  // Add invalid order, should be rejected
+  order_book.add(&order2);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
+  listener.reset();
+  // Cancel only valid order, should be cancelled
+  order_book.cancel(&order1);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  // Cancel filled order, should be rejected
+  order_book.cancel(&order0);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
+  listener.reset();
+  // Add a new order and replace it, should be replaced
+  order_book.add(&order3);
+  order_book.replace(&order3, 0, 3250);
+  order_book.perform_callbacks();
+  ASSERT_EQ(2, listener.changes_.size());
+  listener.reset();
+  // Add matching order, should be accepted, followed by a fill
+  order_book.add(&order4);
+  order_book.perform_callbacks();
+  ASSERT_EQ(1, listener.changes_.size());
+  listener.reset();
+  // Replace matched order, with too large of a size decrease, replace
+  // should be rejected
+  order_book.replace(&order3, -500);
+  order_book.perform_callbacks();
+  ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
+}
 } // namespace liquibook
