@@ -614,13 +614,25 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
   if (MARKET_ORDER_PRICE == cross_price) {
     cross_price = inbound_tracker.ptr()->price();
   }
-  
   inbound_tracker.fill(fill_qty);
   current_tracker.fill(fill_qty);
+
+  typename TypedCallback::FillFlags fill_flags = 
+                              TypedCallback::ff_neither_filled;
+  if (!inbound_tracker.open_qty()) {
+    fill_flags = (typename TypedCallback::FillFlags)(
+                     fill_flags | TypedCallback::ff_inbound_filled);
+  }
+  if (!current_tracker.open_qty()) {
+    fill_flags = (typename TypedCallback::FillFlags)(
+                     fill_flags | TypedCallback::ff_matched_filled);
+  }
+
   callbacks_.push_back(TypedCallback::fill(inbound_tracker.ptr(),
                                            current_tracker.ptr(),
                                            fill_qty,
                                            cross_price,
+                                           fill_flags,
                                            trans_id_));
 }
 
