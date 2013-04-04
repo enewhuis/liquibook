@@ -80,6 +80,7 @@ public:
                                  const TransId& trans_id);
   /// @brief create a new cancel callback
   static Callback<OrderPtr> cancel(const OrderPtr& order,
+                                   const Quantity& open_qty,
                                    const TransId& trans_id);
   /// @brief create a new cancel reject callback
   static Callback<OrderPtr> cancel_reject(const OrderPtr& order,
@@ -103,15 +104,18 @@ public:
   OrderPtr matched_order; // fill
   TransId trans_id;
   union {
-    struct {
+    struct { // Accept
       Quantity match_qty;
     };
-    struct {
+    struct { // Fill
       Quantity fill_qty;
       Price fill_price;
       uint8_t fill_flags;
     };
-    struct {
+    struct { // Cancel
+      Quantity open_qty;
+    };
+    struct { // Replace
       Quantity new_order_qty;
       Price new_price;
     };
@@ -178,12 +182,14 @@ Callback<OrderPtr> Callback<OrderPtr>::fill(
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::cancel(
   const OrderPtr& order,
+  const Quantity& open_qty,
   const TransId& trans_id)
 {
   // TODO save the open qty
   Callback<OrderPtr> result;
   result.type = cb_order_cancel;
   result.order = order;
+  result.open_qty = open_qty;
   result.trans_id = trans_id;
   return result;
 }
