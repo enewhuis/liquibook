@@ -316,9 +316,11 @@ Depth<SIZE>::replace_order(
   bool is_bid)
 {
   bool erased = false;
-  // If the price is unchanged, modify the quantity only
+  // If the price is unchanged, modify this level only
   if (current_price == new_price) {
     int32_t qty_delta = ((int32_t)new_qty) - current_qty;
+    // Only change order qty.  If this closes order, a cancel callback will
+    // also be fired
     change_qty_order(current_price, qty_delta, is_bid);
   // Else this is a price change
   } else {

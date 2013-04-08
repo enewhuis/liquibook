@@ -88,7 +88,8 @@ public:
                                           const TransId& trans_id);
   /// @brief create a new replace callback
   static Callback<OrderPtr> replace(const OrderPtr& order,
-                                    const Quantity& new_order_qty,
+                                    const Quantity& curr_open_qty,
+                                    const int32_t& size_delta,
                                     const Price& new_price,
                                     const TransId& trans_id);
   /// @brief create a new replace reject callback
@@ -105,7 +106,7 @@ public:
   TransId trans_id;
   union {
     struct { // Accept
-      Quantity match_qty;
+      Quantity accept_match_qty;
     };
     struct { // Fill
       Quantity fill_qty;
@@ -113,11 +114,12 @@ public:
       uint8_t fill_flags;
     };
     struct { // Cancel
-      Quantity open_qty;
+      Quantity cxl_open_qty;
     };
     struct { // Replace
-      Quantity new_order_qty;
-      Price new_price;
+      Quantity repl_curr_open_qty; // Open qty of order before replace
+      int32_t repl_size_delta;
+      Price repl_new_price;
     };
     const char* reject_reason;
   };
@@ -189,7 +191,7 @@ Callback<OrderPtr> Callback<OrderPtr>::cancel(
   Callback<OrderPtr> result;
   result.type = cb_order_cancel;
   result.order = order;
-  result.open_qty = open_qty;
+  result.cxl_open_qty = open_qty;
   result.trans_id = trans_id;
   return result;
 }
@@ -211,7 +213,8 @@ Callback<OrderPtr> Callback<OrderPtr>::cancel_reject(
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::replace(
   const OrderPtr& order,
-  const Quantity& new_order_qty,
+  const Quantity& curr_open_qty,
+  const int32_t& size_delta,
   const Price& new_price,
   const TransId& trans_id)
 {
@@ -219,8 +222,9 @@ Callback<OrderPtr> Callback<OrderPtr>::replace(
   Callback<OrderPtr> result;
   result.type = cb_order_replace;
   result.order = order;
-  result.new_order_qty = new_order_qty;
-  result.new_price = new_price;
+  result.repl_curr_open_qty = curr_open_qty;
+  result.repl_size_delta = size_delta;
+  result.repl_new_price = new_price;
   result.trans_id = trans_id;
   return result;
 }

@@ -59,9 +59,9 @@ public:
   void cancel();
 
   /// @brief exchange replaced this order
-  /// @param new_order_qty the new order quantity
+  /// @param size_delta change to the order quantity
   /// @param new_price the new price
-  void replace(book::Quantity new_order_qty, book::Price new_price);
+  void replace(book::Quantity size_delta, book::Price new_price);
 
 private:
   OrderState state_;

@@ -38,10 +38,10 @@ public:
 
   /// @brief callback for an order replace
   /// @param order the replaced order
-  /// @param new_qty the updated order quantity (NOT open quantity)
+  /// @param size_delta the change to order quantity
   /// @param new_price the updated order price
   virtual void on_replace(const OrderPtr& order,
-                          Quantity new_qty, 
+                          const int32_t& size_delta,
                           Price new_price) = 0;
 
   /// @brief callback for an order replace rejection

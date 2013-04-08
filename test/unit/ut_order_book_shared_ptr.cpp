@@ -36,7 +36,7 @@ class SharedPtrOrderBook : public OrderBook<SimpleOrderPtr>
         cb.order->cancel();
         break;
       case TypedCallback::cb_order_replace:
-        cb.order->replace(cb.new_order_qty, cb.new_price);
+        cb.order->replace(cb.repl_size_delta, cb.repl_new_price);
         break;
       default:
         // Nothing
