@@ -2,14 +2,17 @@
 
 namespace liquibook { namespace examples {
 
-Exchange::Exchange()
+Exchange::Exchange(MyDepthListener* listener)
+: listener_(listener)
 {
 }
 
 void
 Exchange::add_order_book(const std::string& symbol)
 {
-  order_books_.insert(std::make_pair(symbol, ExampleOrderBook()));
+  std::pair<OrderBookMap::iterator, bool> result;
+  result = order_books_.insert(std::make_pair(symbol, ExampleOrderBook()));
+  result.first->second.set_depth_listener(listener_);
 }
 
 

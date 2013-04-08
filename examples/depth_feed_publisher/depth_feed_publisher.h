@@ -1,11 +1,18 @@
-#ifndef example_feed_publisher_h
-#define example_feed_publisher_h
+#ifndef example_depth_feed_publisher_h
+#define example_depth_feed_publisher_h
+
+#include "exchange.h"
 
 namespace liquibook { namespace examples {
 
-class FeedPublisher {
+typedef ExampleOrderBook::DepthTracker Tracker;
+
+class DepthFeedPublisher : public book::DepthListener<ExampleOrderBook> {
 public:
-  FeedPublisher(Exchange& exchange);
+  DepthFeedPublisher();
+
+  virtual void on_depth_change(const ExampleOrderBook* order_book,
+                               const Tracker* tracker);
 };
 
 } } // End namespace

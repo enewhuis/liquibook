@@ -10,14 +10,16 @@
 namespace liquibook { namespace examples {
 
 typedef book::DepthOrderBook<Order*> ExampleOrderBook;
+typedef ExampleOrderBook::TypedDepthListener MyDepthListener;
 
 class Exchange {
 public:
-  Exchange();
+  Exchange(MyDepthListener* listener);
   void add_order_book(const std::string& symbol);
 private:
   typedef std::map<std::string, ExampleOrderBook> OrderBookMap;
   OrderBookMap order_books_;
+  MyDepthListener* listener_;
 };
 
 } }

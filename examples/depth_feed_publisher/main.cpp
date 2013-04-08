@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include "exchange.h"
-#include "feed_publisher.h"
+#include "depth_feed_publisher.h"
 
 using namespace liquibook;
 
@@ -9,15 +9,15 @@ void populate_exchange(examples::Exchange& exchange);
 
 int main(int argc, const char* argv[])
 {
+  // Create feed publisher
+  examples::DepthFeedPublisher feed;
+
   // Create exchange
-  examples::Exchange exchange;
+  examples::Exchange exchange(&feed);
 
   // Populate with securities
   populate_exchange(exchange);
   
-  // Create feed publisher
-  examples::DepthFeedPublisher publisher(exchange);
-
   // Generate orders
   return 0;
 }
