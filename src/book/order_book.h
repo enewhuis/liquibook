@@ -199,10 +199,10 @@ private:
 template <class OrderPtr>
 inline
 OrderTracker<OrderPtr>::OrderTracker(
-  const OrderPtr& order, 
+  const OrderPtr& order,
   OrderConditions conditions)
 : order_(order),
-  open_qty_(order_->open_qty()),
+  open_qty_(order->order_qty()),
   conditions_(conditions)
 {
 }
@@ -483,7 +483,7 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
       // If the inbound order is an all or none order
       if (inbound.all_or_none()) {
         // Track how much of the inbound order has been matched
-        matched_qty += bid->second.ptr()->open_qty();
+        matched_qty += bid->second.open_qty();
         // If we have matched enough quantity to fill the inbound order
         if (matched_qty >= inbound_qty) {
           matched =  true;
@@ -558,7 +558,7 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
       // If the inbound order is an all or none order
       if (inbound.all_or_none()) {
         // Track how much of the inbound order has been matched
-        matched_qty += ask->second.ptr()->open_qty();
+        matched_qty += ask->second.open_qty();
         // If we have matched enough quantity to fill the inbound order
         if (matched_qty >= inbound_qty) {
           matched =  true;
