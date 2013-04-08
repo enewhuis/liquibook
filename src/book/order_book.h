@@ -327,7 +327,8 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
     }
     // Cancel any unfilled IOC order
     if (inbound.immediate_or_cancel() && !inbound.filled()) {
-      callbacks_.push_back(TypedCallback::cancel(order, trans_id_));
+      // NOTE - this may need he actual open qty???
+      callbacks_.push_back(TypedCallback::cancel(order, 0, trans_id_));
     }
     callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
   }
@@ -342,11 +343,13 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
   ++trans_id_;  
 
   bool found = false;
+  Quantity open_qty;
   // If the cancel is a buy order
   if (order->is_buy()) {
     typename Bids::iterator bid;
     find_bid(order, bid);
     if (bid != bids_.end()) {
+      open_qty = bid->second.open_qty();
       // Remove from container for cancel
       bids_.erase(bid);
       found = true;
@@ -356,6 +359,7 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
     typename Asks::iterator ask;
     find_ask(order, ask);
     if (ask != asks_.end()) {
+      open_qty = ask->second.open_qty();
       // Remove from container for cancel
       asks_.erase(ask);
       found = true;
@@ -363,7 +367,7 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
   } 
   // If the cancel was found, issue callback
   if (found) {
-    callbacks_.push_back(TypedCallback::cancel(order, trans_id_));
+    callbacks_.push_back(TypedCallback::cancel(order, open_qty, trans_id_));
     callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
   } else {
     callbacks_.push_back(
@@ -406,7 +410,7 @@ OrderBook<OrderPtr>::replace(
         bid->second.change_qty(size_delta);  // Update my copy
         // If the size change will close the order
         if (!new_open_qty) {
-          callbacks_.push_back(TypedCallback::cancel(order, trans_id_));
+          callbacks_.push_back(TypedCallback::cancel(order, -size_delta, trans_id_));
           bids_.erase(bid); // Remove order
         // Else rematch the new order - there could be a price change
         // or size change - that could cause all or none match
@@ -433,7 +437,7 @@ OrderBook<OrderPtr>::replace(
         ask->second.change_qty(size_delta);  // Update my copy
         // If the size change will close the order
         if (!new_open_qty) {
-          callbacks_.push_back(TypedCallback::cancel(order, trans_id_));
+          callbacks_.push_back(TypedCallback::cancel(order, -size_delta, trans_id_));
           asks_.erase(ask); // Remove order
         // Else rematch the new order if there is a price change or the order
         // is all or none (for which a size change could cause it to match)
@@ -614,13 +618,25 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
   if (MARKET_ORDER_PRICE == cross_price) {
     cross_price = inbound_tracker.ptr()->price();
   }
-  
   inbound_tracker.fill(fill_qty);
   current_tracker.fill(fill_qty);
+
+  typename TypedCallback::FillFlags fill_flags = 
+                              TypedCallback::ff_neither_filled;
+  if (!inbound_tracker.open_qty()) {
+    fill_flags = (typename TypedCallback::FillFlags)(
+                     fill_flags | TypedCallback::ff_inbound_filled);
+  }
+  if (!current_tracker.open_qty()) {
+    fill_flags = (typename TypedCallback::FillFlags)(
+                     fill_flags | TypedCallback::ff_matched_filled);
+  }
+
   callbacks_.push_back(TypedCallback::fill(inbound_tracker.ptr(),
                                            current_tracker.ptr(),
                                            fill_qty,
                                            cross_price,
+                                           fill_flags,
                                            trans_id_));
 }
 

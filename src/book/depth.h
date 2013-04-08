@@ -57,14 +57,13 @@ public:
 
   /// @brief handle an order fill
   /// @param price the price level of the order
-  /// @param open_qty the open quantity of the order
   /// @param fill_qty the quantity of this fill
+  /// @param filled was this order completely filled?
   /// @param is_bid indicator of bid or ask
   void fill_order(Price price, 
-                  Quantity open_qty, 
                   Quantity fill_qty, 
+                  bool filled,
                   bool is_bid);
-
   /// @brief cancel or fill an order
   /// @param price the price level of the order
   /// @param open_qty the open quantity of the order
@@ -258,16 +257,16 @@ template <int SIZE>
 inline void
 Depth<SIZE>::fill_order(
   Price price, 
-  Quantity open_qty, 
   Quantity fill_qty, 
+  bool filled,
   bool is_bid)
 {
   if (is_bid && ignore_bid_fill_qty_) {
     ignore_bid_fill_qty_ -= fill_qty;
   } else if ((!is_bid) && ignore_ask_fill_qty_) {
     ignore_ask_fill_qty_ -= fill_qty;
-  } else if (open_qty == fill_qty) {
-    close_order(price, open_qty, is_bid);
+  } else if (filled) {
+    close_order(price, fill_qty, is_bid);
   } else {
     change_qty_order(price, -(int32_t)fill_qty, is_bid);
   }

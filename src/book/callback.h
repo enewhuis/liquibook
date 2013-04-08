@@ -55,6 +55,13 @@ public:
     cb_book_update
   };
 
+  enum FillFlags {
+    ff_neither_filled = 0,
+    ff_inbound_filled = 1,
+    ff_matched_filled = 2,
+    ff_both_filled    = 4
+  };
+
   Callback();
 
   /// @brief create a new accept callback
@@ -67,11 +74,13 @@ public:
   /// @brief create a new fill callback
   static Callback<OrderPtr> fill(const OrderPtr& inbound_order,
                                  const OrderPtr& matched_order,
-                                 const Quantity& qty,
-                                 const Price& price,
+                                 const Quantity& fill_qty,
+                                 const Price& fill_price,
+                                 FillFlags fill_flags,
                                  const TransId& trans_id);
   /// @brief create a new cancel callback
   static Callback<OrderPtr> cancel(const OrderPtr& order,
+                                   const Quantity& open_qty,
                                    const TransId& trans_id);
   /// @brief create a new cancel reject callback
   static Callback<OrderPtr> cancel_reject(const OrderPtr& order,
@@ -95,14 +104,18 @@ public:
   OrderPtr matched_order; // fill
   TransId trans_id;
   union {
-    struct {
+    struct { // Accept
       Quantity match_qty;
     };
-    struct {
+    struct { // Fill
       Quantity fill_qty;
       Price fill_price;
+      uint8_t fill_flags;
     };
-    struct {
+    struct { // Cancel
+      Quantity open_qty;
+    };
+    struct { // Replace
       Quantity new_order_qty;
       Price new_price;
     };
@@ -150,16 +163,18 @@ template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::fill(
   const OrderPtr& inbound_order,
   const OrderPtr& matched_order,
-  const Quantity& qty,
-  const Price& price,
+  const Quantity& fill_qty,
+  const Price& fill_price,
+  FillFlags fill_flags,
   const TransId& trans_id)
 {
   Callback<OrderPtr> result;
   result.type = cb_order_fill;
   result.order = inbound_order;
   result.matched_order = matched_order;
-  result.fill_qty = qty;
-  result.fill_price = price;
+  result.fill_qty = fill_qty;
+  result.fill_price = fill_price;
+  result.fill_flags = fill_flags;
   result.trans_id = trans_id;
   return result;
 }
@@ -167,11 +182,14 @@ Callback<OrderPtr> Callback<OrderPtr>::fill(
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::cancel(
   const OrderPtr& order,
+  const Quantity& open_qty,
   const TransId& trans_id)
 {
+  // TODO save the open qty
   Callback<OrderPtr> result;
   result.type = cb_order_cancel;
   result.order = order;
+  result.open_qty = open_qty;
   result.trans_id = trans_id;
   return result;
 }
@@ -197,6 +215,7 @@ Callback<OrderPtr> Callback<OrderPtr>::replace(
   const Price& new_price,
   const TransId& trans_id)
 {
+  // TODO save the order open qty
   Callback<OrderPtr> result;
   result.type = cb_order_replace;
   result.order = order;

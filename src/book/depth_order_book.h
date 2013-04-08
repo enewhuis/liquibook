@@ -100,18 +100,22 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
     case DobCallback::cb_order_fill: {
       // If the matched order is a limit order
       if (cb.matched_order->is_limit()) {
+        bool matched_order_filled = 
+                 cb.fill_flags & DobCallback::ff_matched_filled;
         // Inform the depth
         depth_.fill_order(cb.matched_order->price(), 
-                          cb.matched_order->open_qty(),
                           cb.fill_qty,
+                          matched_order_filled,
                           cb.matched_order->is_buy());
       }
       // If the inbound order is a limit order
       if (cb.order->is_limit()) {
+        bool inbound_order_filled = 
+                 cb.fill_flags & DobCallback::ff_inbound_filled;
         // Inform the depth
         depth_.fill_order(cb.order->price(), 
-                          cb.order->open_qty(),
                           cb.fill_qty,
+                          inbound_order_filled,
                           cb.order->is_buy());
       }
       // Increment fill ID once
