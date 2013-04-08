@@ -21,8 +21,8 @@ class DepthOrderBook : public OrderBook<OrderPtr> {
 public:
   typedef Depth<SIZE> DepthTracker;
   typedef DepthOrderBook<OrderPtr, SIZE> MyClass;
-  typedef BboListener<MyClass, DepthTracker > TypedBboListener;
-  typedef DepthListener<MyClass, DepthTracker > TypedDepthListener;
+  typedef BboListener<MyClass > TypedBboListener;
+  typedef DepthListener<MyClass > TypedDepthListener;
   typedef Callback<OrderPtr> DobCallback;
 
   /// @brief construct

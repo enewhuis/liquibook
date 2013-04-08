@@ -9,12 +9,13 @@
 namespace liquibook { namespace book {
 
 /// @brief listener of depth events
-template <class OrderBook, class DepthTracker >
+template <class OrderBook>
 class DepthListener {
 public:
   /// @brief callback for change in tracked aggregated depth
-  virtual void on_depth_change(const OrderBook* book, 
-                               const DepthTracker* depth) = 0;
+  virtual void on_depth_change(
+      const OrderBook* book, 
+      const typename OrderBook::DepthTracker* depth) = 0;
 };
 
 } }
