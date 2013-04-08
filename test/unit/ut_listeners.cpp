@@ -44,7 +44,7 @@ public:
     cancel_rejects_.push_back(order);
   }
   virtual void on_replace(const OrderPtr& order,
-                          Quantity new_qty, 
+                          const int32_t& size_delta,
                           Price new_price)
   {
     replaces_.push_back(order);
