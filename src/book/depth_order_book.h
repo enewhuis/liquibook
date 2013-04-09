@@ -20,9 +20,8 @@ template <class OrderPtr = Order*, int SIZE = 5>
 class DepthOrderBook : public OrderBook<OrderPtr> {
 public:
   typedef Depth<SIZE> DepthTracker;
-  typedef DepthOrderBook<OrderPtr, SIZE> MyClass;
-  typedef BboListener<MyClass > TypedBboListener;
-  typedef DepthListener<MyClass > TypedDepthListener;
+  typedef BboListener<DepthOrderBook<OrderPtr, SIZE > > TypedBboListener;
+  typedef DepthListener<DepthOrderBook<OrderPtr, SIZE > > TypedDepthListener;
   typedef Callback<OrderPtr> DobCallback;
 
   /// @brief construct
