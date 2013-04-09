@@ -24,7 +24,7 @@ int main(int argc, const char* argv[])
   create_symbols(symbols);
 
   // Create feed publisher
-  examples::DepthFeedPublisher feed;
+  examples::DepthFeedPublisher feed("./templates/Simple.xml");
 
   // Create exchange
   examples::Exchange exchange(&feed);

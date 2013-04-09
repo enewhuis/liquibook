@@ -7,11 +7,11 @@
 
 #include <string>
 #include <map>
-#include <tr1/memory>
+#include <boost/shared_ptr.hpp>
 
 namespace liquibook { namespace examples {
 
-typedef std::tr1::shared_ptr<Order> OrderPtr;
+typedef boost::shared_ptr<Order> OrderPtr;
 typedef book::DepthOrderBook<OrderPtr> ExampleOrderBook;
 typedef ExampleOrderBook::TypedDepthListener MyDepthListener;
 
