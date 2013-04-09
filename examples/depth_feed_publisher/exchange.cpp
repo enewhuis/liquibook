@@ -15,5 +15,13 @@ Exchange::add_order_book(const std::string& symbol)
   result.first->second.set_depth_listener(listener_);
 }
 
+void
+Exchange::add_order(const std::string& symbol, OrderPtr& order)
+{
+  OrderBookMap::iterator order_book = order_books_.find(symbol);
+  if (order_book != order_books_.end()) {
+    order_book->second.add(order);
+  }
+}
 
 } } // End namespace

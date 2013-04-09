@@ -11,6 +11,7 @@ void
 DepthFeedPublisher::on_depth_change(const ExampleOrderBook* order_book,
                                     const Tracker* tracker)
 {
+  // Published changed levels of order book
 }
 
 } } // End namespace
