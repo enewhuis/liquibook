@@ -14,7 +14,7 @@ class DepthListener {
 public:
   /// @brief callback for change in tracked aggregated depth
   virtual void on_depth_change(
-      const OrderBook* book, 
+      const OrderBook* book,
       const typename OrderBook::DepthTracker* depth) = 0;
 };
 
