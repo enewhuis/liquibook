@@ -1,4 +1,6 @@
 workspace(liquibook) {
-  cmdline += -include mpc -feature_file liquibook.features
+  cmdline += -include mpc 
+  cmdline += -include $QUICKFAST_ROOT
+  cmdline += -feature_file liquibook.features
 }
 
