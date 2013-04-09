@@ -314,17 +314,16 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
   if (!is_valid(order, conditions)) {
     // reject created by is_valid
   } else {
-    callbacks_.push_back(TypedCallback::accept(order, trans_id_));
-    TypedCallback& accept_cb = callbacks_.back();
-
+    TypedCallback accept_cb = TypedCallback::accept(order, trans_id_);
     Price order_price = sort_price(order);
-
     Tracker inbound(order, conditions);
     matched = add_order(inbound, order_price);
     if (matched) {
       // Note the filled qty in the callback
       accept_cb.accept_match_qty = inbound.filled_qty();
     }
+    // Add the callback
+    callbacks_.push_back(accept_cb);
     // Cancel any unfilled IOC order
     if (inbound.immediate_or_cancel() && !inbound.filled()) {
       // NOTE - this may need he actual open qty???
