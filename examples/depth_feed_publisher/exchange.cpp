@@ -21,6 +21,7 @@ Exchange::add_order(const std::string& symbol, OrderPtr& order)
   OrderBookMap::iterator order_book = order_books_.find(symbol);
   if (order_book != order_books_.end()) {
     order_book->second.add(order);
+    order_book->second.perform_callbacks();
   }
 }
 
