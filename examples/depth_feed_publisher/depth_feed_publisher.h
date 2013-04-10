@@ -33,8 +33,13 @@ private:
   QuickFAST::Messages::FieldIdentityCPtr id_size_;
   QuickFAST::Messages::FieldIdentityCPtr id_price_;
   // Build a depth message
-  void build_depth_message(QuickFAST::Codecs::DataDestination& dest,
-                           const std::string& symbol);
+  void build_depth_message(
+      QuickFAST::Codecs::DataDestination& dest,
+      const std::string& symbol,
+      const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
+  void build_depth_level(
+      QuickFAST::Messages::FieldSet& message,
+      const book::DepthLevel* level);
   uint32_t time_stamp();
 
   static QuickFAST::Codecs::TemplateRegistryPtr 
