@@ -8,7 +8,7 @@ ExampleOrderBook::ExampleOrderBook(const std::string& symbol)
 }
 
 const std::string&
-ExampleOrderBook::symbol()
+ExampleOrderBook::symbol() const
 {
   return symbol_;
 }

@@ -5,12 +5,12 @@
 #include <Codecs/XMLTemplateParser.h>
 #include <Messages/FieldIdentity.h>
 #include <Messages/FieldSet.h>
+#include <Messages/FieldString.h>
 #include <Messages/FieldUInt32.h>
 
 namespace liquibook { namespace examples { 
 
-using QuickFAST::Messages::FieldIdentity;
-using QuickFAST::Messages::FieldUInt32;
+using namespace QuickFAST::Messages;
 
 DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
 : sequence_num_(0),
@@ -31,17 +31,21 @@ DepthFeedPublisher::on_depth_change(
   // Published changed levels of order book
   std::cout << "Depth changed" << std::endl;
   QuickFAST::Codecs::DataDestination message;
-  build_depth_message(message);
+  const ExampleOrderBook* exob = 
+          dynamic_cast<const ExampleOrderBook*>(order_book);
+  build_depth_message(message, exob->symbol());
 }
  
 void
-DepthFeedPublisher::build_depth_message(QuickFAST::Codecs::DataDestination& dest)
+DepthFeedPublisher::build_depth_message(
+    QuickFAST::Codecs::DataDestination& dest,
+    const std::string& symbol)
 {
   QuickFAST::Messages::FieldSet message(20); // allocate space for 20 fields
   message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
   message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
+  message.addField(id_symbol_, FieldString::create(symbol));
 /*
-  message.addField(symbolId, FieldString::create("MSFT"));
   message.addField(orderIdId, FieldUInt32::create(202));
   message.addField(sizeId, FieldUInt16::create(100));
   message.addField(priceId, FieldUInt32::create(2000));

@@ -12,7 +12,7 @@ typedef boost::shared_ptr<Order> OrderPtr;
 class ExampleOrderBook : public book::DepthOrderBook<OrderPtr> {
 public:
   ExampleOrderBook(const std::string& symbol);
-  const std::string& symbol();
+  const std::string& symbol() const;
 
 private:
   std::string symbol_;

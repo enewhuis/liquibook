@@ -38,6 +38,7 @@
     <string name="Symbol" id="400">
       <copy/>
     </string>
+<!--
     <sequence name="Bids" id="500">
       <uInt8 name="LevelNum" id="501">
         <copy/>
@@ -66,7 +67,6 @@
         <copy/>
       </uInt16>
     </sequence>
-<!-- Asks -->
-
+-->
   </template>
 </templates>
