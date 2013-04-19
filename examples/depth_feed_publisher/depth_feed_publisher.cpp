@@ -5,8 +5,11 @@
 #include <Codecs/XMLTemplateParser.h>
 #include <Messages/FieldIdentity.h>
 #include <Messages/FieldSet.h>
+#include <Messages/FieldSequence.h>
 #include <Messages/FieldString.h>
+#include <Messages/FieldUInt8.h>
 #include <Messages/FieldUInt32.h>
+#include <Messages/Sequence.h>
 
 namespace liquibook { namespace examples { 
 
@@ -18,8 +21,15 @@ DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
   id_seq_num_(new FieldIdentity("SequenceNumber")),
   id_timestamp_(new FieldIdentity("Timestamp")),
   id_symbol_(new FieldIdentity("Symbol")),
-  id_size_(new FieldIdentity("Size")),
-  id_price_(new FieldIdentity("Price"))
+  id_bids_(new FieldIdentity("Bids")),
+  id_bids_length_(new FieldIdentity("BidsLength")),
+  id_asks_(new FieldIdentity("Asks")),
+  id_asks_length_(new FieldIdentity("AsksLength")),
+  id_level_num_(new FieldIdentity("LevelNum")),
+  id_order_count_(new FieldIdentity("OrderCount")),
+  id_size_(new FieldIdentity("AggregateQty")),
+  id_price_(new FieldIdentity("Price")),
+  tid_depth_message_(1)
 {
 }
 
@@ -34,6 +44,9 @@ DepthFeedPublisher::on_depth_change(
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
   build_depth_message(message, exob->symbol(), tracker);
+  QuickFAST::WorkingBuffer wb;
+  message.toWorkingBuffer(wb);
+  wb.hexDisplay(std::cout);
 }
  
 void
@@ -50,39 +63,54 @@ DepthFeedPublisher::build_depth_message(
   // Build the changed levels
   book::ChangeId last_published_change = tracker->last_published_change();
   
+  // Build changed bids
   {
+    SequencePtr bids(new Sequence(id_bids_length_, 1));
+    int index = 0;
     // Todo - create sequende of bids
     const book::DepthLevel* bid = tracker->bids();
     do {
       if (bid->changed_since(last_published_change)) {
-        build_depth_level(message, bid);
+        build_depth_level(bids, bid, index);
       }
+      ++index;
     } while (++bid != tracker->last_bid_level());
+    message.addField(id_bids_, FieldSequence::create(bids));
   }
-
+  
+  // Build changed asks
   {
+    SequencePtr asks(new Sequence(id_asks_length_, 1));
+    int index = 0;
     // Todo - create sequende of asks
     const book::DepthLevel* ask = tracker->asks();
     do {
       if (ask->changed_since(last_published_change)) {
-        build_depth_level(message, ask);
+        build_depth_level(asks, ask, index);
       }
+      ++index;
     } while (++ask != tracker->last_ask_level());
+    message.addField(id_asks_, FieldSequence::create(asks));
   }
-
-/*
-  message.addField(orderIdId, FieldUInt32::create(202));
-  message.addField(sizeId, FieldUInt16::create(100));
-  message.addField(priceId, FieldUInt32::create(2000));
-*/
-  encoder_.encodeMessage(dest, 1, message);
+  encoder_.encodeMessage(dest, tid_depth_message_, message);
 }
 
 void
 DepthFeedPublisher::build_depth_level(
-    QuickFAST::Messages::FieldSet& message,
-    const book::DepthLevel* level)
+    QuickFAST::Messages::SequencePtr& level_seq,
+    const book::DepthLevel* level,
+    int level_index)
 {
+  std::cout << "Depth level " << level_index << " changed" << std::endl;
+  FieldSetPtr level_fields(new FieldSet(4));
+  level_fields->addField(id_level_num_, FieldUInt8::create(level_index + 1));
+  level_fields->addField(id_order_count_, 
+                         FieldUInt32::create(level->order_count()));
+  level_fields->addField(id_price_,
+                         FieldUInt32::create(level->price()));
+  level_fields->addField(id_size_,
+                         FieldUInt32::create(level->aggregate_qty()));
+  level_seq->addEntry(level_fields);
 }
 
 uint32_t
@@ -90,16 +118,15 @@ DepthFeedPublisher::time_stamp()
 {
   time_t now;
   time(&now);
-std::cout << "returning timestamp of " << (uint32_t)now << std::endl;
   return now;
 }
 
-QuickFAST::Codecs::TemplateRegistryPtr
+/*QuickFAST::Codecs::TemplateRegistryPtr
 DepthFeedPublisher::parse_templates(const std::string& template_filename)
 {
   std::ifstream template_stream("./templates/Depth.xml");
   QuickFAST::Codecs::XMLTemplateParser parser;
   return parser.parse(template_stream);
-}
+} */
 
 } } // End namespace

@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0"?>
 <templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
-
   <template name="Quote" id="10">
     <uInt16 name="MessageType" id="100">
       <constant value="11"/>
@@ -38,7 +37,6 @@
     <string name="Symbol" id="400">
       <copy/>
     </string>
-<!--
     <sequence name="Bids" id="500">
       <uInt8 name="LevelNum" id="501">
         <copy/>
@@ -49,10 +47,11 @@
       <uInt32 name="Price" id="503">
         <copy/>
       </uInt32>
-      <uInt16 name="AggregateSize" id="504">
+      <uInt32 name="AggregateQty" id="504">
         <copy/>
-      </uInt16>
+      </uInt32>
     </sequence>
+<!--
     <sequence name="Asks" id="600">
       <uInt8 name="LevelNum" id="601">
         <copy/>
