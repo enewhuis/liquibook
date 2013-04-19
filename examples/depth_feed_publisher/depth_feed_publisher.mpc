@@ -1,7 +1,21 @@
 
-project(*) : QuickFASTApplication, liquibook_book, liquibook_impl {
+project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_impl {
   Source_Files {
-    ^publisher.cpp
+    main.cpp
+    depth_feed_publisher.cpp
+    template_consumer.cpp
+    example_order_book.cpp
+    exchange.cpp
+    order.cpp
+  }
+  exename = *
+}
+
+project(depth_feed_subscriber) : QuickFASTApplication, liquibook_book, liquibook_impl {
+  Source_Files {
+    client.cpp
+    depth_feed_subscriber.cpp
+    template_consumer.cpp
   }
   exename = *
 }

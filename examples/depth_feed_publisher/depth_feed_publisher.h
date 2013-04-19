@@ -1,7 +1,6 @@
 #ifndef example_depth_feed_publisher_h
 #define example_depth_feed_publisher_h
 
-#include "template_consumer.h"
 #include "example_order_book.h"
 #include "book/depth_listener.h"
 #include <boost/cstdint.hpp>
@@ -16,8 +15,7 @@
 
 namespace liquibook { namespace examples {
 
-class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
-                           public TemplateConsumer {
+class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener {
 public:
   DepthFeedPublisher(const std::string& template_filename);
 
@@ -55,10 +53,8 @@ private:
       int level_index);
   uint32_t time_stamp();
 
-/*
   static QuickFAST::Codecs::TemplateRegistryPtr 
              parse_templates(const std::string& template_fileanme);
-*/
 };
 
 } } // End namespace
