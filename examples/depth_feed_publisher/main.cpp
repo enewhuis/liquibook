@@ -161,7 +161,6 @@ generate_orders(examples::Exchange& exchange, const StringVector& symbols) {
   while (true) {
     // which symbol
     size_t index = std::rand() % num_symbols;
-    std::cout << "index " << index << std::endl;
     std::string symbol = symbols[index];
     // side
     bool is_buy = std::rand() % 2;
