@@ -388,8 +388,6 @@ OrderBook<OrderPtr>::replace(
   bool price_change = new_price && (new_price != order->price());
 
   Price price = (new_price == PRICE_UNCHANGED) ? order->price() : new_price;
-  // TODO can we use value in tracker?
-  Quantity new_order_qty = order->order_qty() + size_delta;
 
   // If the order to replace is a buy order
   if (order->is_buy()) {
@@ -696,6 +694,7 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
       case TypedCallback::cb_order_replace_reject:
         order_listener_->on_replace_reject(cb.order, cb.reject_reason);
         break;
+      case TypedCallback::cb_book_update:
       case TypedCallback::cb_unknown:
         // Error
         std::runtime_error("Unexpected callback type for order");

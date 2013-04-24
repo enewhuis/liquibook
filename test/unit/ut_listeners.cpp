@@ -24,14 +24,14 @@ public:
   {
     accepts_.push_back(order);
   }
-  virtual void on_reject(const OrderPtr& order, const char* reason)
+  virtual void on_reject(const OrderPtr& order, const char* )
   {
     rejects_.push_back(order);
   }
   virtual void on_fill(const OrderPtr& order, 
-                       const OrderPtr& matched_order, 
-                       Quantity fill_qty, 
-                       Cost fill_cost)
+                       const OrderPtr& , // matched_order
+                       Quantity ,        // fill_qty
+                       Cost)             // fill_cost
   {
     fills_.push_back(order);
   }
@@ -39,17 +39,17 @@ public:
   {
     cancels_.push_back(order);
   }
-  virtual void on_cancel_reject(const OrderPtr& order, const char* reason)
+  virtual void on_cancel_reject(const OrderPtr& order, const char* )
   {
     cancel_rejects_.push_back(order);
   }
   virtual void on_replace(const OrderPtr& order,
-                          const int32_t& size_delta,
-                          Price new_price)
+                          const int32_t& , // size_delta
+                          Price )          // new_price)
   {
     replaces_.push_back(order);
   }
-  virtual void on_replace_reject(const OrderPtr& order, const char* reason)
+  virtual void on_replace_reject(const OrderPtr& order, const char* )
   {
     replace_rejects_.push_back(order);
   }
@@ -210,7 +210,7 @@ class DepthCbListener
 {
 public:
   virtual void on_depth_change(const TypedDepthOrderBook* book,
-                               const DepthTracker* depth)
+                               const DepthTracker* ) // depth
   {
     changes_.push_back(book);
   }
@@ -288,7 +288,7 @@ class BboCbListener
 {
   public:
   virtual void on_bbo_change(const TypedDepthOrderBook* book,
-                             const DepthTracker* depth)
+                             const DepthTracker* ) // depth
   {
     changes_.push_back(book);
   }

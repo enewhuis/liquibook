@@ -129,14 +129,12 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
     case DobCallback::cb_order_replace:
     {
       // Remember current values
-      Price current_price = cb.order->price();
       Quantity current_qty = cb.repl_curr_open_qty;
       Quantity new_qty = current_qty + cb.repl_size_delta;
 
       // Notify the depth
       depth_.replace_order(cb.order->price(), cb.repl_new_price, 
-                           current_qty, new_qty,
-                           cb.order->is_buy());
+                           current_qty, new_qty, cb.order->is_buy());
       break;
     }
     case DobCallback::cb_book_update:
