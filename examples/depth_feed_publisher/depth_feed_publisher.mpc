@@ -1,7 +1,7 @@
 
 project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_impl {
   Source_Files {
-    main.cpp
+    publisher_main.cpp
     depth_feed_publisher.cpp
     template_consumer.cpp
     example_order_book.cpp
@@ -13,7 +13,7 @@ project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_
 
 project(depth_feed_subscriber) : QuickFASTApplication, liquibook_book, liquibook_impl {
   Source_Files {
-    client.cpp
+    client_main.cpp
     depth_feed_subscriber.cpp
     template_consumer.cpp
   }
