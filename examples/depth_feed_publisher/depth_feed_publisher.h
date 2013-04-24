@@ -10,6 +10,7 @@
 #include <cstring>
 #include <sstream>
 
+#include <Messages/FieldIdentity.h>
 #include <Codecs/Encoder.h>
 #include <Codecs/TemplateRegistry_fwd.h>
 
