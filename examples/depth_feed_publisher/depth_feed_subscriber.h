@@ -9,12 +9,15 @@
 #include <Codecs/Decoder.h>
 
 #include "template_consumer.h"
+#include "depth_feed_connection.h"
 
 namespace liquibook { namespace examples {
 
   class DepthFeedSubscriber : public TemplateConsumer {
   public:
     DepthFeedSubscriber(const std::string& template_filename);
+    void handle_message(BufferPtr& bp);
+
   private:
     QuickFAST::Codecs::Decoder decoder_;
   };

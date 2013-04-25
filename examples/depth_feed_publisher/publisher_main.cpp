@@ -1,6 +1,8 @@
 
+#include <boost/thread.hpp>
 #include "exchange.h"
 #include "depth_feed_publisher.h"
+#include "depth_feed_connection.h"
 #include "order.h"
 
 #include <cstdlib>
@@ -23,8 +25,16 @@ int main(int argc, const char* argv[])
   // Create symbols
   create_symbols(symbols);
 
+  // Open connection in background thread
+  examples::DepthFeedConnection connection;
+  boost::function<void ()> 
+      acceptor(boost::bind(&examples::DepthFeedConnection::accept,
+                          &connection, argc, argv));
+  boost::thread acceptor_thread(acceptor);
+  
   // Create feed publisher
   examples::DepthFeedPublisher feed("./templates/Simple.xml");
+  feed.set_message_handler(&connection);
 
   // Create exchange
   examples::Exchange exchange(&feed);

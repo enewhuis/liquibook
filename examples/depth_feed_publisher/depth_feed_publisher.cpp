@@ -29,8 +29,15 @@ DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
   id_order_count_(new FieldIdentity("OrderCount")),
   id_size_(new FieldIdentity("AggregateQty")),
   id_price_(new FieldIdentity("Price")),
-  tid_depth_message_(1)
+  tid_depth_message_(1),
+  connection_(NULL)
 {
+}
+
+void
+DepthFeedPublisher::set_message_handler(DepthFeedConnection* connection)
+{
+  connection_ = connection;
 }
 
 void
@@ -39,14 +46,14 @@ DepthFeedPublisher::on_depth_change(
     const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
 {
   // Published changed levels of order book
-  std::cout << "Depth changed" << std::endl;
   QuickFAST::Codecs::DataDestination message;
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
   build_depth_message(message, exob->symbol(), tracker);
-  QuickFAST::WorkingBuffer wb;
-  message.toWorkingBuffer(wb);
-  wb.hexDisplay(std::cout);
+
+  WorkingBufferPtr wb = connection_->reserve_send_buffer();
+  message.toWorkingBuffer(*wb);
+  connection_->send_buffer(wb);
 }
  
 void
@@ -101,7 +108,7 @@ DepthFeedPublisher::build_depth_level(
     const book::DepthLevel* level,
     int level_index)
 {
-  std::cout << "Depth level " << level_index << " changed" << std::endl;
+  //std::cout << "Depth level " << level_index << " changed" << std::endl;
   FieldSetPtr level_fields(new FieldSet(4));
   level_fields->addField(id_level_num_, FieldUInt8::create(level_index + 1));
   level_fields->addField(id_order_count_, 
