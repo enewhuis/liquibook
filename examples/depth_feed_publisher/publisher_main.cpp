@@ -42,6 +42,8 @@ int main(int argc, const char* argv[])
   // Populate exchange with securities
   populate_exchange(exchange, symbols);
   
+  sleep(10);
+
   // Generate random orders
   generate_orders(exchange, symbols);
 

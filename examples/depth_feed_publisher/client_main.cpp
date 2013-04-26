@@ -1,4 +1,5 @@
 
+#include <boost/bind.hpp>
 #include "depth_feed_connection.h"
 #include "depth_feed_subscriber.h"
 
@@ -9,8 +10,11 @@ int main(int argc, const char* argv[])
 
   // Connect to server
   liquibook::examples::DepthFeedConnection connection;
-  connection.set_message_handler(&feed);
+  liquibook::examples::MessageHandler msg_handler =
+      boost::bind(&liquibook::examples::DepthFeedSubscriber::handle_message,
+                  &feed, _1);
+  connection.set_message_handler(msg_handler);
   connection.connect(argc, argv);
-  
+
   return 0;
 }

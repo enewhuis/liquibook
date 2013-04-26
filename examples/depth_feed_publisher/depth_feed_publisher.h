@@ -10,16 +10,17 @@
 #include <sstream>
 #include <vector>
 
-#include <Messages/FieldIdentity.h>
 #include <Codecs/Encoder.h>
 #include <Codecs/TemplateRegistry_fwd.h>
 #include "example_order_book.h"
 #include "book/depth_listener.h"
 #include "depth_feed_connection.h"
+#include "template_consumer.h"
 
 namespace liquibook { namespace examples {
 
-class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener {
+class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
+                           public TemplateConsumer {
 public:
   DepthFeedPublisher(const std::string& template_filename);
   void set_message_handler(DepthFeedConnection* connection);
@@ -30,20 +31,6 @@ public:
 private:
   uint32_t sequence_num_;
   QuickFAST::Codecs::Encoder encoder_;
-  // Field identities
-  QuickFAST::Messages::FieldIdentityCPtr id_seq_num_;
-  QuickFAST::Messages::FieldIdentityCPtr id_timestamp_;
-  QuickFAST::Messages::FieldIdentityCPtr id_symbol_;
-
-  QuickFAST::Messages::FieldIdentityCPtr id_bids_length_;
-  QuickFAST::Messages::FieldIdentityCPtr id_bids_;
-  QuickFAST::Messages::FieldIdentityCPtr id_asks_length_;
-  QuickFAST::Messages::FieldIdentityCPtr id_asks_;
-
-  QuickFAST::Messages::FieldIdentityCPtr id_level_num_;
-  QuickFAST::Messages::FieldIdentityCPtr id_order_count_;
-  QuickFAST::Messages::FieldIdentityCPtr id_price_;
-  QuickFAST::Messages::FieldIdentityCPtr id_size_;
 
   const QuickFAST::template_id_t tid_depth_message_;
 

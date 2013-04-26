@@ -51,7 +51,6 @@
         <copy/>
       </uInt32>
     </sequence>
-<!--
     <sequence name="Asks" id="600">
       <uInt8 name="LevelNum" id="601">
         <copy/>
@@ -62,10 +61,9 @@
       <uInt32 name="Price" id="603">
         <copy/>
       </uInt32>
-      <uInt16 name="AggregateSize" id="604">
+      <uInt32 name="AggregateQty" id="604">
         <copy/>
-      </uInt16>
+      </uInt32>
     </sequence>
--->
   </template>
 </templates>

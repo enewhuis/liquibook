@@ -18,17 +18,6 @@ using namespace QuickFAST::Messages;
 DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
 : sequence_num_(0),
   encoder_(parse_templates(template_filename)),
-  id_seq_num_(new FieldIdentity("SequenceNumber")),
-  id_timestamp_(new FieldIdentity("Timestamp")),
-  id_symbol_(new FieldIdentity("Symbol")),
-  id_bids_(new FieldIdentity("Bids")),
-  id_bids_length_(new FieldIdentity("BidsLength")),
-  id_asks_(new FieldIdentity("Asks")),
-  id_asks_length_(new FieldIdentity("AsksLength")),
-  id_level_num_(new FieldIdentity("LevelNum")),
-  id_order_count_(new FieldIdentity("OrderCount")),
-  id_size_(new FieldIdentity("AggregateQty")),
-  id_price_(new FieldIdentity("Price")),
   tid_depth_message_(1),
   connection_(NULL)
 {
@@ -53,7 +42,9 @@ DepthFeedPublisher::on_depth_change(
 
   WorkingBufferPtr wb = connection_->reserve_send_buffer();
   message.toWorkingBuffer(*wb);
+std::cout << "working buffer: size " << wb->size() << std::endl;
   connection_->send_buffer(wb);
+  sleep(1);
 }
  
 void
@@ -74,31 +65,35 @@ DepthFeedPublisher::build_depth_message(
   {
     SequencePtr bids(new Sequence(id_bids_length_, 1));
     int index = 0;
-    // Todo - create sequende of bids
+    // Create sequence of bids
     const book::DepthLevel* bid = tracker->bids();
     do {
       if (bid->changed_since(last_published_change)) {
+std::cout << "Adding bid" << std::endl;
         build_depth_level(bids, bid, index);
       }
       ++index;
     } while (++bid != tracker->last_bid_level());
     message.addField(id_bids_, FieldSequence::create(bids));
   }
-  
+
   // Build changed asks
   {
     SequencePtr asks(new Sequence(id_asks_length_, 1));
     int index = 0;
-    // Todo - create sequende of asks
+    // Create sequence of asks
     const book::DepthLevel* ask = tracker->asks();
     do {
       if (ask->changed_since(last_published_change)) {
+std::cout << "Adding ask" << std::endl;
         build_depth_level(asks, ask, index);
       }
       ++index;
     } while (++ask != tracker->last_ask_level());
     message.addField(id_asks_, FieldSequence::create(asks));
   }
+  std::cout << "Encoding depth message (" << tid_depth_message_ << ") with " 
+            << message.size() << " fields" << std::endl;
   encoder_.encodeMessage(dest, tid_depth_message_, message);
 }
 
