@@ -10,6 +10,7 @@
 
 #include "template_consumer.h"
 #include "depth_feed_connection.h"
+#include "book/depth.h"
 
 namespace liquibook { namespace examples {
 
@@ -20,6 +21,9 @@ namespace liquibook { namespace examples {
 
   private:
     QuickFAST::Codecs::Decoder decoder_;
-  };
+    typedef std::map<std::string, book::Depth<5> > DepthMap;
+    DepthMap depth_map_;
 
+    void log_depth(book::Depth<5>& depth);
+  };
 } }
