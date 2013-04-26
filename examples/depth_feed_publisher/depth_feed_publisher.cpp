@@ -42,7 +42,7 @@ DepthFeedPublisher::on_depth_change(
 
   WorkingBufferPtr wb = connection_->reserve_send_buffer();
   message.toWorkingBuffer(*wb);
-std::cout << "working buffer: size " << wb->size() << std::endl;
+  std::cout << "message working buffer size " << wb->size() << std::endl;
   connection_->send_buffer(wb);
   sleep(1);
 }
@@ -53,6 +53,8 @@ DepthFeedPublisher::build_depth_message(
     const std::string& symbol,
     const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
 {
+  size_t bid_count(0), ask_count(0);
+
   QuickFAST::Messages::FieldSet message(20); // allocate space for 20 fields
   message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
   message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
@@ -69,8 +71,8 @@ DepthFeedPublisher::build_depth_message(
     const book::DepthLevel* bid = tracker->bids();
     do {
       if (bid->changed_since(last_published_change)) {
-std::cout << "Adding bid" << std::endl;
         build_depth_level(bids, bid, index);
+        ++bid_count;
       }
       ++index;
     } while (++bid != tracker->last_bid_level());
@@ -85,15 +87,16 @@ std::cout << "Adding bid" << std::endl;
     const book::DepthLevel* ask = tracker->asks();
     do {
       if (ask->changed_since(last_published_change)) {
-std::cout << "Adding ask" << std::endl;
         build_depth_level(asks, ask, index);
+        ++ask_count;
       }
       ++index;
     } while (++ask != tracker->last_ask_level());
     message.addField(id_asks_, FieldSequence::create(asks));
   }
-  std::cout << "Encoding depth message (" << tid_depth_message_ << ") with " 
-            << message.size() << " fields" << std::endl;
+  std::cout << "Encoding depth message for symbol " << symbol 
+            << " with " << bid_count << " bids, "
+            << ask_count << " asks" << std::endl;
   encoder_.encodeMessage(dest, tid_depth_message_, message);
 }
 
@@ -105,7 +108,7 @@ DepthFeedPublisher::build_depth_level(
 {
   //std::cout << "Depth level " << level_index << " changed" << std::endl;
   FieldSetPtr level_fields(new FieldSet(4));
-  level_fields->addField(id_level_num_, FieldUInt8::create(level_index + 1));
+  level_fields->addField(id_level_num_, FieldUInt8::create(level_index));
   level_fields->addField(id_order_count_, 
                          FieldUInt32::create(level->order_count()));
   level_fields->addField(id_price_,
