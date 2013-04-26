@@ -90,6 +90,18 @@ DepthLevel::close_order(Quantity qty)
 }
 
 void
+DepthLevel::set(Price price, 
+                Quantity qty,
+                uint32_t order_count,
+                ChangeId last_change)
+{
+  price_ = price;
+  aggregate_qty_ = qty;
+  order_count_ = order_count;
+  last_change_ = last_change;
+}
+
+void
 DepthLevel::increase_qty(Quantity qty)
 {
   aggregate_qty_ += qty;
