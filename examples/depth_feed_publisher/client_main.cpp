@@ -9,12 +9,13 @@ int main(int argc, const char* argv[])
   liquibook::examples::DepthFeedSubscriber feed("./templates/Depth.xml");
 
   // Connect to server
-  liquibook::examples::DepthFeedConnection connection;
+  liquibook::examples::DepthFeedConnection connection(argc, argv);
   liquibook::examples::MessageHandler msg_handler =
       boost::bind(&liquibook::examples::DepthFeedSubscriber::handle_message,
                   &feed, _1);
   connection.set_message_handler(msg_handler);
-  connection.connect(argc, argv);
+  connection.connect();
+  connection.run();
 
   return 0;
 }

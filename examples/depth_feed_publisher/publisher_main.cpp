@@ -26,10 +26,10 @@ int main(int argc, const char* argv[])
   create_symbols(symbols);
 
   // Open connection in background thread
-  examples::DepthFeedConnection connection;
-  boost::function<void ()> 
-      acceptor(boost::bind(&examples::DepthFeedConnection::accept,
-                          &connection, argc, argv));
+  examples::DepthFeedConnection connection(argc, argv);
+  connection.accept();
+  boost::function<void ()> acceptor(
+      boost::bind(&examples::DepthFeedConnection::run, &connection));
   boost::thread acceptor_thread(acceptor);
   
   // Create feed publisher
