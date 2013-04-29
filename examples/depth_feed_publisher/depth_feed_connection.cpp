@@ -7,11 +7,14 @@ using namespace boost::asio::ip;
 
 namespace liquibook { namespace examples {
 
-DepthSession::DepthSession(boost::asio::io_service& ios)
+DepthSession::DepthSession(boost::asio::io_service& ios,
+                           DepthFeedConnection* connection)
 : connected_(false),
   ios_(ios),
-  socket_(ios)
+  socket_(ios),
+  connection_(connection)
 {
+  
 }
 
 void
@@ -32,23 +35,8 @@ DepthSession::on_accept(const boost::system::error_code& error)
   } else {
     std::cout << "on_accept, error=" << error << std::endl;
   }
-}
-
-bool
-DepthSession::send_incremental_update(const std::string& symbol)
-{
-  std::pair<StringSet::iterator, bool> results = sent_symbols_.insert(symbol);
-  bool sent = !results.second;
-  if (sent) {
-    SendHandler send_handler = boost::bind(&DepthSession::on_send,
-                                           this, buf, _1, _2);
-    boost::asio::const_buffers_1 buffer(
-        boost::asio::buffer(buf->begin(), buf->size()));
-    socket_.async_send(buffer, 0, send_handler);
-    
-    //socket_
-  }
-  return sent;
+  // Accept next connection
+  connection_->accept();
 }
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
@@ -68,6 +56,7 @@ DepthFeedConnection::connect()
 void
 DepthFeedConnection::accept()
 {
+  
   tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
   tcp::acceptor acceptor(ios_, endpoint);
   acceptor.async_accept(socket_, boost::bind(&DepthFeedConnection::on_accept,
@@ -128,8 +117,10 @@ DepthFeedConnection::send_buffer(WorkingBufferPtr& buf)
 }
 
 bool
-DepthFeedConnection::send_incremental_buffer(WorkingBufferPtr& buf)
+DepthFeedConnection::send_incremental_update(WorkingBufferPtr& buf)
 {
+  return false;
+/*
   bool any_new = false;
   // For each session
   Sessions::iterator session;
@@ -137,15 +128,17 @@ DepthFeedConnection::send_incremental_buffer(WorkingBufferPtr& buf)
     // If the session is connected
     if (session->connected()) {
       // send on that session
-      if (session.send_incremental_buffer(buf)) {
+// TODO SEND BUFFER
+      //if (*session->send_incremental_buffer(buf)) {
         any_new = false;
-      }
+      //}
       ++session;
     } else {
       // Remove the session
       session = sessions_.erase(session);
     }
   }
+*/
 
   if (connected_) {
     SendHandler send_handler = boost::bind(&DepthFeedConnection::on_send,

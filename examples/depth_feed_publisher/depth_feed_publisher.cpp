@@ -43,7 +43,9 @@ DepthFeedPublisher::on_depth_change(
   WorkingBufferPtr wb = connection_->reserve_send_buffer();
   message.toWorkingBuffer(*wb);
   std::cout << "message working buffer size " << wb->size() << std::endl;
-  connection_->send_buffer(wb);
+  if (!connection_->send_incremental_update(wb)) {
+    // TODO send full buffer
+  }
   sleep(1);
 }
  
