@@ -27,6 +27,8 @@ namespace liquibook { namespace examples {
     DepthSession(boost::asio::io_service& ios,
                  DepthFeedConnection* connection);
 
+    ~DepthSession();
+
     void accept();
   private:       
     bool connected_;
@@ -45,6 +47,8 @@ namespace liquibook { namespace examples {
   class DepthFeedConnection {
   public:
     DepthFeedConnection(int argc, const char* argv[]);
+    ~DepthFeedConnection();
+
     void connect();
     void accept();
     void run();
@@ -59,7 +63,8 @@ namespace liquibook { namespace examples {
     void send_full_update(WorkingBufferPtr& buf);
 
     void on_connect(const boost::system::error_code& error);
-    void on_accept(const boost::system::error_code& error);
+    void on_accept(DepthSession* session,
+                   const boost::system::error_code& error);
     void on_receive(BufferPtr bp,
                     const boost::system::error_code& error,
                     std::size_t bytes_transferred);

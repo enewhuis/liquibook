@@ -17,9 +17,15 @@ DepthSession::DepthSession(boost::asio::io_service& ios,
   
 }
 
+DepthSession::~DepthSession()
+{
+  std::cout << "DepthSession dtor" << std::endl;
+}
+
 void
 DepthSession::accept()
 {
+  std::cout << "DS accept" << std::endl;
   tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
   tcp::acceptor acceptor(ios_, endpoint);
   acceptor.async_accept(socket_, boost::bind(&DepthSession::on_accept,
@@ -30,19 +36,22 @@ void
 DepthSession::on_accept(const boost::system::error_code& error)
 {
   if (!error) {
-    std::cout << "on_accept" << std::endl;
+    std::cout << "DS on_accept" << std::endl;
     connected_ = true;
-  } else {
-    std::cout << "on_accept, error=" << error << std::endl;
   }
-  // Accept next connection
-  connection_->accept();
+  // Pass back result
+  connection_->on_accept(this, error);
 }
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
 : connected_(false),
   socket_(ios_)
 {
+}
+
+DepthFeedConnection::~DepthFeedConnection()
+{
+  std::cout << "DepthFeedConnection dtor" << std::endl;
 }
 
 void
@@ -56,11 +65,16 @@ DepthFeedConnection::connect()
 void
 DepthFeedConnection::accept()
 {
-  
+
+  DepthSession* session = new DepthSession(ios_, this);
+  session->accept();
+
+/*
   tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
   tcp::acceptor acceptor(ios_, endpoint);
   acceptor.async_accept(socket_, boost::bind(&DepthFeedConnection::on_accept,
                                              this, _1));
+*/
 }
 
 void
@@ -169,13 +183,15 @@ DepthFeedConnection::on_connect(const boost::system::error_code& error)
 }
 
 void
-DepthFeedConnection::on_accept(const boost::system::error_code& error)
+DepthFeedConnection::on_accept(DepthSession* session,
+                               const boost::system::error_code& error)
 {
   if (!error) {
     std::cout << "on_accept" << std::endl;
-    connected_ = true;
+    sessions_.push_back(session);
   } else {
-    std::cout << "on_accept, error=" << error << std::endl;
+    std::cout << "DFC on_accept, error=" << error << std::endl;
+    delete session;
   }
 }
 
