@@ -39,7 +39,7 @@ DepthFeedPublisher::on_depth_change(
   QuickFAST::Messages::FieldSet message(20);
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
-  build_depth_message(message, exob->symbol(), tracker);
+  build_depth_message(message, exob->symbol(), tracker, false);
   // TODO move
   //encoder_.encodeMessage(dest, tid_depth_message_, message);
 
@@ -48,7 +48,7 @@ DepthFeedPublisher::on_depth_change(
   //std::cout << "incr message working buffer size " << wb->size() << std::endl;
   if (!connection_->send_incr_update(exob->symbol(), message)) {
     QuickFAST::Messages::FieldSet full_message(20);
-    build_full_depth_message(full_message, exob->symbol(), tracker);
+    build_depth_message(full_message, exob->symbol(), tracker, true);
     connection_->send_full_update(exob->symbol(), full_message);
   }
 /*
@@ -66,14 +66,15 @@ DepthFeedPublisher::on_depth_change(
     connection_->send_full_update(exob->symbol(), full_wb);  
   }
 */
-  sleep(5);
+  sleep(2);
 }
  
 void
 DepthFeedPublisher::build_depth_message(
     QuickFAST::Messages::FieldSet& message,
     const std::string& symbol,
-    const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
+    const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker,
+    bool full_message)
 {
   size_t bid_count(0), ask_count(0);
 
@@ -88,15 +89,20 @@ DepthFeedPublisher::build_depth_message(
   {
     SequencePtr bids(new Sequence(id_bids_length_, 1));
     int index = 0;
-    // Create sequence of bids
     const book::DepthLevel* bid = tracker->bids();
-    do {
-      if (bid->changed_since(last_published_change)) {
+    // Create sequence of bids
+    while (true) {
+      if (full_message || bid->changed_since(last_published_change)) {
         build_depth_level(bids, bid, index);
         ++bid_count;
       }
       ++index;
-    } while (++bid != tracker->last_bid_level());
+      if (bid == tracker->last_bid_level()) {
+        break;
+      } else {
+        ++bid;
+      }
+    }
     message.addField(id_bids_, FieldSequence::create(bids));
   }
 
@@ -104,15 +110,20 @@ DepthFeedPublisher::build_depth_message(
   {
     SequencePtr asks(new Sequence(id_asks_length_, 1));
     int index = 0;
-    // Create sequence of asks
     const book::DepthLevel* ask = tracker->asks();
-    do {
-      if (ask->changed_since(last_published_change)) {
+    // Create sequence of asks
+    while (true) {
+      if (full_message || ask->changed_since(last_published_change)) {
         build_depth_level(asks, ask, index);
         ++ask_count;
       }
       ++index;
-    } while (++ask != tracker->last_ask_level());
+      if (ask == tracker->last_ask_level()) {
+        break;
+      } else {
+        ++ask;
+      }
+    }
     message.addField(id_asks_, FieldSequence::create(asks));
   }
   std::cout << "Encoding depth message for symbol " << symbol 
@@ -120,6 +131,7 @@ DepthFeedPublisher::build_depth_message(
             << ask_count << " asks" << std::endl;
 }
 
+/*
 void
 DepthFeedPublisher::build_full_depth_message(
     QuickFAST::Messages::FieldSet& message,
@@ -136,13 +148,18 @@ DepthFeedPublisher::build_full_depth_message(
   {
     SequencePtr bids(new Sequence(id_bids_length_, 1));
     int index = 0;
-    // Create sequence of bids
     const book::DepthLevel* bid = tracker->bids();
-    do {
+    // Create sequence of bids
+    while (true) {
       build_depth_level(bids, bid, index);
       ++bid_count;
       ++index;
-    } while (++bid != tracker->last_bid_level());
+      if (bid == tracker->last_bid_level()) {
+        break;
+      } else {
+        ++bid;
+      }
+    }
     message.addField(id_bids_, FieldSequence::create(bids));
   }
 
@@ -150,20 +167,25 @@ DepthFeedPublisher::build_full_depth_message(
   {
     SequencePtr asks(new Sequence(id_asks_length_, 1));
     int index = 0;
-    // Create sequence of asks
     const book::DepthLevel* ask = tracker->asks();
-    do {
+    // Create sequence of asks
+    while (true) {
       build_depth_level(asks, ask, index);
       ++ask_count;
       ++index;
-    } while (++ask != tracker->last_ask_level());
+      if (ask == tracker->last_ask_level()) {
+        break;
+      } else {
+        ++ask;
+      }
+    }
     message.addField(id_asks_, FieldSequence::create(asks));
   }
   std::cout << "Encoding depth message for symbol " << symbol 
             << " with " << bid_count << " bids, "
             << ask_count << " asks" << std::endl;
 }
-
+*/
 void
 DepthFeedPublisher::build_depth_level(
     QuickFAST::Messages::SequencePtr& level_seq,

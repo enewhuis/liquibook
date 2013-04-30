@@ -40,12 +40,15 @@ private:
   void build_depth_message(
       QuickFAST::Messages::FieldSet& message,
       const std::string& symbol,
-      const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
+      const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker,
+      bool full_message);
   // Build a full depth message
+/*
   void build_full_depth_message(
       QuickFAST::Messages::FieldSet& message,
       const std::string& symbol,
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
+*/
   void build_depth_level(
       QuickFAST::Messages::SequencePtr& level_seq,
       const book::DepthLevel* level,

@@ -60,9 +60,7 @@ bool
 DepthFeedSession::send_incr_update(const std::string& symbol,
                                    QuickFAST::Messages::FieldSet& message)
 {
-  return false;
-/*
-std::cout << "send_incr_update" << std::endl;
+  std::cout << "send_incr_update" << std::endl;
   bool sent = false;
   // If the session has been started for this symbol
   if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
@@ -78,14 +76,13 @@ std::cout << "send_incr_update" << std::endl;
     sent = true;
   }
   return sent;
-*/
 }
 
 void
 DepthFeedSession::send_full_update(const std::string& symbol,
                                    QuickFAST::Messages::FieldSet& message)
 {
-std::cout << "send_full_update" << std::endl;
+  std::cout << "send_full_update" << std::endl;
   // Mark this symbols as sent
   std::pair<StringSet::iterator, bool> result = sent_symbols_.insert(symbol);
 
@@ -96,6 +93,7 @@ std::cout << "send_full_update" << std::endl;
     WorkingBufferPtr wb = connection_->reserve_send_buffer();
     dest.toWorkingBuffer(*wb);
 
+/*
     size_t i = 0;
     const unsigned char* start = wb->begin();
     while (i < wb->size()) {
@@ -103,6 +101,7 @@ std::cout << "send_full_update" << std::endl;
       std::cout << byte << " ";
     }
     std::cout << std::endl;
+*/
 
     // Perform the send
     SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
@@ -121,8 +120,6 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   if (error) {
     std::cout << "Error " << error << " sending message" << std::endl;
     connected_ = false;
-  } else {
-    std::cout << "Sent" << std::endl;
   }
 
   // Keep buffer for later
@@ -220,7 +217,7 @@ bool
 DepthFeedConnection::send_incr_update(const std::string& symbol,
                                       QuickFAST::Messages::FieldSet& message)
 {
-  bool any_new = false;
+  bool none_new = true;
   // For each session
   Sessions::iterator session;
   for (session = sessions_.begin(); session != sessions_.end(); ) {
@@ -228,7 +225,7 @@ DepthFeedConnection::send_incr_update(const std::string& symbol,
     if ((*session)->connected()) {
       // send on that session
       if (!(*session)->send_incr_update(symbol, message)) {
-        any_new = true;
+        none_new = false;
       }
       ++session;
     } else {
@@ -236,6 +233,7 @@ DepthFeedConnection::send_incr_update(const std::string& symbol,
       session = sessions_.erase(session);
     }
   }
+  return none_new;
 }
 
 void

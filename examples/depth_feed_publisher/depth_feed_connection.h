@@ -37,6 +37,8 @@ namespace liquibook { namespace examples {
     bool connected() { return connected_; }
 
     void accept(boost::asio::ip::tcp::endpoint address);
+    // Send an incremental update
+    //   return true if all sessions could handle an incremental update
     bool send_incr_update(const std::string& symbol,
                           QuickFAST::Messages::FieldSet& message);
     void send_full_update(const std::string& symbol,
