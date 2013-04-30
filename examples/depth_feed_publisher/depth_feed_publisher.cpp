@@ -104,7 +104,8 @@ DepthFeedPublisher::build_depth_message(
     }
     message.addField(id_asks_, FieldSequence::create(asks));
   }
-  std::cout << "Encoding depth message for symbol " << symbol 
+  std::cout << "Encoding " << (full_message ? "full" : "incr")
+            << " depth message for symbol " << symbol 
             << " with " << bid_count << " bids, "
             << ask_count << " asks" << std::endl;
 }
