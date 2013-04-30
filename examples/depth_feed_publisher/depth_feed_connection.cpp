@@ -134,18 +134,10 @@ DepthFeedConnection::connect()
 void
 DepthFeedConnection::accept()
 {
-
   std::cout << "DFC accept" << std::endl;
   DepthFeedSession* session = new DepthFeedSession(ios_, this, templates_);
   tcp::endpoint address(address::from_string("127.0.0.1"), 10003);
   session->accept(address);
-
-/*
-  tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
-  tcp::acceptor acceptor(ios_, endpoint);
-  acceptor.async_accept(socket_, boost::bind(&DepthFeedConnection::on_accept,
-                                             this, _1));
-*/
 }
 
 void
