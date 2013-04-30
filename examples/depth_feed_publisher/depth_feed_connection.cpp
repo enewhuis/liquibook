@@ -14,7 +14,7 @@ DepthSession::DepthSession(boost::asio::io_service& ios,
   socket_(ios),
   connection_(connection)
 {
-  
+  std::cout << "DepthSession ctor" << std::endl;
 }
 
 DepthSession::~DepthSession()
@@ -23,24 +23,90 @@ DepthSession::~DepthSession()
 }
 
 void
-DepthSession::accept()
+DepthSession::accept(tcp::endpoint address)
 {
   std::cout << "DS accept" << std::endl;
-  tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
-  tcp::acceptor acceptor(ios_, endpoint);
-  acceptor.async_accept(socket_, boost::bind(&DepthSession::on_accept,
-                                             this, _1));
+/*
+  boost::system::error_code ec;
+  tcp::endpoint endpoint(tcp::v4(), 10003);
+  acceptor_.reset(new tcp::acceptor(ios_));
+  acceptor_->open(endpoint.protocol());
+  acceptor_->set_option(boost::asio::socket_base::reuse_address(true), ec);
+  acceptor_->bind(endpoint);
+  acceptor_->listen();
+*/
+  acceptor_.reset(new tcp::acceptor(ios_, address));
+  acceptor_->async_accept(socket_, 
+                          boost::bind(&DepthSession::on_accept, this, _1));
 }
 
 void
 DepthSession::on_accept(const boost::system::error_code& error)
 {
+  std::cout << "DS on_accept, error " << error << std::endl;
   if (!error) {
-    std::cout << "DS on_accept" << std::endl;
     connected_ = true;
   }
-  // Pass back result
   connection_->on_accept(this, error);
+}
+
+bool
+DepthSession::send_incr_update(const std::string& symbol,
+                               WorkingBufferPtr& buf)
+{
+std::cout << "send_incr_update" << std::endl;
+  bool sent = false;
+  // If the session has been started for this symbol
+  if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
+    SendHandler send_handler = boost::bind(&DepthSession::on_send,
+                                           this, buf, _1, _2);
+    boost::asio::const_buffers_1 buffer(
+        boost::asio::buffer(buf->begin(), buf->size()));
+    socket_.async_send(buffer, 0, send_handler);
+    sent = true;
+  }
+  return sent;
+}
+
+void
+DepthSession::send_full_update(const std::string& symbol,
+                               WorkingBufferPtr& buf)
+{
+std::cout << "send_full_update" << std::endl;
+  // Mark this symbols as sent
+  std::pair<StringSet::iterator, bool> result = sent_symbols_.insert(symbol);
+
+  // If this symbol is new for the session
+  if (result.second) {
+    size_t i = 0;
+    const unsigned char* start = buf->begin();
+    while (i < buf->size()) {
+      unsigned short byte = start[i++];
+      std::cout << byte << " ";
+    }
+    // Perform the send
+    SendHandler send_handler = boost::bind(&DepthSession::on_send,
+                                           this, buf, _1, _2);
+    boost::asio::const_buffers_1 buffer(
+        boost::asio::buffer(buf->begin(), buf->size()));
+    socket_.async_send(buffer, 0, send_handler);
+  }
+}
+
+void
+DepthSession::on_send(WorkingBufferPtr wb,
+                      const boost::system::error_code& error,
+                      std::size_t bytes_transferred)
+{
+  if (error) {
+    std::cout << "Error " << error << " sending message" << std::endl;
+    connected_ = false;
+  } else {
+    std::cout << "Sent" << std::endl;
+  }
+
+  // Keep buffer for later
+  connection_->on_send(wb, error, bytes_transferred);
 }
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
@@ -66,8 +132,10 @@ void
 DepthFeedConnection::accept()
 {
 
+  std::cout << "DFC accept" << std::endl;
   DepthSession* session = new DepthSession(ios_, this);
-  session->accept();
+  tcp::endpoint address(address::from_string("127.0.0.1"), 10003);
+  session->accept(address);
 
 /*
   tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
@@ -80,9 +148,12 @@ DepthFeedConnection::accept()
 void
 DepthFeedConnection::run()
 {
+  std::cout << "DFC run" << std::endl;
+
   // Keep on running
   work_ptr_.reset(new boost::asio::io_service::work(ios_));
   ios_.run();
+  std::cout << "DFC run returning" << std::endl;
 }
 
 void
@@ -131,38 +202,43 @@ DepthFeedConnection::send_buffer(WorkingBufferPtr& buf)
 }
 
 bool
-DepthFeedConnection::send_incremental_update(WorkingBufferPtr& buf)
+DepthFeedConnection::send_incr_update(const std::string& symbol,
+                                      WorkingBufferPtr& buf)
 {
-  return false;
-/*
   bool any_new = false;
   // For each session
   Sessions::iterator session;
   for (session = sessions_.begin(); session != sessions_.end(); ) {
     // If the session is connected
-    if (session->connected()) {
+    if ((*session)->connected()) {
       // send on that session
-// TODO SEND BUFFER
-      //if (*session->send_incremental_buffer(buf)) {
-        any_new = false;
-      //}
+      if (!(*session)->send_incr_update(symbol, buf)) {
+        any_new = true;
+      }
       ++session;
     } else {
       // Remove the session
       session = sessions_.erase(session);
     }
   }
-*/
+}
 
-  if (connected_) {
-    SendHandler send_handler = boost::bind(&DepthFeedConnection::on_send,
-                                           this, buf, _1, _2);
-    boost::asio::const_buffers_1 buffer(
-        boost::asio::buffer(buf->begin(), buf->size()));
-    socket_.async_send(buffer, 0, send_handler);
-  } else {
-    // Just put back in unused
-    unused_send_buffers_.push_back(buf);
+void
+DepthFeedConnection::send_full_update(const std::string& symbol,
+                                      WorkingBufferPtr& buf)
+{
+  // For each session
+  Sessions::iterator session;
+  for (session = sessions_.begin(); session != sessions_.end(); ) {
+    // If the session is connected
+    if ((*session)->connected()) {
+      // conditionally send on that session
+      (*session)->send_full_update(symbol, buf);
+      ++session;
+    } else {
+      // Remove the session
+      session = sessions_.erase(session);
+    }
   }
 }
 
@@ -192,7 +268,10 @@ DepthFeedConnection::on_accept(DepthSession* session,
   } else {
     std::cout << "DFC on_accept, error=" << error << std::endl;
     delete session;
+    sleep(2);
   }
+  // TODO - accept again
+  //accept();
 }
 
 void
@@ -206,7 +285,7 @@ DepthFeedConnection::on_receive(BufferPtr bp,
 
     unsigned char* start = bp->c_array();
     //std::cout << std::hex << std::setfill('0');
-    int i = 0;
+    size_t i = 0;
     while (i < bytes_transferred) {
       unsigned short byte = start[i++];
       std::cout << byte << " ";
@@ -214,7 +293,7 @@ DepthFeedConnection::on_receive(BufferPtr bp,
     std::cout << std::endl;
     //std::cout << std::setfill(' ') << std::dec << std::endl;;
     // Handle the buffer
-    msg_handler_(bp);
+    msg_handler_(bp, bytes_transferred);
 
     // Restore buffer
     unused_recv_buffers_.push_back(bp);
@@ -228,10 +307,6 @@ DepthFeedConnection::on_send(WorkingBufferPtr wb,
                              const boost::system::error_code& error,
                              std::size_t bytes_transferred)
 {
-  if (error) {
-    std::cout << "Error " << error << " sending message" << std::endl;
-  }
-
   // Keep buffer for later
   unused_send_buffers_.push_back(wb);
 }

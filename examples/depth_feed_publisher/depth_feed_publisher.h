@@ -36,8 +36,13 @@ private:
 
   DepthFeedConnection* connection_;
 
-  // Build a depth message
+  // Build an incremental depth message
   void build_depth_message(
+      QuickFAST::Codecs::DataDestination& dest,
+      const std::string& symbol,
+      const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
+  // Build a full depth message
+  void build_full_depth_message(
       QuickFAST::Codecs::DataDestination& dest,
       const std::string& symbol,
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);

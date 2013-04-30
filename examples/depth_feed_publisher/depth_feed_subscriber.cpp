@@ -13,12 +13,13 @@ using QuickFAST::ValueType;
 DepthFeedSubscriber::DepthFeedSubscriber(const std::string& template_filename)
 : decoder_(parse_templates(template_filename))
 {
+  decoder_.setVerboseOutput(std::cout);
 }
 
 void
-DepthFeedSubscriber::handle_message(BufferPtr& bp)
+DepthFeedSubscriber::handle_message(BufferPtr& bp, size_t bytes_transferred)
 {
-  QuickFAST::Codecs::DataSourceBuffer source(bp->c_array(), bp->size());
+  QuickFAST::Codecs::DataSourceBuffer source(bp->c_array(), bytes_transferred);
   QuickFAST::Codecs::SingleMessageConsumer consumer;
   QuickFAST::Codecs::GenericMessageBuilder builder(consumer);
   decoder_.decodeMessage(source, builder);

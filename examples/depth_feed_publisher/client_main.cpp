@@ -12,7 +12,7 @@ int main(int argc, const char* argv[])
   liquibook::examples::DepthFeedConnection connection(argc, argv);
   liquibook::examples::MessageHandler msg_handler =
       boost::bind(&liquibook::examples::DepthFeedSubscriber::handle_message,
-                  &feed, _1);
+                  &feed, _1, _2);
   connection.set_message_handler(msg_handler);
   connection.connect();
   connection.run();

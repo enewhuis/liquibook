@@ -21,6 +21,7 @@ DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
   tid_depth_message_(1),
   connection_(NULL)
 {
+  encoder_.setVerboseOutput(std::cout);
 }
 
 void
@@ -42,11 +43,19 @@ DepthFeedPublisher::on_depth_change(
 
   WorkingBufferPtr wb = connection_->reserve_send_buffer();
   message.toWorkingBuffer(*wb);
-  std::cout << "message working buffer size " << wb->size() << std::endl;
-  if (!connection_->send_incremental_update(wb)) {
-    // TODO send full buffer
+  std::cout << "incr message working buffer size " << wb->size() << std::endl;
+  if (!connection_->send_incr_update(exob->symbol(), wb)) {
+    QuickFAST::Codecs::DataDestination full_message;
+    build_full_depth_message(full_message, exob->symbol(), tracker);
+
+    WorkingBufferPtr full_wb = connection_->reserve_send_buffer();
+    full_message.toWorkingBuffer(*full_wb);
+    std::cout << "full message working buffer size " << full_wb->size()
+              << std::endl;
+    // send full buffer
+    connection_->send_full_update(exob->symbol(), full_wb);  
   }
-  sleep(1);
+  sleep(5);
 }
  
 void
@@ -92,6 +101,52 @@ DepthFeedPublisher::build_depth_message(
         build_depth_level(asks, ask, index);
         ++ask_count;
       }
+      ++index;
+    } while (++ask != tracker->last_ask_level());
+    message.addField(id_asks_, FieldSequence::create(asks));
+  }
+  std::cout << "Encoding depth message for symbol " << symbol 
+            << " with " << bid_count << " bids, "
+            << ask_count << " asks" << std::endl;
+  encoder_.encodeMessage(dest, tid_depth_message_, message);
+}
+
+void
+DepthFeedPublisher::build_full_depth_message(
+    QuickFAST::Codecs::DataDestination& dest,
+    const std::string& symbol,
+    const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
+{
+  size_t bid_count(0), ask_count(0);
+
+  QuickFAST::Messages::FieldSet message(20); // allocate space for 20 fields
+  message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
+  message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
+  message.addField(id_symbol_, FieldString::create(symbol));
+
+  // Build all bids
+  {
+    SequencePtr bids(new Sequence(id_bids_length_, 1));
+    int index = 0;
+    // Create sequence of bids
+    const book::DepthLevel* bid = tracker->bids();
+    do {
+      build_depth_level(bids, bid, index);
+      ++bid_count;
+      ++index;
+    } while (++bid != tracker->last_bid_level());
+    message.addField(id_bids_, FieldSequence::create(bids));
+  }
+
+  // Build all asks
+  {
+    SequencePtr asks(new Sequence(id_asks_length_, 1));
+    int index = 0;
+    // Create sequence of asks
+    const book::DepthLevel* ask = tracker->asks();
+    do {
+      build_depth_level(asks, ask, index);
+      ++ask_count;
       ++index;
     } while (++ask != tracker->last_ask_level());
     message.addField(id_asks_, FieldSequence::create(asks));

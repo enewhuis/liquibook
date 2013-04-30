@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <Common/WorkingBuffer.h>
@@ -14,22 +15,29 @@ namespace liquibook { namespace examples {
   typedef std::deque<WorkingBufferPtr> WorkingBuffers;
   typedef boost::array<unsigned char, 128> Buffer;
   typedef boost::shared_ptr<Buffer> BufferPtr;
-  typedef boost::function<void (BufferPtr)> MessageHandler;
+  typedef boost::function<void (BufferPtr, size_t)> MessageHandler;
   typedef boost::function<void (const boost::system::error_code& error,
                                 std::size_t bytes_transferred)> SendHandler;
   typedef boost::function<void (const boost::system::error_code& error,
                                 std::size_t bytes_transferred)> RecvHandler;
 
   class DepthFeedConnection;
+
   // Socket connection
-  class DepthSession {
+  class DepthSession : boost::noncopyable {
   public:
     DepthSession(boost::asio::io_service& ios,
                  DepthFeedConnection* connection);
 
     ~DepthSession();
 
-    void accept();
+    bool connected() { return connected_; }
+
+    void accept(boost::asio::ip::tcp::endpoint address);
+    bool send_incr_update(const std::string& symbol,
+                          WorkingBufferPtr& buf);
+    void send_full_update(const std::string& symbol,
+                          WorkingBufferPtr& buf);
   private:       
     bool connected_;
     boost::asio::io_service& ios_;
@@ -38,13 +46,17 @@ namespace liquibook { namespace examples {
 
     typedef std::set<std::string> StringSet;
     StringSet sent_symbols_;
+    boost::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
 
     void on_accept(const boost::system::error_code& error);
+    void on_send(WorkingBufferPtr wb,
+                 const boost::system::error_code& error,
+                 std::size_t bytes_transferred);
   };
 
   // Create a Session when accepting or connecting.  Then if fails, delete.
 
-  class DepthFeedConnection {
+  class DepthFeedConnection : boost::noncopyable {
   public:
     DepthFeedConnection(int argc, const char* argv[]);
     ~DepthFeedConnection();
@@ -59,8 +71,10 @@ namespace liquibook { namespace examples {
     WorkingBufferPtr reserve_send_buffer();
 
     void send_buffer(WorkingBufferPtr& buf);
-    bool send_incremental_update(WorkingBufferPtr& buf);
-    void send_full_update(WorkingBufferPtr& buf);
+    bool send_incr_update(const std::string& symbol, 
+                          WorkingBufferPtr& buf);
+    void send_full_update(const std::string& symbol, 
+                          WorkingBufferPtr& buf);
 
     void on_connect(const boost::system::error_code& error);
     void on_accept(DepthSession* session,
