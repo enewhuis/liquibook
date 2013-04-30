@@ -13,7 +13,6 @@ using QuickFAST::ValueType;
 DepthFeedSubscriber::DepthFeedSubscriber(const std::string& template_filename)
 : decoder_(parse_templates(template_filename))
 {
-  decoder_.setVerboseOutput(std::cout);
 }
 
 void
