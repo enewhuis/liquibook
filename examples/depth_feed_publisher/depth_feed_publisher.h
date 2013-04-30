@@ -10,7 +10,6 @@
 #include <sstream>
 #include <vector>
 
-#include <Codecs/Encoder.h>
 #include <Codecs/TemplateRegistry_fwd.h>
 #include "example_order_book.h"
 #include "book/depth_listener.h"
@@ -30,7 +29,6 @@ public:
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
 private:
   uint32_t sequence_num_;
-  QuickFAST::Codecs::Encoder encoder_; // TODO remove
 
   const QuickFAST::template_id_t tid_depth_message_;
 

@@ -17,7 +17,6 @@ using namespace QuickFAST::Messages;
 
 DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
 : sequence_num_(0),
-  encoder_(parse_templates(template_filename)),
   tid_depth_message_(1),
   connection_(NULL)
 {
@@ -35,37 +34,16 @@ DepthFeedPublisher::on_depth_change(
     const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
 {
   // Published changed levels of order book
-  //QuickFAST::Codecs::DataDestination dest;
   QuickFAST::Messages::FieldSet message(20);
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
   build_depth_message(message, exob->symbol(), tracker, false);
-  // TODO move
-  //encoder_.encodeMessage(dest, tid_depth_message_, message);
-
-  //WorkingBufferPtr wb = connection_->reserve_send_buffer();
-  //dest.toWorkingBuffer(*wb);
-  //std::cout << "incr message working buffer size " << wb->size() << std::endl;
   if (!connection_->send_incr_update(exob->symbol(), message)) {
+    // Published all levels of order book
     QuickFAST::Messages::FieldSet full_message(20);
     build_depth_message(full_message, exob->symbol(), tracker, true);
     connection_->send_full_update(exob->symbol(), full_message);
   }
-/*
-  if (!connection_->send_incr_update(exob->symbol(), wb)) {
-    QuickFAST::Messages::FieldSet full_message(20);
-    build_full_depth_message(full_message, exob->symbol(), tracker);
-
-    WorkingBufferPtr full_wb = connection_->reserve_send_buffer();
-    full_message.toWorkingBuffer(*full_wb);
-    std::cout << "full message working buffer size " << full_wb->size()
-              << std::endl;
-    // send full buffer
-    QuickFAST::Codecs::DataDestination full_message;
-    encoder_.encodeMessage(dest, tid_depth_message_, message);
-    connection_->send_full_update(exob->symbol(), full_wb);  
-  }
-*/
   sleep(2);
 }
  
@@ -131,68 +109,12 @@ DepthFeedPublisher::build_depth_message(
             << ask_count << " asks" << std::endl;
 }
 
-/*
-void
-DepthFeedPublisher::build_full_depth_message(
-    QuickFAST::Messages::FieldSet& message,
-    const std::string& symbol,
-    const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
-{
-  size_t bid_count(0), ask_count(0);
-
-  message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
-  message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
-  message.addField(id_symbol_, FieldString::create(symbol));
-
-  // Build all bids
-  {
-    SequencePtr bids(new Sequence(id_bids_length_, 1));
-    int index = 0;
-    const book::DepthLevel* bid = tracker->bids();
-    // Create sequence of bids
-    while (true) {
-      build_depth_level(bids, bid, index);
-      ++bid_count;
-      ++index;
-      if (bid == tracker->last_bid_level()) {
-        break;
-      } else {
-        ++bid;
-      }
-    }
-    message.addField(id_bids_, FieldSequence::create(bids));
-  }
-
-  // Build all asks
-  {
-    SequencePtr asks(new Sequence(id_asks_length_, 1));
-    int index = 0;
-    const book::DepthLevel* ask = tracker->asks();
-    // Create sequence of asks
-    while (true) {
-      build_depth_level(asks, ask, index);
-      ++ask_count;
-      ++index;
-      if (ask == tracker->last_ask_level()) {
-        break;
-      } else {
-        ++ask;
-      }
-    }
-    message.addField(id_asks_, FieldSequence::create(asks));
-  }
-  std::cout << "Encoding depth message for symbol " << symbol 
-            << " with " << bid_count << " bids, "
-            << ask_count << " asks" << std::endl;
-}
-*/
 void
 DepthFeedPublisher::build_depth_level(
     QuickFAST::Messages::SequencePtr& level_seq,
     const book::DepthLevel* level,
     int level_index)
 {
-  //std::cout << "Depth level " << level_index << " changed" << std::endl;
   FieldSetPtr level_fields(new FieldSet(4));
   level_fields->addField(id_level_num_, FieldUInt8::create(level_index));
   level_fields->addField(id_order_count_, 
