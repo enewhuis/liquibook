@@ -28,46 +28,10 @@ DepthFeedSession::~DepthFeedSession()
 {
 }
 
-void
-DepthFeedSession::accept(unsigned short port)
-{
-  std::cout << "DS accept(port)" << std::endl;
-  tcp::endpoint endpoint(tcp::v4(), port);
-  acceptor_.reset(new tcp::acceptor(ios_));
-  acceptor_->open(endpoint.protocol());
-  boost::system::error_code ec;
-  acceptor_->set_option(boost::asio::socket_base::reuse_address(true), ec);
-  acceptor_->bind(endpoint);
-  acceptor_->listen();
-  acceptor_->async_accept(socket_, 
-                          boost::bind(&DepthFeedSession::on_accept, this, _1));
-}
-
-void
-DepthFeedSession::accept(tcp::endpoint address)
-{
-  std::cout << "DS accept" << std::endl;
-  // async_accept - only allows one accept
-  acceptor_.reset(new tcp::acceptor(ios_, address));
-  acceptor_->async_accept(socket_, 
-                          boost::bind(&DepthFeedSession::on_accept, this, _1));
-}
-
-void
-DepthFeedSession::on_accept(const boost::system::error_code& error)
-{
-  std::cout << "DS on_accept, error " << error << std::endl;
-  if (!error) {
-    connected_ = true;
-  }
-  connection_->on_accept(this, error);
-}
-
 bool
 DepthFeedSession::send_incr_update(const std::string& symbol,
                                    QuickFAST::Messages::FieldSet& message)
 {
-  std::cout << "send_incr_update" << std::endl;
   bool sent = false;
   // If the session has been started for this symbol
   if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
@@ -89,7 +53,6 @@ void
 DepthFeedSession::send_full_update(const std::string& symbol,
                                    QuickFAST::Messages::FieldSet& message)
 {
-  std::cout << "send_full_update" << std::endl;
   // Mark this symbols as sent
   std::pair<StringSet::iterator, bool> result = sent_symbols_.insert(symbol);
 
@@ -147,10 +110,19 @@ void
 DepthFeedConnection::accept()
 {
   std::cout << "DFC accept" << std::endl;
-  DepthFeedSession* session = new DepthFeedSession(ios_, this, templates_);
-  //tcp::endpoint address(address::from_string("127.0.0.1"), 10003);
-  //session->accept(address);
-  session->accept(10003);
+  if (!acceptor_) {
+    acceptor_.reset(new tcp::acceptor(ios_));
+    tcp::endpoint endpoint(tcp::v4(), 10003);
+    acceptor_->open(endpoint.protocol());
+    boost::system::error_code ec;
+    acceptor_->set_option(boost::asio::socket_base::reuse_address(true), ec);
+    acceptor_->bind(endpoint);
+    acceptor_->listen();
+  }
+  SessionPtr session(new DepthFeedSession(ios_, this, templates_));
+  acceptor_->async_accept(
+      session->socket(), 
+      boost::bind(&DepthFeedConnection::on_accept, this, session, _1));
 }
 
 void
@@ -242,7 +214,6 @@ DepthFeedConnection::on_connect(const boost::system::error_code& error)
   if (!error) {
     std::cout << "on_connect" << std::endl;
     connected_ = true;
-    // TODO - if handler
     issue_read();
   } else {
     std::cout << "on_connect, error=" << error << std::endl;
@@ -253,15 +224,16 @@ DepthFeedConnection::on_connect(const boost::system::error_code& error)
 }
 
 void
-DepthFeedConnection::on_accept(DepthFeedSession* session,
+DepthFeedConnection::on_accept(SessionPtr session,
                                const boost::system::error_code& error)
 {
   if (!error) {
     std::cout << "on_accept" << std::endl;
     sessions_.push_back(session);
+    session->set_connected();
   } else {
     std::cout << "DFC on_accept, error=" << error << std::endl;
-    delete session;
+    session.reset();
     sleep(2);
   }
   // accept again
