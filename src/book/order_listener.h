@@ -8,8 +8,8 @@
 
 namespace liquibook { namespace book {
 
-/// @brief generic listener of order events.  Used by common version of 
-///   OrderBook::process_callback().
+/// @brief generic listener of order events.  Implement to build a full order book feed.
+//    Used by common version of OrderBook::process_callback().
 template <class OrderPtr = Order*>
 class OrderListener {
 public:
