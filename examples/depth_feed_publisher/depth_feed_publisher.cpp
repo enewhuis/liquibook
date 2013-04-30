@@ -35,17 +35,22 @@ DepthFeedPublisher::on_depth_change(
     const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
 {
   // Published changed levels of order book
-  QuickFAST::Codecs::DataDestination dest;
+  //QuickFAST::Codecs::DataDestination dest;
   QuickFAST::Messages::FieldSet message(20);
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
   build_depth_message(message, exob->symbol(), tracker);
   // TODO move
-  encoder_.encodeMessage(dest, tid_depth_message_, message);
+  //encoder_.encodeMessage(dest, tid_depth_message_, message);
 
-  WorkingBufferPtr wb = connection_->reserve_send_buffer();
-  dest.toWorkingBuffer(*wb);
-  std::cout << "incr message working buffer size " << wb->size() << std::endl;
+  //WorkingBufferPtr wb = connection_->reserve_send_buffer();
+  //dest.toWorkingBuffer(*wb);
+  //std::cout << "incr message working buffer size " << wb->size() << std::endl;
+  if (!connection_->send_incr_update(exob->symbol(), message)) {
+    QuickFAST::Messages::FieldSet full_message(20);
+    build_full_depth_message(full_message, exob->symbol(), tracker);
+    connection_->send_full_update(exob->symbol(), full_message);
+  }
 /*
   if (!connection_->send_incr_update(exob->symbol(), wb)) {
     QuickFAST::Messages::FieldSet full_message(20);

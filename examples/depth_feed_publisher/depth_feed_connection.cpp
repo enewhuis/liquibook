@@ -3,6 +3,10 @@
 #include <boost/bind.hpp>
 #include "depth_feed_connection.h"
 #include "template_consumer.h"
+#include <Codecs/DataDestination.h>
+#include <Messages/FieldSet.h>
+
+#define TID_DEPTH_MESSAGE QuickFAST::template_id_t(1)
 
 using namespace boost::asio::ip;
 
@@ -54,25 +58,32 @@ DepthFeedSession::on_accept(const boost::system::error_code& error)
 
 bool
 DepthFeedSession::send_incr_update(const std::string& symbol,
-                                   WorkingBufferPtr& buf)
+                                   QuickFAST::Messages::FieldSet& message)
 {
+  return false;
+/*
 std::cout << "send_incr_update" << std::endl;
   bool sent = false;
   // If the session has been started for this symbol
   if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
+    QuickFAST::Codecs::DataDestination dest;
+    encoder_.encodeMessage(dest, TID_DEPTH_MESSAGE, message);
+    WorkingBufferPtr wb = connection_->reserve_send_buffer();
+    dest.toWorkingBuffer(*wb);
     SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
-                                           this, buf, _1, _2);
+                                           this, wb, _1, _2);
     boost::asio::const_buffers_1 buffer(
-        boost::asio::buffer(buf->begin(), buf->size()));
+        boost::asio::buffer(wb->begin(), wb->size()));
     socket_.async_send(buffer, 0, send_handler);
     sent = true;
   }
   return sent;
+*/
 }
 
 void
 DepthFeedSession::send_full_update(const std::string& symbol,
-                                   WorkingBufferPtr& buf)
+                                   QuickFAST::Messages::FieldSet& message)
 {
 std::cout << "send_full_update" << std::endl;
   // Mark this symbols as sent
@@ -80,17 +91,24 @@ std::cout << "send_full_update" << std::endl;
 
   // If this symbol is new for the session
   if (result.second) {
+    QuickFAST::Codecs::DataDestination dest;
+    encoder_.encodeMessage(dest, TID_DEPTH_MESSAGE, message);
+    WorkingBufferPtr wb = connection_->reserve_send_buffer();
+    dest.toWorkingBuffer(*wb);
+
     size_t i = 0;
-    const unsigned char* start = buf->begin();
-    while (i < buf->size()) {
+    const unsigned char* start = wb->begin();
+    while (i < wb->size()) {
       unsigned short byte = start[i++];
       std::cout << byte << " ";
     }
+    std::cout << std::endl;
+
     // Perform the send
     SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
-                                           this, buf, _1, _2);
+                                           this, wb, _1, _2);
     boost::asio::const_buffers_1 buffer(
-        boost::asio::buffer(buf->begin(), buf->size()));
+        boost::asio::buffer(wb->begin(), wb->size()));
     socket_.async_send(buffer, 0, send_handler);
   }
 }
@@ -181,6 +199,7 @@ DepthFeedConnection::reserve_recv_buffer()
   }
 }
 
+/*
 void
 DepthFeedConnection::send_buffer(WorkingBufferPtr& buf)
 {
@@ -195,10 +214,11 @@ DepthFeedConnection::send_buffer(WorkingBufferPtr& buf)
     unused_send_buffers_.push_back(buf);
   }
 }
+*/
 
 bool
 DepthFeedConnection::send_incr_update(const std::string& symbol,
-                                      WorkingBufferPtr& buf)
+                                      QuickFAST::Messages::FieldSet& message)
 {
   bool any_new = false;
   // For each session
@@ -207,7 +227,7 @@ DepthFeedConnection::send_incr_update(const std::string& symbol,
     // If the session is connected
     if ((*session)->connected()) {
       // send on that session
-      if (!(*session)->send_incr_update(symbol, buf)) {
+      if (!(*session)->send_incr_update(symbol, message)) {
         any_new = true;
       }
       ++session;
@@ -220,7 +240,7 @@ DepthFeedConnection::send_incr_update(const std::string& symbol,
 
 void
 DepthFeedConnection::send_full_update(const std::string& symbol,
-                                      WorkingBufferPtr& buf)
+                                      QuickFAST::Messages::FieldSet& message)
 {
   // For each session
   Sessions::iterator session;
@@ -228,7 +248,7 @@ DepthFeedConnection::send_full_update(const std::string& symbol,
     // If the session is connected
     if ((*session)->connected()) {
       // conditionally send on that session
-      (*session)->send_full_update(symbol, buf);
+      (*session)->send_full_update(symbol, message);
       ++session;
     } else {
       // Remove the session

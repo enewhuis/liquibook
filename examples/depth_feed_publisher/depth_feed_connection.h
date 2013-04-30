@@ -38,9 +38,9 @@ namespace liquibook { namespace examples {
 
     void accept(boost::asio::ip::tcp::endpoint address);
     bool send_incr_update(const std::string& symbol,
-                          WorkingBufferPtr& buf);
+                          QuickFAST::Messages::FieldSet& message);
     void send_full_update(const std::string& symbol,
-                          WorkingBufferPtr& buf);
+                          QuickFAST::Messages::FieldSet& message);
   private:       
     bool connected_;
     boost::asio::io_service& ios_;
@@ -75,10 +75,11 @@ namespace liquibook { namespace examples {
     WorkingBufferPtr reserve_send_buffer();
 
     void send_buffer(WorkingBufferPtr& buf);
+                     
     bool send_incr_update(const std::string& symbol, 
-                          WorkingBufferPtr& buf);
+                          QuickFAST::Messages::FieldSet& message);
     void send_full_update(const std::string& symbol, 
-                          WorkingBufferPtr& buf);
+                          QuickFAST::Messages::FieldSet& message);
 
     void on_connect(const boost::system::error_code& error);
     void on_accept(DepthFeedSession* session,
