@@ -101,6 +101,7 @@ DepthFeedConnection::~DepthFeedConnection()
 void
 DepthFeedConnection::connect()
 {
+  std::cout << "Connecting to feed" << std::endl;
   tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
   socket_.async_connect(endpoint, boost::bind(&DepthFeedConnection::on_connect,
                                               this, _1));
@@ -109,7 +110,6 @@ DepthFeedConnection::connect()
 void
 DepthFeedConnection::accept()
 {
-  std::cout << "DFC accept" << std::endl;
   if (!acceptor_) {
     acceptor_.reset(new tcp::acceptor(ios_));
     tcp::endpoint endpoint(tcp::v4(), 10003);
@@ -128,12 +128,9 @@ DepthFeedConnection::accept()
 void
 DepthFeedConnection::run()
 {
-  std::cout << "DFC run" << std::endl;
-
   // Keep on running
   work_ptr_.reset(new boost::asio::io_service::work(ios_));
   ios_.run();
-  std::cout << "DFC run returning" << std::endl;
 }
 
 void
@@ -212,11 +209,12 @@ void
 DepthFeedConnection::on_connect(const boost::system::error_code& error)
 {
   if (!error) {
-    std::cout << "on_connect" << std::endl;
+    std::cout << "connected to feed" << std::endl;
     connected_ = true;
     issue_read();
   } else {
     std::cout << "on_connect, error=" << error << std::endl;
+    socket_.close();
     sleep(3);
     // Try again
     connect();
@@ -228,11 +226,11 @@ DepthFeedConnection::on_accept(SessionPtr session,
                                const boost::system::error_code& error)
 {
   if (!error) {
-    std::cout << "on_accept" << std::endl;
+    std::cout << "accepted client connection" << std::endl;
     sessions_.push_back(session);
     session->set_connected();
   } else {
-    std::cout << "DFC on_accept, error=" << error << std::endl;
+    std::cout << "on_accept, error=" << error << std::endl;
     session.reset();
     sleep(2);
   }
@@ -256,6 +254,9 @@ DepthFeedConnection::on_receive(BufferPtr bp,
     unused_recv_buffers_.push_back(bp);
   } else {
     std::cout << "Error " << error << " receiving message" << std::endl;
+    socket_.close();
+    sleep(3);
+    connect();
   }
 }
 
