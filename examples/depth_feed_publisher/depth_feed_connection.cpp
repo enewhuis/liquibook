@@ -196,23 +196,6 @@ DepthFeedConnection::reserve_recv_buffer()
   }
 }
 
-/*
-void
-DepthFeedConnection::send_buffer(WorkingBufferPtr& buf)
-{
-  if (connected_) {
-    SendHandler send_handler = boost::bind(&DepthFeedConnection::on_send,
-                                           this, buf, _1, _2);
-    boost::asio::const_buffers_1 buffer(
-        boost::asio::buffer(buf->begin(), buf->size()));
-    socket_.async_send(buffer, 0, send_handler);
-  } else {
-    // Just put back in unused
-    unused_send_buffers_.push_back(buf);
-  }
-}
-*/
-
 bool
 DepthFeedConnection::send_incr_update(const std::string& symbol,
                                       QuickFAST::Messages::FieldSet& message)
@@ -296,15 +279,6 @@ DepthFeedConnection::on_receive(BufferPtr bp,
     // Next read
     issue_read();
 
-    unsigned char* start = bp->c_array();
-    //std::cout << std::hex << std::setfill('0');
-    size_t i = 0;
-    while (i < bytes_transferred) {
-      unsigned short byte = start[i++];
-      std::cout << byte << " ";
-    }
-    std::cout << std::endl;
-    //std::cout << std::setfill(' ') << std::dec << std::endl;;
     // Handle the buffer
     msg_handler_(bp, bytes_transferred);
 
