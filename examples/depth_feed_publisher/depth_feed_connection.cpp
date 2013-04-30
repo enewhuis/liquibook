@@ -29,18 +29,25 @@ DepthFeedSession::~DepthFeedSession()
 }
 
 void
-DepthFeedSession::accept(tcp::endpoint address)
+DepthFeedSession::accept(unsigned short port)
 {
-  std::cout << "DS accept" << std::endl;
-/*
-  boost::system::error_code ec;
-  tcp::endpoint endpoint(tcp::v4(), 10003);
+  std::cout << "DS accept(port)" << std::endl;
+  tcp::endpoint endpoint(tcp::v4(), port);
   acceptor_.reset(new tcp::acceptor(ios_));
   acceptor_->open(endpoint.protocol());
+  boost::system::error_code ec;
   acceptor_->set_option(boost::asio::socket_base::reuse_address(true), ec);
   acceptor_->bind(endpoint);
   acceptor_->listen();
-*/
+  acceptor_->async_accept(socket_, 
+                          boost::bind(&DepthFeedSession::on_accept, this, _1));
+}
+
+void
+DepthFeedSession::accept(tcp::endpoint address)
+{
+  std::cout << "DS accept" << std::endl;
+  // async_accept - only allows one accept
   acceptor_.reset(new tcp::acceptor(ios_, address));
   acceptor_->async_accept(socket_, 
                           boost::bind(&DepthFeedSession::on_accept, this, _1));
@@ -93,16 +100,6 @@ DepthFeedSession::send_full_update(const std::string& symbol,
     WorkingBufferPtr wb = connection_->reserve_send_buffer();
     dest.toWorkingBuffer(*wb);
 
-/*
-    size_t i = 0;
-    const unsigned char* start = wb->begin();
-    while (i < wb->size()) {
-      unsigned short byte = start[i++];
-      std::cout << byte << " ";
-    }
-    std::cout << std::endl;
-*/
-
     // Perform the send
     SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
                                            this, wb, _1, _2);
@@ -151,8 +148,9 @@ DepthFeedConnection::accept()
 {
   std::cout << "DFC accept" << std::endl;
   DepthFeedSession* session = new DepthFeedSession(ios_, this, templates_);
-  tcp::endpoint address(address::from_string("127.0.0.1"), 10003);
-  session->accept(address);
+  //tcp::endpoint address(address::from_string("127.0.0.1"), 10003);
+  //session->accept(address);
+  session->accept(10003);
 }
 
 void
@@ -266,8 +264,8 @@ DepthFeedConnection::on_accept(DepthFeedSession* session,
     delete session;
     sleep(2);
   }
-  // TODO - accept again
-  //accept();
+  // accept again
+  accept();
 }
 
 void
