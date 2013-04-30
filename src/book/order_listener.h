@@ -8,9 +8,8 @@
 
 namespace liquibook { namespace book {
 
-/// @brief interface an order must implement in order to be used by OrderBook.
-/// Note: structly speaking, inheriting from Order should not be required, 
-///       due to the template implementation of OrderBook.
+/// @brief generic listener of order events.  Used by common version of 
+///   OrderBook::process_callback().
 template <class OrderPtr = Order*>
 class OrderListener {
 public:
