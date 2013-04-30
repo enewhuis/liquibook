@@ -9,6 +9,8 @@
 #include <Common/WorkingBuffer.h>
 #include <deque>
 #include <set>
+#include <Codecs/Encoder.h>
+#include <Codecs/TemplateRegistry_fwd.h>
 
 namespace liquibook { namespace examples {
   typedef boost::shared_ptr<QuickFAST::WorkingBuffer> WorkingBufferPtr;
@@ -24,12 +26,13 @@ namespace liquibook { namespace examples {
   class DepthFeedConnection;
 
   // Socket connection
-  class DepthSession : boost::noncopyable {
+  class DepthFeedSession : boost::noncopyable {
   public:
-    DepthSession(boost::asio::io_service& ios,
-                 DepthFeedConnection* connection);
+    DepthFeedSession(boost::asio::io_service& ios,
+                     DepthFeedConnection* connection,
+                     QuickFAST::Codecs::TemplateRegistryPtr& templates);
 
-    ~DepthSession();
+    ~DepthFeedSession();
 
     bool connected() { return connected_; }
 
@@ -43,6 +46,7 @@ namespace liquibook { namespace examples {
     boost::asio::io_service& ios_;
     boost::asio::ip::tcp::socket socket_;
     DepthFeedConnection* connection_;
+    QuickFAST::Codecs::Encoder encoder_;
 
     typedef std::set<std::string> StringSet;
     StringSet sent_symbols_;
@@ -77,7 +81,7 @@ namespace liquibook { namespace examples {
                           WorkingBufferPtr& buf);
 
     void on_connect(const boost::system::error_code& error);
-    void on_accept(DepthSession* session,
+    void on_accept(DepthFeedSession* session,
                    const boost::system::error_code& error);
     void on_receive(BufferPtr bp,
                     const boost::system::error_code& error,
@@ -88,9 +92,10 @@ namespace liquibook { namespace examples {
 
   private:
     typedef std::deque<BufferPtr> Buffers;
-    typedef std::vector<DepthSession*> Sessions;
+    typedef std::vector<DepthFeedSession*> Sessions;
     bool connected_;
     MessageHandler msg_handler_;
+    QuickFAST::Codecs::TemplateRegistryPtr templates_;
 
     Buffers        unused_recv_buffers_;
     WorkingBuffers unused_send_buffers_;

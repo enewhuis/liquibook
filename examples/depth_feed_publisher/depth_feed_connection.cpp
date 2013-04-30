@@ -2,28 +2,30 @@
 #include <iomanip>
 #include <boost/bind.hpp>
 #include "depth_feed_connection.h"
+#include "template_consumer.h"
 
 using namespace boost::asio::ip;
 
 namespace liquibook { namespace examples {
 
-DepthSession::DepthSession(boost::asio::io_service& ios,
-                           DepthFeedConnection* connection)
+DepthFeedSession::DepthFeedSession(
+    boost::asio::io_service& ios,
+    DepthFeedConnection* connection,
+    QuickFAST::Codecs::TemplateRegistryPtr& templates)
 : connected_(false),
   ios_(ios),
   socket_(ios),
-  connection_(connection)
+  connection_(connection),
+  encoder_(templates)
 {
-  std::cout << "DepthSession ctor" << std::endl;
 }
 
-DepthSession::~DepthSession()
+DepthFeedSession::~DepthFeedSession()
 {
-  std::cout << "DepthSession dtor" << std::endl;
 }
 
 void
-DepthSession::accept(tcp::endpoint address)
+DepthFeedSession::accept(tcp::endpoint address)
 {
   std::cout << "DS accept" << std::endl;
 /*
@@ -37,11 +39,11 @@ DepthSession::accept(tcp::endpoint address)
 */
   acceptor_.reset(new tcp::acceptor(ios_, address));
   acceptor_->async_accept(socket_, 
-                          boost::bind(&DepthSession::on_accept, this, _1));
+                          boost::bind(&DepthFeedSession::on_accept, this, _1));
 }
 
 void
-DepthSession::on_accept(const boost::system::error_code& error)
+DepthFeedSession::on_accept(const boost::system::error_code& error)
 {
   std::cout << "DS on_accept, error " << error << std::endl;
   if (!error) {
@@ -51,14 +53,14 @@ DepthSession::on_accept(const boost::system::error_code& error)
 }
 
 bool
-DepthSession::send_incr_update(const std::string& symbol,
-                               WorkingBufferPtr& buf)
+DepthFeedSession::send_incr_update(const std::string& symbol,
+                                   WorkingBufferPtr& buf)
 {
 std::cout << "send_incr_update" << std::endl;
   bool sent = false;
   // If the session has been started for this symbol
   if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
-    SendHandler send_handler = boost::bind(&DepthSession::on_send,
+    SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
                                            this, buf, _1, _2);
     boost::asio::const_buffers_1 buffer(
         boost::asio::buffer(buf->begin(), buf->size()));
@@ -69,8 +71,8 @@ std::cout << "send_incr_update" << std::endl;
 }
 
 void
-DepthSession::send_full_update(const std::string& symbol,
-                               WorkingBufferPtr& buf)
+DepthFeedSession::send_full_update(const std::string& symbol,
+                                   WorkingBufferPtr& buf)
 {
 std::cout << "send_full_update" << std::endl;
   // Mark this symbols as sent
@@ -85,7 +87,7 @@ std::cout << "send_full_update" << std::endl;
       std::cout << byte << " ";
     }
     // Perform the send
-    SendHandler send_handler = boost::bind(&DepthSession::on_send,
+    SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
                                            this, buf, _1, _2);
     boost::asio::const_buffers_1 buffer(
         boost::asio::buffer(buf->begin(), buf->size()));
@@ -94,8 +96,8 @@ std::cout << "send_full_update" << std::endl;
 }
 
 void
-DepthSession::on_send(WorkingBufferPtr wb,
-                      const boost::system::error_code& error,
+DepthFeedSession::on_send(WorkingBufferPtr wb,
+                          const boost::system::error_code& error,
                       std::size_t bytes_transferred)
 {
   if (error) {
@@ -111,6 +113,7 @@ DepthSession::on_send(WorkingBufferPtr wb,
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
 : connected_(false),
+  templates_(TemplateConsumer::parse_templates("./templates/Depth.xml")),
   socket_(ios_)
 {
 }
@@ -133,7 +136,7 @@ DepthFeedConnection::accept()
 {
 
   std::cout << "DFC accept" << std::endl;
-  DepthSession* session = new DepthSession(ios_, this);
+  DepthFeedSession* session = new DepthFeedSession(ios_, this, templates_);
   tcp::endpoint address(address::from_string("127.0.0.1"), 10003);
   session->accept(address);
 
@@ -259,7 +262,7 @@ DepthFeedConnection::on_connect(const boost::system::error_code& error)
 }
 
 void
-DepthFeedConnection::on_accept(DepthSession* session,
+DepthFeedConnection::on_accept(DepthFeedSession* session,
                                const boost::system::error_code& error)
 {
   if (!error) {
