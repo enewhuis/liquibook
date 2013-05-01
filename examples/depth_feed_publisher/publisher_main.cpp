@@ -52,7 +52,6 @@ int main(int argc, const char* argv[])
 
 void
 create_symbols(StringVector& symbols) {
-  symbols.push_back("SRFAS");
   symbols.push_back("AAPL");
   symbols.push_back("ADBE");
   symbols.push_back("ADI");
@@ -178,10 +177,10 @@ generate_orders(examples::Exchange& exchange, const StringVector& symbols) {
     bool is_buy = std::rand() % 2;
     // price
     uint32_t price_base = (index + 1) * 400; // Each symbol has different base
-    uint32_t delta_range = price_base / 10;
-    int32_t delta = std::rand() % price_base;
-    delta -= (price_base / 2);
-    book::Price price = price_base + delta;
+    uint32_t delta_range = price_base / 10;  // +/- 10% of base
+    int32_t delta = std::rand() % delta_range;
+    delta -= (delta_range / 2);
+    double price = double (price_base + delta) / 100;
 
     // qty
     book::Quantity qty = (std::rand() % 10 + 1) * 100;
