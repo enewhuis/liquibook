@@ -16,8 +16,7 @@ namespace liquibook { namespace examples {
 using namespace QuickFAST::Messages;
 
 DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
-: sequence_num_(0),
-  tid_depth_message_(1),
+: tid_depth_message_(1),
   connection_(NULL)
 {
 }
@@ -38,9 +37,12 @@ DepthFeedPublisher::on_trade(
   QuickFAST::Messages::FieldSet message(20);
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
-  std::cout << "Got trade for " << exob->symbol() << std::endl;
+  std::cout << "Got trade for " << exob->symbol() 
+            << " qty " << qty
+            << " cost " << cost << std::endl;
   build_trade_message(message, exob->symbol(), qty, cost);
   connection_->send_trade(message);
+  sleep(30);
 }
 
 void
@@ -59,7 +61,6 @@ DepthFeedPublisher::on_depth_change(
     build_depth_message(full_message, exob->symbol(), tracker, true);
     connection_->send_full_update(exob->symbol(), full_message);
   }
-  sleep(2);
 }
  
 void
@@ -69,11 +70,10 @@ DepthFeedPublisher::build_trade_message(
     book::Quantity qty,
     book::Cost cost)
 {
-  message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
   message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
   message.addField(id_symbol_, FieldString::create(symbol));
   message.addField(id_qty_, FieldUInt32::create(qty));
-  message.addField(id_cost_, FieldUInt32::create(double(cost)));
+  message.addField(id_cost_, FieldUInt32::create(cost));
 }
 
 void
@@ -85,7 +85,6 @@ DepthFeedPublisher::build_depth_message(
 {
   size_t bid_count(0), ask_count(0);
 
-  message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
   message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
   message.addField(id_symbol_, FieldString::create(symbol));
 

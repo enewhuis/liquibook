@@ -34,8 +34,6 @@ public:
       const book::DepthOrderBook<OrderPtr>* order_book,
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
 private:
-  uint32_t sequence_num_;
-
   const QuickFAST::template_id_t tid_depth_message_;
 
   DepthFeedConnection* connection_;

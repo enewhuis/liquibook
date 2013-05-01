@@ -13,7 +13,11 @@ int main(int argc, const char* argv[])
   liquibook::examples::MessageHandler msg_handler =
       boost::bind(&liquibook::examples::DepthFeedSubscriber::handle_message,
                   &feed, _1, _2);
+  liquibook::examples::ResetHandler reset_handler =
+      boost::bind(&liquibook::examples::DepthFeedSubscriber::handle_reset,
+                  &feed);
   connection.set_message_handler(msg_handler);
+  connection.set_reset_handler(reset_handler);
   connection.connect();
   connection.run();
 

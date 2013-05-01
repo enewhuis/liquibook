@@ -41,19 +41,21 @@ namespace liquibook { namespace examples {
     boost::asio::ip::tcp::socket& socket() { return socket_; }
 
     // Send a trade messsage to all clients
-    void send_trade(const QuickFAST::Messages::FieldSet& message);
+    void send_trade(QuickFAST::Messages::FieldSet& message);
 
     // Send an incremental update - if this client has handled this symbol
     //   return true if handled
     bool send_incr_update(const std::string& symbol,
-                          const QuickFAST::Messages::FieldSet& message);
+                          QuickFAST::Messages::FieldSet& message);
 
     // Send a full update - if the client has not yet received for this symbol
     void send_full_update(const std::string& symbol,
-                          const QuickFAST::Messages::FieldSet& message);
+                          QuickFAST::Messages::FieldSet& message);
     void on_accept(const boost::system::error_code& error);
   private:       
     bool connected_;
+    uint64_t seq_num_;
+
     boost::asio::io_service& ios_;
     boost::asio::ip::tcp::socket socket_;
     DepthFeedConnection* connection_;
@@ -79,6 +81,7 @@ namespace liquibook { namespace examples {
     void run();
 
     void set_message_handler(MessageHandler msg_handler);
+    void set_reset_handler(ResetHandler reset_handler);
 
     BufferPtr        reserve_recv_buffer();
     WorkingBufferPtr reserve_send_buffer();
@@ -86,16 +89,16 @@ namespace liquibook { namespace examples {
     void send_buffer(WorkingBufferPtr& buf);
                      
     // Send a trade messsage to all clients
-    void send_trade(const QuickFAST::Messages::FieldSet& message);
+    void send_trade(QuickFAST::Messages::FieldSet& message);
 
     // Send an incremental update
     //   return true if all sessions could handle an incremental update
     bool send_incr_update(const std::string& symbol, 
-                          const QuickFAST::Messages::FieldSet& message);
+                          QuickFAST::Messages::FieldSet& message);
 
     // Send a full update to those which have not yet received for this symbol
     void send_full_update(const std::string& symbol, 
-                          const QuickFAST::Messages::FieldSet& message);
+                          QuickFAST::Messages::FieldSet& message);
 
     void on_connect(const boost::system::error_code& error);
     void on_accept(SessionPtr session,

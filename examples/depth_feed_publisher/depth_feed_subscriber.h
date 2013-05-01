@@ -25,6 +25,9 @@ namespace liquibook { namespace examples {
     // return false if failure
     bool handle_message(BufferPtr& bp, size_t bytes_transferred);
 
+    // Handle a reset
+    void handle_reset();
+
   private:
     QuickFAST::Codecs::Decoder decoder_;
     typedef std::map<std::string, book::Depth<5> > DepthMap;

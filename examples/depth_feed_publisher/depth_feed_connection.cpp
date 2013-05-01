@@ -5,6 +5,7 @@
 #include "template_consumer.h"
 #include <Codecs/DataDestination.h>
 #include <Messages/FieldSet.h>
+#include <Messages/FieldUInt32.h>
 
 #define TID_DEPTH_MESSAGE QuickFAST::template_id_t(1)
 #define TID_TRADE_MESSAGE QuickFAST::template_id_t(2)
@@ -18,6 +19,7 @@ DepthFeedSession::DepthFeedSession(
     DepthFeedConnection* connection,
     QuickFAST::Codecs::TemplateRegistryPtr& templates)
 : connected_(false),
+  seq_num_(0),
   ios_(ios),
   socket_(ios),
   connection_(connection),
@@ -30,9 +32,11 @@ DepthFeedSession::~DepthFeedSession()
 }
 
 void
-DepthFeedSession::send_trade(const QuickFAST::Messages::FieldSet& message)
+DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet& message)
 {
   std::cout << "sending trade message with " << message.size() << " fields" << std::endl;
+  message.addField(TemplateConsumer::id_seq_num_,
+                   QuickFAST::Messages::FieldUInt32::create(++seq_num_));
   QuickFAST::Codecs::DataDestination dest;
   encoder_.encodeMessage(dest, TID_TRADE_MESSAGE, message);
   WorkingBufferPtr wb = connection_->reserve_send_buffer();
@@ -48,12 +52,14 @@ DepthFeedSession::send_trade(const QuickFAST::Messages::FieldSet& message)
 
 bool
 DepthFeedSession::send_incr_update(const std::string& symbol,
-                                   const QuickFAST::Messages::FieldSet& message)
+                                   QuickFAST::Messages::FieldSet& message)
 {
   bool sent = false;
   // If the session has been started for this symbol
   if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
     QuickFAST::Codecs::DataDestination dest;
+    message.addField(TemplateConsumer::id_seq_num_,
+                     QuickFAST::Messages::FieldUInt32::create(++seq_num_));
     encoder_.encodeMessage(dest, TID_DEPTH_MESSAGE, message);
     WorkingBufferPtr wb = connection_->reserve_send_buffer();
     dest.toWorkingBuffer(*wb);
@@ -69,7 +75,7 @@ DepthFeedSession::send_incr_update(const std::string& symbol,
 
 void
 DepthFeedSession::send_full_update(const std::string& symbol,
-                                   const QuickFAST::Messages::FieldSet& message)
+                                   QuickFAST::Messages::FieldSet& message)
 {
   // Mark this symbols as sent
   std::pair<StringSet::iterator, bool> result = sent_symbols_.insert(symbol);
@@ -77,6 +83,8 @@ DepthFeedSession::send_full_update(const std::string& symbol,
   // If this symbol is new for the session
   if (result.second) {
     QuickFAST::Codecs::DataDestination dest;
+    message.addField(TemplateConsumer::id_seq_num_,
+                     QuickFAST::Messages::FieldUInt32::create(++seq_num_));
     encoder_.encodeMessage(dest, TID_DEPTH_MESSAGE, message);
     WorkingBufferPtr wb = connection_->reserve_send_buffer();
     dest.toWorkingBuffer(*wb);
@@ -157,6 +165,12 @@ DepthFeedConnection::set_message_handler(MessageHandler handler)
   msg_handler_ = handler;
 }
 
+void
+DepthFeedConnection::set_reset_handler(ResetHandler handler)
+{
+  reset_handler_ = handler;
+}
+
 WorkingBufferPtr
 DepthFeedConnection::reserve_send_buffer()
 {
@@ -182,7 +196,7 @@ DepthFeedConnection::reserve_recv_buffer()
 }
 
 void
-DepthFeedConnection::send_trade(const QuickFAST::Messages::FieldSet& message)
+DepthFeedConnection::send_trade(QuickFAST::Messages::FieldSet& message)
 {
   // For each session
   Sessions::iterator session;
@@ -201,7 +215,7 @@ DepthFeedConnection::send_trade(const QuickFAST::Messages::FieldSet& message)
 
 bool
 DepthFeedConnection::send_incr_update(const std::string& symbol,
-                                      const QuickFAST::Messages::FieldSet& message)
+                                      QuickFAST::Messages::FieldSet& message)
 {
   bool none_new = true;
   // For each session
@@ -224,7 +238,7 @@ DepthFeedConnection::send_incr_update(const std::string& symbol,
 
 void
 DepthFeedConnection::send_full_update(const std::string& symbol,
-                                      const QuickFAST::Messages::FieldSet& message)
+                                      QuickFAST::Messages::FieldSet& message)
 {
   // For each session
   Sessions::iterator session;
@@ -247,6 +261,7 @@ DepthFeedConnection::on_connect(const boost::system::error_code& error)
   if (!error) {
     std::cout << "connected to feed" << std::endl;
     connected_ = true;
+    reset_handler_();
     issue_read();
   } else {
     std::cout << "on_connect, error=" << error << std::endl;
