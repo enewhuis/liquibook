@@ -9,29 +9,28 @@ class TemplateConsumer {
 public:
   static QuickFAST::Codecs::TemplateRegistryPtr 
              parse_templates(const std::string& template_filename);
-protected:
+
   TemplateConsumer();
 
   // Field identities
-  QuickFAST::Messages::FieldIdentityCPtr id_seq_num_;
-  QuickFAST::Messages::FieldIdentityCPtr id_msg_type_;
-  QuickFAST::Messages::FieldIdentityCPtr id_timestamp_;
-  QuickFAST::Messages::FieldIdentityCPtr id_symbol_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_seq_num_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_msg_type_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_timestamp_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_symbol_;
 
-  QuickFAST::Messages::FieldIdentityCPtr id_bids_length_;
-  QuickFAST::Messages::FieldIdentityCPtr id_bids_;
-  QuickFAST::Messages::FieldIdentityCPtr id_asks_length_;
-  QuickFAST::Messages::FieldIdentityCPtr id_asks_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_bids_length_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_bids_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_asks_length_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_asks_;
 
-  QuickFAST::Messages::FieldIdentityCPtr id_level_num_;
-  QuickFAST::Messages::FieldIdentityCPtr id_order_count_;
-  QuickFAST::Messages::FieldIdentityCPtr id_price_;
-  QuickFAST::Messages::FieldIdentityCPtr id_size_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_level_num_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_order_count_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_price_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_size_;
 
   // Trade field identities
-  QuickFAST::Messages::FieldIdentityCPtr id_qty_;
-  QuickFAST::Messages::FieldIdentityCPtr id_cost_;
-
+  static const QuickFAST::Messages::FieldIdentityCPtr id_qty_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_cost_;
 };
 
 } }
