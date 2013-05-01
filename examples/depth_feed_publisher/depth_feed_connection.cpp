@@ -7,6 +7,7 @@
 #include <Messages/FieldSet.h>
 
 #define TID_DEPTH_MESSAGE QuickFAST::template_id_t(1)
+#define TID_TRADE_MESSAGE QuickFAST::template_id_t(2)
 
 using namespace boost::asio::ip;
 
@@ -28,9 +29,26 @@ DepthFeedSession::~DepthFeedSession()
 {
 }
 
+void
+DepthFeedSession::send_trade(const QuickFAST::Messages::FieldSet& message)
+{
+  std::cout << "sending trade message with " << message.size() << " fields" << std::endl;
+  QuickFAST::Codecs::DataDestination dest;
+  encoder_.encodeMessage(dest, TID_TRADE_MESSAGE, message);
+  WorkingBufferPtr wb = connection_->reserve_send_buffer();
+  dest.toWorkingBuffer(*wb);
+
+  // Perform the send
+  SendHandler send_handler = boost::bind(&DepthFeedSession::on_send,
+                                         this, wb, _1, _2);
+  boost::asio::const_buffers_1 buffer(
+      boost::asio::buffer(wb->begin(), wb->size()));
+  socket_.async_send(buffer, 0, send_handler);
+}
+
 bool
 DepthFeedSession::send_incr_update(const std::string& symbol,
-                                   QuickFAST::Messages::FieldSet& message)
+                                   const QuickFAST::Messages::FieldSet& message)
 {
   bool sent = false;
   // If the session has been started for this symbol
@@ -51,7 +69,7 @@ DepthFeedSession::send_incr_update(const std::string& symbol,
 
 void
 DepthFeedSession::send_full_update(const std::string& symbol,
-                                   QuickFAST::Messages::FieldSet& message)
+                                   const QuickFAST::Messages::FieldSet& message)
 {
   // Mark this symbols as sent
   std::pair<StringSet::iterator, bool> result = sent_symbols_.insert(symbol);
@@ -163,9 +181,27 @@ DepthFeedConnection::reserve_recv_buffer()
   }
 }
 
+void
+DepthFeedConnection::send_trade(const QuickFAST::Messages::FieldSet& message)
+{
+  // For each session
+  Sessions::iterator session;
+  for (session = sessions_.begin(); session != sessions_.end(); ) {
+    // If the session is connected
+    if ((*session)->connected()) {
+      // conditionally send on that session
+      (*session)->send_trade(message);
+      ++session;
+    } else {
+      // Remove the session
+      session = sessions_.erase(session);
+    }
+  }
+}
+
 bool
 DepthFeedConnection::send_incr_update(const std::string& symbol,
-                                      QuickFAST::Messages::FieldSet& message)
+                                      const QuickFAST::Messages::FieldSet& message)
 {
   bool none_new = true;
   // For each session
@@ -188,7 +224,7 @@ DepthFeedConnection::send_incr_update(const std::string& symbol,
 
 void
 DepthFeedConnection::send_full_update(const std::string& symbol,
-                                      QuickFAST::Messages::FieldSet& message)
+                                      const QuickFAST::Messages::FieldSet& message)
 {
   // For each session
   Sessions::iterator session;

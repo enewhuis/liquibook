@@ -11,6 +11,7 @@ using namespace QuickFAST::Messages;
 
 TemplateConsumer::TemplateConsumer()
 : id_seq_num_(new FieldIdentity("SequenceNumber")),
+  id_msg_type_(new FieldIdentity("MessageType")),
   id_timestamp_(new FieldIdentity("Timestamp")),
   id_symbol_(new FieldIdentity("Symbol")),
   id_bids_(new FieldIdentity("Bids")),
@@ -20,7 +21,9 @@ TemplateConsumer::TemplateConsumer()
   id_level_num_(new FieldIdentity("LevelNum")),
   id_order_count_(new FieldIdentity("OrderCount")),
   id_size_(new FieldIdentity("AggregateQty")),
-  id_price_(new FieldIdentity("Price"))
+  id_price_(new FieldIdentity("Price")),
+  id_qty_(new FieldIdentity("Quantity")),
+  id_cost_(new FieldIdentity("Cost"))
 {
 }
 

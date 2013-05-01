@@ -37,7 +37,7 @@ int main(int argc, const char* argv[])
   feed.set_message_handler(&connection);
 
   // Create exchange
-  examples::Exchange exchange(&feed);
+  examples::Exchange exchange(&feed, &feed);
 
   // Populate exchange with securities
   populate_exchange(exchange, symbols);

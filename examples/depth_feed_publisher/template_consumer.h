@@ -14,6 +14,7 @@ protected:
 
   // Field identities
   QuickFAST::Messages::FieldIdentityCPtr id_seq_num_;
+  QuickFAST::Messages::FieldIdentityCPtr id_msg_type_;
   QuickFAST::Messages::FieldIdentityCPtr id_timestamp_;
   QuickFAST::Messages::FieldIdentityCPtr id_symbol_;
 
@@ -26,6 +27,11 @@ protected:
   QuickFAST::Messages::FieldIdentityCPtr id_order_count_;
   QuickFAST::Messages::FieldIdentityCPtr id_price_;
   QuickFAST::Messages::FieldIdentityCPtr id_size_;
+
+  // Trade field identities
+  QuickFAST::Messages::FieldIdentityCPtr id_qty_;
+  QuickFAST::Messages::FieldIdentityCPtr id_cost_;
+
 };
 
 } }

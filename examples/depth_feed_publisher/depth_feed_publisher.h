@@ -12,17 +12,23 @@
 
 #include <Codecs/TemplateRegistry_fwd.h>
 #include "example_order_book.h"
-#include "book/depth_listener.h"
+#include "book/types.h"
 #include "depth_feed_connection.h"
 #include "template_consumer.h"
 
 namespace liquibook { namespace examples {
 
 class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
+                           public ExampleOrderBook::TypedTradeListener,
                            public TemplateConsumer {
 public:
   DepthFeedPublisher(const std::string& template_filename);
   void set_message_handler(DepthFeedConnection* connection);
+
+  virtual void on_trade(
+      const book::OrderBook<OrderPtr>* order_book,
+      book::Quantity qty,
+      book::Cost cost);
 
   virtual void on_depth_change(
       const book::DepthOrderBook<OrderPtr>* order_book,
@@ -34,19 +40,19 @@ private:
 
   DepthFeedConnection* connection_;
 
+  // Build an trade message
+  void build_trade_message(
+      QuickFAST::Messages::FieldSet& message,
+      const std::string& symbol,
+      book::Quantity qty,
+      book::Cost cost);
+
   // Build an incremental depth message
   void build_depth_message(
       QuickFAST::Messages::FieldSet& message,
       const std::string& symbol,
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker,
       bool full_message);
-  // Build a full depth message
-/*
-  void build_full_depth_message(
-      QuickFAST::Messages::FieldSet& message,
-      const std::string& symbol,
-      const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
-*/
   void build_depth_level(
       QuickFAST::Messages::SequencePtr& level_seq,
       const book::DepthLevel* level,

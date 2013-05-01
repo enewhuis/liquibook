@@ -38,12 +38,17 @@ namespace liquibook { namespace examples {
     void set_connected() { connected_ = true; }
     boost::asio::ip::tcp::socket& socket() { return socket_; }
 
-    // Send an incremental update
-    //   return true if all sessions could handle an incremental update
+    // Send a trade messsage to all clients
+    void send_trade(const QuickFAST::Messages::FieldSet& message);
+
+    // Send an incremental update - if this client has handled this symbol
+    //   return true if handled
     bool send_incr_update(const std::string& symbol,
-                          QuickFAST::Messages::FieldSet& message);
+                          const QuickFAST::Messages::FieldSet& message);
+
+    // Send a full update - if the client has not yet received for this symbol
     void send_full_update(const std::string& symbol,
-                          QuickFAST::Messages::FieldSet& message);
+                          const QuickFAST::Messages::FieldSet& message);
     void on_accept(const boost::system::error_code& error);
   private:       
     bool connected_;
@@ -78,10 +83,17 @@ namespace liquibook { namespace examples {
 
     void send_buffer(WorkingBufferPtr& buf);
                      
+    // Send a trade messsage to all clients
+    void send_trade(const QuickFAST::Messages::FieldSet& message);
+
+    // Send an incremental update
+    //   return true if all sessions could handle an incremental update
     bool send_incr_update(const std::string& symbol, 
-                          QuickFAST::Messages::FieldSet& message);
+                          const QuickFAST::Messages::FieldSet& message);
+
+    // Send a full update to those which have not yet received for this symbol
     void send_full_update(const std::string& symbol, 
-                          QuickFAST::Messages::FieldSet& message);
+                          const QuickFAST::Messages::FieldSet& message);
 
     void on_connect(const boost::system::error_code& error);
     void on_accept(SessionPtr session,

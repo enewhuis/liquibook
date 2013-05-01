@@ -42,4 +42,24 @@
       </uInt32>
     </sequence>
   </template>
+  <template name="Trade" id="2">
+    <uInt16 name="MessageType" id="100">
+      <constant value="22"/>
+    </uInt16>
+    <uInt32 name="SequenceNumber" id="200">
+      <increment/>
+    </uInt32>
+    <uInt32 name="Timestamp" id="300">
+      <copy/>
+    </uInt32>
+    <string name="Symbol" id="400">
+      <copy/>
+    </string>
+    <uInt32 name="Quantity" id="604">
+      <copy/>
+    </uInt32>
+    <uInt32 name="Cost" id="603">
+      <copy/>
+    </uInt32>
+  </template>
 </templates>

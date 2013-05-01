@@ -29,11 +29,26 @@ DepthFeedPublisher::set_message_handler(DepthFeedConnection* connection)
 }
 
 void
+DepthFeedPublisher::on_trade(
+    const book::OrderBook<OrderPtr>* order_book,
+    book::Quantity qty,
+    book::Cost cost)
+{
+  // Publish trade
+  QuickFAST::Messages::FieldSet message(20);
+  const ExampleOrderBook* exob = 
+          dynamic_cast<const ExampleOrderBook*>(order_book);
+  std::cout << "Got trade for " << exob->symbol() << std::endl;
+  build_trade_message(message, exob->symbol(), qty, cost);
+  connection_->send_trade(message);
+}
+
+void
 DepthFeedPublisher::on_depth_change(
     const book::DepthOrderBook<OrderPtr>* order_book,
     const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker)
 {
-  // Published changed levels of order book
+  // Publish changed levels of order book
   QuickFAST::Messages::FieldSet message(20);
   const ExampleOrderBook* exob = 
           dynamic_cast<const ExampleOrderBook*>(order_book);
@@ -47,6 +62,20 @@ DepthFeedPublisher::on_depth_change(
   sleep(2);
 }
  
+void
+DepthFeedPublisher::build_trade_message(
+    QuickFAST::Messages::FieldSet& message,
+    const std::string& symbol,
+    book::Quantity qty,
+    book::Cost cost)
+{
+  message.addField(id_seq_num_, FieldUInt32::create(++sequence_num_));
+  message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
+  message.addField(id_symbol_, FieldString::create(symbol));
+  message.addField(id_qty_, FieldUInt32::create(qty));
+  message.addField(id_cost_, FieldUInt32::create(double(cost)));
+}
+
 void
 DepthFeedPublisher::build_depth_message(
     QuickFAST::Messages::FieldSet& message,
