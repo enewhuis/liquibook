@@ -20,7 +20,7 @@ Order::is_buy() const
 book::Price
 Order::price() const
 {
-  return price_ / precision_;
+  return price_ * precision_;
 }
 
 book::Quantity
