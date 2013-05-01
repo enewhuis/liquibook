@@ -42,7 +42,6 @@ DepthFeedPublisher::on_trade(
             << " cost " << cost << std::endl;
   build_trade_message(message, exob->symbol(), qty, cost);
   connection_->send_trade(message);
-  sleep(30);
 }
 
 void

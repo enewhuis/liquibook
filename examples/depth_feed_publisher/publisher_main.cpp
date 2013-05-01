@@ -52,8 +52,6 @@ int main(int argc, const char* argv[])
   // Populate exchange with securities
   populate_exchange(exchange, securities);
   
-  sleep(10);
-
   // Generate random orders
   generate_orders(exchange, securities);
 
@@ -200,5 +198,8 @@ generate_orders(examples::Exchange& exchange, const SecurityVector& securities) 
 
     // add order
     exchange.add_order(sec.symbol, order);
+
+    // Wait for eyes to read
+    sleep(1);
   }
 }
