@@ -8,14 +8,18 @@
 
 namespace liquibook { namespace examples {
 
+const uint64_t DepthFeedSubscriber::MSG_TYPE_DEPTH(11);
+const uint64_t DepthFeedSubscriber::MSG_TYPE_TRADE(22);
+
 using QuickFAST::ValueType;
 
 DepthFeedSubscriber::DepthFeedSubscriber(const std::string& template_filename)
-: decoder_(parse_templates(template_filename))
+: decoder_(parse_templates(template_filename)),
+  expected_seq_(1)
 {
 }
 
-void
+bool
 DepthFeedSubscriber::handle_message(BufferPtr& bp, size_t bytes_transferred)
 {
   QuickFAST::Codecs::DataSourceBuffer source(bp->c_array(), bytes_transferred);
@@ -24,18 +28,42 @@ DepthFeedSubscriber::handle_message(BufferPtr& bp, size_t bytes_transferred)
   decoder_.decodeMessage(source, builder);
   QuickFAST::Messages::Message& msg(consumer.message());
 
-  uint64_t seq_num, timestamp;
+  uint64_t seq_num, msg_type, timestamp;
   const QuickFAST::StringBuffer* string_buffer;
   size_t bids_length, asks_length;
   std::string symbol;
   if (!msg.getUnsignedInteger(*id_seq_num_, ValueType::UINT32, seq_num)) {
     std::cout << "Could not get seq num from message" << std::endl;
-    return;
+    return false;
+  }
+  if (seq_num != expected_seq_) {
+    std::cout << "ERROR: Got Seq num " << seq_num << ", expected " 
+              << expected_seq_ << std::endl;
+    return false;
+  }
+  ++expected_seq_;
+  if (!msg.getUnsignedInteger(*id_msg_type_, ValueType::UINT32, msg_type)) {
+    std::cout << "Could not get msg type from message" << std::endl;
+    return false;
   }
   if (!msg.getString(*id_symbol_, ValueType::ASCII, string_buffer)) {
     std::cout << "Could not get symbol from message" << std::endl;
-    return;
+    return false;
   }
+  switch (msg_type) {
+  case MSG_TYPE_DEPTH:
+    return handle_depth_message(symbol, seq_num, timestamp, msg);
+    break;
+  case MSG_TYPE_TRADE:
+    return true;
+    break;
+  default:
+    std::cout << "ERROR: Unknown message type " << msg_type 
+              << " seq num " << seq_num << std::endl;
+    return false;
+  }
+/*
+  std::cout << "Got msg type " << msg_type << std::endl;
 
   symbol = (std::string)*string_buffer;
   std::cout << "Got depth message " << seq_num 
@@ -117,6 +145,7 @@ DepthFeedSubscriber::handle_message(BufferPtr& bp, size_t bytes_transferred)
     }
   }
   log_depth(depth);
+*/
 }
 
 void
@@ -156,6 +185,99 @@ DepthFeedSubscriber::log_depth(book::Depth<5>& depth)
       ask = NULL;
     }
   }
+}
+
+bool
+DepthFeedSubscriber::handle_depth_message(
+  const std::string& symbol,
+  uint64_t& seq_num,
+  uint64_t& timestamp,
+  QuickFAST::Messages::Message& msg)
+{
+  size_t bids_length, asks_length;
+  std::cout << timestamp
+            << " Got depth message " << seq_num 
+            << " for symbol " << symbol << std::endl;
+
+  // Create or find depth
+  std::pair<DepthMap::iterator, bool> results = depth_map_.insert(
+      std::make_pair(symbol, book::Depth<5>()));
+  book::Depth<5>& depth = results.first->second;
+
+  if (msg.getSequenceLength(*id_bids_, bids_length)) {
+    for (size_t i = 0; i < bids_length; ++i) {
+      const QuickFAST::Messages::MessageAccessor* accessor;
+      if (msg.getSequenceEntry(*id_bids_, i, accessor)) {
+        uint64_t level_num, price, order_count, aggregate_qty;
+        if (!accessor->getUnsignedInteger(*id_level_num_, ValueType::UINT8,
+                                         level_num)) {
+          std::cout << "FAILED TO GET Bid level " << std::endl;
+          return false;
+        }
+        if (!accessor->getUnsignedInteger(*id_price_, ValueType::UINT32,
+                                         price)) {
+          std::cout << "FAILED TO GET Bid price " << std::endl;
+          return false;
+        }
+        if (!accessor->getUnsignedInteger(*id_order_count_, ValueType::UINT32,
+                                         order_count)) {
+          std::cout << "FAILED TO GET Bid order count " << std::endl;
+          return false;
+        }
+        if (!accessor->getUnsignedInteger(*id_size_, ValueType::UINT32,
+                                         aggregate_qty)) {
+          std::cout << "FAILED TO GET Bid aggregate qty " << std::endl;
+          return false;
+        }
+
+        book::DepthLevel& level = depth.bids()[level_num];
+        level.set(price, aggregate_qty, order_count);
+
+      } else {
+        std::cout << "Failed to get bid " << i << std::endl;
+        return false;
+      }
+      msg.endSequenceEntry(*id_bids_, i, accessor);
+    }
+  }
+  if (msg.getSequenceLength(*id_asks_, asks_length)) {
+    for (size_t i = 0; i < asks_length; ++i) {
+      const QuickFAST::Messages::MessageAccessor* accessor;
+      if (msg.getSequenceEntry(*id_asks_, i, accessor)) {
+        uint64_t level_num, price, order_count, aggregate_qty;
+        if (!accessor->getUnsignedInteger(*id_level_num_, ValueType::UINT8,
+                                         level_num)) {
+          std::cout << "FAILED TO GET Ask level " << std::endl;
+          return false;
+        }
+        if (!accessor->getUnsignedInteger(*id_price_, ValueType::UINT32,
+                                         price)) {
+          std::cout << "FAILED TO GET Ask price " << std::endl;
+          return false;
+        }
+        if (!accessor->getUnsignedInteger(*id_order_count_, ValueType::UINT32,
+                                         order_count)) {
+          std::cout << "FAILED TO GET Ask order count " << std::endl;
+          return false;
+        }
+        if (!accessor->getUnsignedInteger(*id_size_, ValueType::UINT32,
+                                         aggregate_qty)) {
+          std::cout << "FAILED TO GET Ask aggregate qty " << std::endl;
+          return false;
+        }
+
+        book::DepthLevel& level = depth.asks()[level_num];
+        level.set(price, aggregate_qty, order_count);
+
+      } else {
+        std::cout << "Failed to get ask " << i << std::endl;
+        return false;
+      }
+      msg.endSequenceEntry(*id_asks_, i, accessor);
+    }
+  }
+  log_depth(depth);
+  return true;
 }
 
 } }

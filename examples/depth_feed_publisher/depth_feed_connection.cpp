@@ -284,7 +284,9 @@ DepthFeedConnection::on_receive(BufferPtr bp,
     issue_read();
 
     // Handle the buffer
-    msg_handler_(bp, bytes_transferred);
+    if (!msg_handler_(bp, bytes_transferred)) {
+      socket_.close();
+    }
 
     // Restore buffer
     unused_recv_buffers_.push_back(bp);

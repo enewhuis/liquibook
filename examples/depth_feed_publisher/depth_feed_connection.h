@@ -17,7 +17,8 @@ namespace liquibook { namespace examples {
   typedef std::deque<WorkingBufferPtr> WorkingBuffers;
   typedef boost::array<unsigned char, 128> Buffer;
   typedef boost::shared_ptr<Buffer> BufferPtr;
-  typedef boost::function<void (BufferPtr, size_t)> MessageHandler;
+  typedef boost::function<bool (BufferPtr, size_t)> MessageHandler;
+  typedef boost::function<void ()> ResetHandler;
   typedef boost::function<void (const boost::system::error_code& error,
                                 std::size_t bytes_transferred)> SendHandler;
   typedef boost::function<void (const boost::system::error_code& error,
@@ -34,8 +35,9 @@ namespace liquibook { namespace examples {
 
     ~DepthFeedSession();
 
-    bool connected() { return connected_; }
+    bool connected() const { return connected_; }
     void set_connected() { connected_ = true; }
+
     boost::asio::ip::tcp::socket& socket() { return socket_; }
 
     // Send a trade messsage to all clients
@@ -110,6 +112,7 @@ namespace liquibook { namespace examples {
     typedef std::vector<SessionPtr> Sessions;
     bool connected_;
     MessageHandler msg_handler_;
+    ResetHandler reset_handler_;
     QuickFAST::Codecs::TemplateRegistryPtr templates_;
 
     Buffers        unused_recv_buffers_;
