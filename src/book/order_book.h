@@ -9,6 +9,7 @@
 #include "order_listener.h"
 #include "order_book_listener.h"
 #include "depth_level.h"
+#include "trade_listener.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -77,6 +78,7 @@ public:
   typedef Callback<OrderPtr > TypedCallback;
   typedef OrderListener<OrderPtr > TypedOrderListener;
   typedef OrderBook<OrderPtr > MyClass;
+  typedef TradeListener<MyClass > TypedTradeListener;
   typedef OrderBookListener<MyClass > TypedOrderBookListener;
   typedef std::vector<TypedCallback > Callbacks;
   typedef std::multimap<Price, Tracker, std::greater<Price> >  Bids;
@@ -89,6 +91,9 @@ public:
 
   /// @brief set the order listener
   void set_order_listener(TypedOrderListener* listener);
+
+  /// @brief set the trade listener
+  void set_trade_listener(TypedTradeListener* listener);
 
   /// @brief set the order book listener
   void set_order_book_listener(TypedOrderBookListener* listener);
@@ -189,6 +194,7 @@ private:
   DeferredAskCrosses deferred_ask_crosses_;
   Callbacks callbacks_;
   TypedOrderListener* order_listener_;
+  TypedTradeListener* trade_listener_;
   TypedOrderBookListener* order_book_listener_;
   TransId trans_id_;
 
@@ -281,6 +287,7 @@ OrderTracker<OrderPtr>::immediate_or_cancel() const
 template <class OrderPtr>
 OrderBook<OrderPtr>::OrderBook()
 : order_listener_(NULL),
+  trade_listener_(NULL),
   order_book_listener_(NULL),
   trans_id_(0)
 {
@@ -292,6 +299,13 @@ void
 OrderBook<OrderPtr>::set_order_listener(TypedOrderListener* listener)
 {
   order_listener_ = listener;
+}
+
+template <class OrderPtr>
+void
+OrderBook<OrderPtr>::set_trade_listener(TypedTradeListener* listener)
+{
+  trade_listener_ = listener;
 }
 
 template <class OrderPtr>
@@ -663,8 +677,6 @@ template <class OrderPtr>
 inline void
 OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
 {
-  // NOTE - this is not yet handled in the parent class.  You are requried to
-  //        override in the child.
   // If this is an order callback and I know of an order listener
   if (cb.order && order_listener_) {
     switch (cb.type) {
@@ -700,8 +712,14 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
         std::runtime_error("Unexpected callback type for order");
         break;
     }
+  // Else if this was an order book update and there is an order book listener
   } else if (cb.type == TypedCallback::cb_book_update && order_book_listener_) {
     order_book_listener_->on_order_book_change(this);
+  }
+  // If this was a trade and there is a trade listener
+  if (cb.type == TypedCallback::cb_order_fill && trade_listener_) {
+    Cost fill_cost = cb.fill_price * cb.fill_qty;
+    trade_listener_->on_trade(this, cb.fill_qty, fill_cost);
   }
 }
 
