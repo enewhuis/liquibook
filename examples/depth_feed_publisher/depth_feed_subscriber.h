@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 #include <vector>
+#include <Application/QuickFAST.h>
 #include <Codecs/Decoder.h>
 
 #include "template_consumer.h"

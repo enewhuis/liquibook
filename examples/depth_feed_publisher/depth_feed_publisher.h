@@ -10,6 +10,7 @@
 #include <sstream>
 #include <vector>
 
+#include <Application/QuickFAST.h>
 #include <Codecs/TemplateRegistry_fwd.h>
 #include "example_order_book.h"
 #include "book/types.h"

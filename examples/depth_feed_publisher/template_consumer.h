@@ -1,5 +1,6 @@
 
 #include <boost/shared_ptr.hpp>
+#include <Application/QuickFAST.h>
 #include <Codecs/TemplateRegistry_fwd.h>
 #include <Messages/FieldIdentity.h>
 
