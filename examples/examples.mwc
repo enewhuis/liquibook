@@ -1,5 +1,0 @@
-workspace(examples) {
-  cmdline += -include $QUICKFAST_ROOT
-  cmdline += -include $LIQUIBOOK_ROOT/mpc
-  cmdline += -feature_file examples.features
-}
