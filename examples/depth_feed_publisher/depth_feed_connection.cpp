@@ -32,11 +32,28 @@ DepthFeedSession::~DepthFeedSession()
 }
 
 void
+DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
+{
+  // Create the field
+  QuickFAST::Messages::FieldCPtr value = 
+      QuickFAST::Messages::FieldUInt32::create(++seq_num_);
+  std::cout << "Updaing sequence number to " << seq_num_ << std::endl;
+  // Update the sequece number
+  if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
+    std::cout << "  Not found, addsequence number of " << seq_num_ << std::endl;
+    // Not found, add the sequece number
+    message.addField(TemplateConsumer::id_seq_num_, value);
+  }
+}
+
+void
 DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet& message)
 {
+  // Add or update sequence number in message
+  set_sequence_num(message);
+                            
   std::cout << "sending trade message with " << message.size() << " fields" << std::endl;
-  message.addField(TemplateConsumer::id_seq_num_,
-                   QuickFAST::Messages::FieldUInt32::create(++seq_num_));
+
   QuickFAST::Codecs::DataDestination dest;
   encoder_.encodeMessage(dest, TID_TRADE_MESSAGE, message);
   WorkingBufferPtr wb = connection_->reserve_send_buffer();
@@ -58,8 +75,8 @@ DepthFeedSession::send_incr_update(const std::string& symbol,
   // If the session has been started for this symbol
   if (sent_symbols_.find(symbol) != sent_symbols_.end()) {
     QuickFAST::Codecs::DataDestination dest;
-    message.addField(TemplateConsumer::id_seq_num_,
-                     QuickFAST::Messages::FieldUInt32::create(++seq_num_));
+    // Add or update sequence number in message
+    set_sequence_num(message);
     encoder_.encodeMessage(dest, TID_DEPTH_MESSAGE, message);
     WorkingBufferPtr wb = connection_->reserve_send_buffer();
     dest.toWorkingBuffer(*wb);
@@ -83,8 +100,8 @@ DepthFeedSession::send_full_update(const std::string& symbol,
   // If this symbol is new for the session
   if (result.second) {
     QuickFAST::Codecs::DataDestination dest;
-    message.addField(TemplateConsumer::id_seq_num_,
-                     QuickFAST::Messages::FieldUInt32::create(++seq_num_));
+    // Add or update sequence number in message
+    set_sequence_num(message);
     encoder_.encodeMessage(dest, TID_DEPTH_MESSAGE, message);
     WorkingBufferPtr wb = connection_->reserve_send_buffer();
     dest.toWorkingBuffer(*wb);

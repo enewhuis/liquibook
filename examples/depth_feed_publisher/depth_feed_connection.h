@@ -6,6 +6,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
+#include <Application/QuickFAST.h>
 #include <Common/WorkingBuffer.h>
 #include <deque>
 #include <set>
@@ -63,6 +64,8 @@ namespace liquibook { namespace examples {
 
     typedef std::set<std::string> StringSet;
     StringSet sent_symbols_;
+
+    void set_sequence_num(QuickFAST::Messages::FieldSet& message);
 
     void on_send(WorkingBufferPtr wb,
                  const boost::system::error_code& error,
