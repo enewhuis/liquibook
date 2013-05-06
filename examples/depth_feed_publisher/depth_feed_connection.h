@@ -65,6 +65,9 @@ namespace liquibook { namespace examples {
     typedef std::set<std::string> StringSet;
     StringSet sent_symbols_;
 
+    static QuickFAST::template_id_t TID_TRADE_MESSAGE;
+    static QuickFAST::template_id_t TID_DEPTH_MESSAGE;
+
     void set_sequence_num(QuickFAST::Messages::FieldSet& message);
 
     void on_send(WorkingBufferPtr wb,

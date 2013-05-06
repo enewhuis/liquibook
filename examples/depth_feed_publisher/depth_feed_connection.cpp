@@ -7,12 +7,12 @@
 #include <Messages/FieldSet.h>
 #include <Messages/FieldUInt32.h>
 
-#define TID_DEPTH_MESSAGE QuickFAST::template_id_t(1)
-#define TID_TRADE_MESSAGE QuickFAST::template_id_t(2)
-
 using namespace boost::asio::ip;
 
 namespace liquibook { namespace examples {
+
+QuickFAST::template_id_t DepthFeedSession::TID_TRADE_MESSAGE(1);
+QuickFAST::template_id_t DepthFeedSession::TID_DEPTH_MESSAGE(2);
 
 DepthFeedSession::DepthFeedSession(
     boost::asio::io_service& ios,
@@ -37,10 +37,10 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
   // Create the field
   QuickFAST::Messages::FieldCPtr value = 
       QuickFAST::Messages::FieldUInt32::create(++seq_num_);
-  std::cout << "Updaing sequence number to " << seq_num_ << std::endl;
+  std::cout << "Updating sequence number to " << seq_num_ << std::endl;
   // Update the sequece number
   if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
-    std::cout << "  Not found, addsequence number of " << seq_num_ << std::endl;
+    std::cout << "  Not found, add sequence number of " << seq_num_ << std::endl;
     // Not found, add the sequece number
     message.addField(TemplateConsumer::id_seq_num_, value);
   }
