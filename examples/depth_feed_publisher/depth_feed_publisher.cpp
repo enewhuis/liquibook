@@ -162,12 +162,4 @@ DepthFeedPublisher::time_stamp()
   return now;
 }
 
-QuickFAST::Codecs::TemplateRegistryPtr
-DepthFeedPublisher::parse_templates(const std::string& template_filename)
-{
-  std::ifstream template_stream("./templates/Depth.xml");
-  QuickFAST::Codecs::XMLTemplateParser parser;
-  return parser.parse(template_stream);
-}
-
 } } // End namespace

@@ -6,7 +6,7 @@
 int main(int argc, const char* argv[])
 {
   // Create feed subscriber
-  liquibook::examples::DepthFeedSubscriber feed("./templates/Depth.xml");
+  liquibook::examples::DepthFeedSubscriber feed("./templates/depth.xml");
 
   // Connect to server
   liquibook::examples::DepthFeedConnection connection(argc, argv);

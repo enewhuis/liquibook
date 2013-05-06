@@ -58,8 +58,6 @@ private:
       int level_index);
   uint32_t time_stamp();
 
-  static QuickFAST::Codecs::TemplateRegistryPtr 
-             parse_templates(const std::string& template_fileanme);
 };
 
 } } // End namespace

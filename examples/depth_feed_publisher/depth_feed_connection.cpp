@@ -131,7 +131,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
 : connected_(false),
-  templates_(TemplateConsumer::parse_templates("./templates/Depth.xml")),
+  templates_(TemplateConsumer::parse_templates("./templates/depth.xml")),
   socket_(ios_)
 {
 }

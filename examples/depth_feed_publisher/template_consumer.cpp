@@ -55,9 +55,9 @@ TemplateConsumer::TemplateConsumer()
 }
 
 QuickFAST::Codecs::TemplateRegistryPtr 
-TemplateConsumer::parse_templates(const std::string& template_fileanme)
+TemplateConsumer::parse_templates(const std::string& template_filename)
 {
-  std::ifstream template_stream("./templates/Depth.xml");
+  std::ifstream template_stream(template_filename.c_str());
   QuickFAST::Codecs::XMLTemplateParser parser;
   return parser.parse(template_stream);
 }
