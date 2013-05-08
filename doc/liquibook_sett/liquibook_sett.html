@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
@@ -260,8 +259,8 @@
 <h2>Publisher Application</h2>
 
 <p>
-  The publisher acts as the exchange in the example project.  The publisher is 
-  therefore responsible for maintaining the various order books (one per
+  The publisher implements the exchange in the example project.  The publisher
+  is therefore responsible for maintaining the various order books (one per
   security), building the feed messages, and publishing the messages, in a
   FAST-encoded format.
 </p>
@@ -272,97 +271,19 @@
 </p>
 
 <p>
-  Finally, the publisher will listen for network connections from one or more
+  Finally, the publisher accepts network connections from one or more
   subscribers.
-</p>
-
-<h3>Order Class</h3>
-
-<p>
-  Liquibook requires that the application define an order class to represent 
-  an order to match.  Liquibook requires that it meet the interface defined
-  in the class <code>src/book/order.h</code>, which includes the conversion
-  of the order's price to integer format.
-</p>
-
-<div class="listing">Listing 1 book/order.h: Order class of Liquibook</div>
-<pre class="code">
-namespace liquibook { namespace book {
-
-class Order {
-public:
-  /// @brief is this a limit order?
-  bool is_limit() const;
-
-  /// @brief is this order a buy?
-  virtual bool is_buy() const = 0;
-
-  /// @brief get the price of this order, or 0 if a market order
-  virtual Price price() const = 0;
-
-  /// @brief get the quantity of this order
-  virtual Quantity order_qty() const = 0;
-};
-
-} }
-</pre>
-
-<h2>Subscriber Application</h2>
-<p>
-  There is also one or more subscribers, who are responsible for decoding the
-  FAST messages and displaying the results in the console.  The publisher
-  listens for connections, and the subscribers connect to the publisher.
-</p>
-
-</p>
-
-<p>
-  Liquibook accepts pointers to orders in the API for order books, and 
-  provides those pointers back in callbacks.  A client program can extend the
-  order interface to add whatever additional information is needed in the
-  callbacks.  The order class for the example exchange looks like this:
-</p>
-
-<div class="listing">Listing 2 order.h: Implementation of Order class in example exchange</div>
-<pre class="code">
-namespace liquibook { namespace examples {
-
-class Order : public book::Order {
-public:
-  Order(bool buy,
-        const double&amp; price,          
-        book::Quantity qty);
-
-  virtual bool is_buy() const;
-  virtual book::Price price() const;
-  virtual book::Quantity order_qty() const;
-private:
-  bool is_buy_;
-  double price_;
-  book::Quantity qty_;
-
-  static const uint8_t precision_;
-};
-
-} }
-</pre>
-
-<p>
-  The example exchange's order class inherits from <code>book::Order</code>
-  and implements its 3 pure virtual functions.  Inheriting from the 
-  <code>book::Order</code> class is not strictly necessary as the rest of 
-  Liquibook uses templates to bind to a specific order class.  The trivial 
-  implementation of this class is omitted from this paper.
 </p>
 
 <h3>The Order Book</h3>
 
 <p>
-  Liquibook comes with an order book class - two actually:
-  <code>book::OrderBook</code> for managing an order book only, and a derived
-  class <code>book::DepthOrderBook</code> for adding depth aggregation to that
-  order book.  Since this example builds a depth feed, it uses
-  <code>book::DepthOrderBook</code>.  The important parts of the 
+  As an exchange, the publisher must implement an order book.  Liquibook comes
+  with an order book class - two actually: <code>book::OrderBook</code> for
+  managing an order book only, and a derived class
+  <code>book::DepthOrderBook</code> for adding depth aggregation to that order
+  book.  Since the publisher builds a depth feed, it uses
+  <code>book::DepthOrderBook</code>.  The relevant parts of the
   <code>book::OrderBook</code> class are:
 </p>
 
@@ -512,6 +433,85 @@ private:
 
 } } // End namespace
 </pre>
+
+<h3>Order Class</h3>
+
+<p>
+  Liquibook requires that the application define an order class to represent 
+  an order to match.  Liquibook requires that it meet the interface defined
+  in the class <code>src/book/order.h</code>, which includes the conversion
+  of the order's price to integer format.
+</p>
+
+<div class="listing">Listing 1 book/order.h: Order class of Liquibook</div>
+<pre class="code">
+namespace liquibook { namespace book {
+
+class Order {
+public:
+  /// @brief is this a limit order?
+  bool is_limit() const;
+
+  /// @brief is this order a buy?
+  virtual bool is_buy() const = 0;
+
+  /// @brief get the price of this order, or 0 if a market order
+  virtual Price price() const = 0;
+
+  /// @brief get the quantity of this order
+  virtual Quantity order_qty() const = 0;
+};
+
+} }
+</pre>
+
+<h2>Subscriber Application</h2>
+<p>
+  There is also one or more subscribers, who are responsible for decoding the
+  FAST messages and displaying the results in the console.  The publisher
+  listens for connections, and the subscribers connect to the publisher.
+</p>
+
+</p>
+
+<p>
+  Liquibook accepts pointers to orders in the API for order books, and 
+  provides those pointers back in callbacks.  A client program can extend the
+  order interface to add whatever additional information is needed in the
+  callbacks.  The order class for the example exchange looks like this:
+</p>
+
+<div class="listing">Listing 2 order.h: Implementation of Order class in example exchange</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+class Order : public book::Order {
+public:
+  Order(bool buy,
+        const double&amp; price,          
+        book::Quantity qty);
+
+  virtual bool is_buy() const;
+  virtual book::Price price() const;
+  virtual book::Quantity order_qty() const;
+private:
+  bool is_buy_;
+  double price_;
+  book::Quantity qty_;
+
+  static const uint8_t precision_;
+};
+
+} }
+</pre>
+
+<p>
+  The example exchange's order class inherits from <code>book::Order</code>
+  and implements its 3 pure virtual functions.  Inheriting from the 
+  <code>book::Order</code> class is not strictly necessary as the rest of 
+  Liquibook uses templates to bind to a specific order class.  The trivial 
+  implementation of this class is omitted from this paper.
+</p>
 
 <h3>Mapping from Symbol to Order Book</h3>
 
