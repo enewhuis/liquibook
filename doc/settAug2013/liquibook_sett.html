@@ -314,9 +314,11 @@ public:
 </pre>
 
 <p>
-  Note that the <code>book::OrderBook</code> class is a template class, allowing
-  the user to define not only the order class used in the order book, but the 
-  style of pointer used.  This can be a regular pointer or a smart pointer.  The  example exchange uses a <code>boost::shared_ptr</code>.
+  Note that the <code>book::OrderBook</code> class is a template class,
+  allowing the user to define not only the order class used in the order book,
+  but the style of pointer used.  This can be a regular pointer or a smart
+  pointer.  The publisher uses a <code>boost::shared_ptr</code> seen below
+  with the order class.
 </p>
 
 <p>
@@ -333,7 +335,7 @@ public:
   Next is a method to add an order to the order book.  <code>add()</code> 
   accepts an order pointer, and condition flags for special conditions, like
   an immediate or cancel order.  Note that there are also methods (not used in
-  the example exchange) to cancel an order and to replace an order.
+  the example project) to cancel an order and to replace an order.
 </p>
 
 <p>
@@ -347,7 +349,7 @@ public:
 </p>
 
 <p>
-  The <code>book::DepthOrderBook</code> class is simpiler:
+  The derived <code>book::DepthOrderBook</code> class is simpiler:
 </p>
 
 <div class="listing">Listing 4 book/depth_order_book.h: DepthOrderBook class of Liquibook</div>
@@ -393,7 +395,7 @@ private:
 <p>
   <code>book::DepthOrderBook</code> overrides <code>perform_callback()</code>
   to update the depth, which is accessible through the <code>depth()</code>
-  methods.
+  accessor methods.
 </p>
 
 <p>
@@ -403,20 +405,22 @@ private:
 </p>
 
 <p>
-  To build the example exchange, a <code>book::DepthOrderBook</code> must be
+  To build the exhange, a <code>book::DepthOrderBook</code> must be
   used, and it must have a trade listener and a depth listener set.  In these
   listener's callbacks, the feed clients must be updated with trade and depth
   update messages.
 </p>
 
 <p>
-  In some of these callbacks, a pointer to the order book is provided.  This
-  gives the client code the opportunity to derive from one of the order book
-  classes, and add custom fields.  The example exchange takes advantage of this,
-  providing access to the symbol of the order book's security:
+  In some of these callbacks, a pointer to the order book is provided.  In 
+  others, a pointer to the order is provided.  This gives the client code the
+  opportunity to derive from one of the <code>book::IOrder</code> and
+  <code>book::OrderBook</code> classes, and add custom fields and logic.  The
+  publisher takes advantage of this, providing access to the symbol of the
+  order book's security:
 </p>
 
-<div class="listing">Listing 5 example_order_book.h: ExampleOrderBook class in example exchange</div>
+<div class="listing">Listing 5 example_order_book.h: ExampleOrderBook class in publisher</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -433,6 +437,11 @@ private:
 
 } } // End namespace
 </pre>
+
+<p>
+  Note that the <code>examples::ExampleOrderBook</code> binds a shared pointer
+  to the <code>examples::Order</code> class to its parent's template argument.
+</p>
 
 <h3>Order Class</h3>
 
@@ -465,13 +474,179 @@ public:
 } }
 </pre>
 
+<h3>Mapping from Symbol to Order Book</h3>
+
+<p>
+  The <code>examples::ExampleOrderBook</code> class manages the order book and
+  depth for a single security.  Somewhere the example exchange needs to create
+  an order book for each security, and maintain a mapping from symbol to its 
+  order book.  This is done in the <code>examples::Exchange</code> class:
+</p>
+
+<div class="listing">Listing 6 example_order_book.h: Exchange class in publisher</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+class Exchange {
+public:
+  Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
+           ExampleOrderBook::TypedTradeListener* trade_listener);
+  void add_order_book(const std::string&amp; symbol);
+  void add_order(const std::string&amp; symbol, OrderPtr&amp; order);
+private:
+  typedef std::map&lt;std::string, ExampleOrderBook&gt; OrderBookMap;
+  OrderBookMap order_books_;
+  ExampleOrderBook::TypedDepthListener* depth_listener_;
+  ExampleOrderBook::TypedTradeListener* trade_listener_;
+};
+
+} }
+</pre>
+
+<p>
+  The implementation of the <code>examples::Exchange</code> class is trivial.
+  The constructor saves off the provided listeners, in order to add them to
+  future order books:
+</p>
+
+<div class="listing">Listing 7 exchange.cpp: Exchange constructor in publisher</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+Exchange::Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
+                   ExampleOrderBook::TypedTradeListener* trade_listener)
+: depth_listener_(depth_listener),
+  trade_listener_(trade_listener)
+{
+}
+</pre>
+
+<p>
+  The <code>add_order_book()</code> method creates a new order book, sets the
+  listeners on the order book, and adds a mapping from the given symbol to the
+  order book:
+</p>
+
+<div class="listing">Listing 8 exchange.cpp: add_order_book() method in publisher</div>
+<pre class="code">
+void
+Exchange::add_order_book(const std::string&amp; sym)
+{
+  std::pair<OrderBookMap::iterator, bool> result;
+  result = order_books_.insert(std::make_pair(sym, ExampleOrderBook(sym)));
+  result.first-&gt;second.set_depth_listener(depth_listener_);
+  result.first-&gt;second.set_trade_listener(trade_listener_);
+}
+</pre>
+
+<p>
+  Finally, the <code>add_order()</code> method finds the correct order book,
+  adds the order to the orer book, and then calls triggers callbacks by calling
+  the <code>perform_callbacks()</code> method.
+</p>
+
+<div class="listing">Listing 9 exchange.cpp: add_order() method in publisher</div>
+<pre class="code">
+void
+Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
+{
+  OrderBookMap::iterator order_book = order_books_.find(symbol);
+  if (order_book != order_books_.end()) {
+    order_book-&gt;second.add(order);
+    order_book-&gt;second.perform_callbacks();
+  }
+}
+
+} } // End namespace
+</pre>
+
+<h3>Setting up the Exchange</h3>
+
+<p>
+  The exchange is initialized in the file <code>publisher_main.cpp</code>.
+  The <code>main()</code> function starts by establishing the securities to
+  "trade" in our exchange - in this case the NASDAQ 100 - taken from a snapshot 
+  in April 2013.  <code>main()</code> records the symbol and a base price in
+  a structure:
+</p>
+
+<div class="listing">Listing 10 publisher_main.cpp: SecurityInfo structure of publisher</div>
+<pre class="code">
+struct SecurityInfo {
+  std::string symbol;
+  double ref_price;
+
+  SecurityInfo(const char* sym, double price)
+  : symbol(sym),
+    ref_price(price)
+  {
+  }
+};
+
+typedef std::vector<SecurityInfo> SecurityVector;
+</pre>
+
+<p>
+  The base price serves as a basis for generating random prices for the
+  example exchange.  <code>main()</code> keeps this security information in a
+  <code>SecurityVector</code>  and populates it the 
+  <code>create_securities()</code> method, later in <code>main()</code>.
+</p>
+
+<h3>Listening for Client Connections</h3>
+
+<p>
+  An exchange must accept connections from feed clients in order to 
+  disseminate market data to them.  The publisher does this through a class
+  called <code>DepthFeedConnection</code>, which is created in 
+  <code>main()</code>:
+</p>
+
+<div class="listing">Listing 12 publisher_main.cpp: main() function of
+  publisher</div>
+<pre class="code">
+int main(int argc, const char* argv[])
+{
+  // Feed connection
+  examples::DepthFeedConnection connection(argc, argv);
+
+  // Open connection in background thread
+  connection.accept();
+  boost::function<void ()> acceptor(
+      boost::bind(&amp;examples::DepthFeedConnection::run, &amp;connection));
+  boost::thread acceptor_thread(acceptor);
+</pre>
+
+<p>
+  The example exchange creates an instance of <code>DepthFeedConnection</code>,
+  passing in the command-line arguments to configure it.  The publisher then
+  calls <code>DepthFeedConnection::accept()</code> creates a background thread
+  to execute <code>DepthFeedConnection::run()</code>, using Boost's thread
+  library.
+</p>
+
+<p>
+</p>
+
+<h3>Populating the Exhange with Securities</h3>
+<p>
+  The body of <code>create_securities()</code> is not shown here, but it adds
+  each of the one hundred constituents of the NASDAQ-100 to the vector.  These
+  are later added to the exchange, and also referenced while generating random
+  orders.
+</p>
+
+<h3>Establishing the Publisher</h3>
+
+<h3>Populating the Exchange</h3>
+
+<h3>Generating Random Orders</h3>
+
 <h2>Subscriber Application</h2>
 <p>
   There is also one or more subscribers, who are responsible for decoding the
   FAST messages and displaying the results in the console.  The publisher
   listens for connections, and the subscribers connect to the publisher.
-</p>
-
 </p>
 
 <p>
@@ -511,172 +686,6 @@ private:
   <code>book::Order</code> class is not strictly necessary as the rest of 
   Liquibook uses templates to bind to a specific order class.  The trivial 
   implementation of this class is omitted from this paper.
-</p>
-
-<h3>Mapping from Symbol to Order Book</h3>
-
-<p>
-  The <code>examples::ExampleOrderBook</code> class manages the order book and
-  depth for a single security.  Somewhere the example exchange needs to create
-  an order book for each security, and maintain a mapping from symbol to its 
-  order book.  This is done in the <code>examples::Exchange</code> class:
-</p>
-
-<div class="listing">Listing 6 example_order_book.h: Exchange class in example exchange</div>
-<pre class="code">
-namespace liquibook { namespace examples {
-
-class Exchange {
-public:
-  Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
-           ExampleOrderBook::TypedTradeListener* trade_listener);
-  void add_order_book(const std::string&amp; symbol);
-  void add_order(const std::string&amp; symbol, OrderPtr&amp; order);
-private:
-  typedef std::map&lt;std::string, ExampleOrderBook&gt; OrderBookMap;
-  OrderBookMap order_books_;
-  ExampleOrderBook::TypedDepthListener* depth_listener_;
-  ExampleOrderBook::TypedTradeListener* trade_listener_;
-};
-
-} }
-</pre>
-
-<p>
-  The implementation of the <code>examples::Exchange</code> class is trivial.
-  The constructor saves off the provided listeners, in order to add them to
-  future order books:
-</p>
-
-<div class="listing">Listing 7 exchange.cpp: Exchange constructor in example exchange</div>
-<pre class="code">
-namespace liquibook { namespace examples {
-
-Exchange::Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
-                   ExampleOrderBook::TypedTradeListener* trade_listener)
-: depth_listener_(depth_listener),
-  trade_listener_(trade_listener)
-{
-}
-</pre>
-
-<p>
-  The <code>add_order_book()</code> method creates a new order book, sets the
-  listeners on the order book, and adds a mapping from the given symbol to the
-  order book:
-</p>
-
-<div class="listing">Listing 8 exchange.cpp: Exchange method in example exchange</div>
-<pre class="code">
-void
-Exchange::add_order_book(const std::string&amp; sym)
-{
-  std::pair<OrderBookMap::iterator, bool> result;
-  result = order_books_.insert(std::make_pair(sym, ExampleOrderBook(sym)));
-  result.first-&gt;second.set_depth_listener(depth_listener_);
-  result.first-&gt;second.set_trade_listener(trade_listener_);
-}
-</pre>
-
-<p>
-  Finally, the <code>add_order()</code> method finds the correct order book,
-  adds the order to the orer book, and then calls triggers callbacks by calling
-  the <code>perform_callbacks()</code> method.
-</p>
-
-<div class="listing">Listing 9 exchange.cpp: Exchange method in example exchange</div>
-<pre class="code">
-void
-Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
-{
-  OrderBookMap::iterator order_book = order_books_.find(symbol);
-  if (order_book != order_books_.end()) {
-    order_book-&gt;second.add(order);
-    order_book-&gt;second.perform_callbacks();
-  }
-}
-
-} } // End namespace
-</pre>
-
-<h3>Setting up the Exchange</h3>
-
-<p>
-  The exchange is initialized in the file <code>publisher_main.cpp</code>.
-  The <code>main()</code> function starts by establishing the securities to
-  "trade" in our exchange - in this case the NASDAQ 100 - taken from a snapshot 
-  in April 2013.  <code>main()</code> records the symbol and a base price in
-  a structure:
-</p>
-
-<div class="listing">Listing 10 publisher_main.cpp: SecurityInfo structure of example exchange</div>
-<pre class="code">
-struct SecurityInfo {
-  std::string symbol;
-  double ref_price;
-
-  SecurityInfo(const char* sym, double price)
-  : symbol(sym),
-    ref_price(price)
-  {
-  }
-};
-</pre>
-
-<p>
-  The base price serves as a basis for generating random prices for the
-  example exchange.  <code>main()</code> keeps this security information in a
-  vector and populates it in a method, called <code>create_securities()</code>:
-</p>
-
-<div class="listing">Listing 11 publisher_main.cpp: main() function of example exchange</div>
-<pre class="code">
-int main(int argc, const char* argv[])
-{
-  SecurityVector securities;
-
-  // Create securities
-  create_securities(securities);
-</pre>
-
-<p>
-  The body of <code>create_securities()</code> is not shown here, but it adds
-  each of the one hundred constituents of the NASDAQ-100 to the vector.  These
-  are later added to the exchange, and also referenced while generating random
-  orders.
-</p>
-
-<h3>Listening for Client Connections</h3>
-
-<p>
-  An exchange must accept connections from feed clients in order to 
-  disseminate market data to them.  The example exchange does this through a
-  class called <code>DepthFeedConnection</code>:
-</p>
-
-<h3>Generating Random Orders</h3>
-
-<div class="listing">Listing 12 publisher_main.cpp: main() function (continued) of example exchange</div>
-<pre class="code">
-  // Feed connection
-  examples::DepthFeedConnection connection(argc, argv);
-
-  // Open connection in background thread
-  connection.accept();
-  boost::function<void ()> acceptor(
-      boost::bind(&amp;examples::DepthFeedConnection::run, &amp;connection));
-  boost::thread acceptor_thread(acceptor);
-</pre>
-
-<p>
-  The example exchange creates an instance of <code>DepthFeedConnection</code>,
-  passing in the command-line arguments to configure it.  The command line
-  arguments it looks for a -t to define the location of the template file, -h
-  to set the host to connect to, and -p to set the connection port.
-</p>
-
-<p>
-  The e
 </p>
 
 <h3>Handling Trade Events</h3>
