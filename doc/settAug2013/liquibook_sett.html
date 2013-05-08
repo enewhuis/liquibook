@@ -96,7 +96,7 @@
   compression and decompression, and Boost ASIO for distribution.
 </p>
 
-<h2>Liquibook Background</h2>
+<h3>Liquibook Background</h3>
 
 <p>
   Liquibook is a C++ open source limit order book matching engine.  It is a
@@ -105,7 +105,7 @@
   aggregate depth tracking, BBO tracking, and a trade feed.
 </p>
 
-<h2>QuickFAST Background</h2>
+<h3>QuickFAST Background</h3>
 
 <p>
   The FAST protocol is a compression and encoding mechanism for streaming data.
@@ -113,7 +113,7 @@
   decoding message streams using the FAST protocol.
 </p>
 
-<h2>Boost ASIO Background</h2>
+<h3>Boost ASIO Background</h3>
 
 <p>
   Boost ASIO is a cross-platform C++ library for asynchronous network
@@ -267,16 +267,11 @@
 
 <p>
   The publisher also simulates the trading clients, generating random orders
-  inside the process, and adding them to the appropriate order book.
-</p>
-
-<p>
-  Finally, the publisher accepts network connections from one or more
-  subscribers.
+  inside the process, and adding them to the appropriate order book.  Finally,
+  the publisher accepts network connections from one or more subscribers.
 </p>
 
 <h3>The Order Book</h3>
-
 <p>
   As an exchange, the publisher must implement an order book.  Liquibook comes
   with an order book class - two actually: <code>book::OrderBook</code> for
@@ -317,8 +312,7 @@ public:
   Note that the <code>book::OrderBook</code> class is a template class,
   allowing the user to define not only the order class used in the order book,
   but the style of pointer used.  This can be a regular pointer or a smart
-  pointer.  The publisher uses a <code>boost::shared_ptr</code> seen below
-  with the order class.
+  pointer.
 </p>
 
 <p>
@@ -344,8 +338,9 @@ public:
   decide whether it is done in the calling thread, or in a background thread.
   By default, this method calls <code>perform_callback()</code> for each
   callback in the queue.  Naturally, <code>perform_callback()</code> can be
-  overridden.  The default implementation of this method issues callbacks for
-  to the trade listener, order listener, and order book listener, if present.
+  overridden, but that is not necessary in the publisher.  The default
+  implementation of this method issues callbacks for to the trade listener,
+  order listener, and order book listener, if present.
 </p>
 
 <p>
@@ -400,24 +395,29 @@ private:
 
 <p>
   In addition, <code>book::DepthOrderBook</code> adds two new listeners -
-  a BBO listener, for tracking only changes to the best bid and best offer, and 
-  a depth listener, for tracking all depth changes.
+  a BBO listener, for tracking only changes to the best bid and best offer,
+  and a depth listener, for tracking all depth changes.
 </p>
 
 <p>
-  To build the exhange, a <code>book::DepthOrderBook</code> must be
-  used, and it must have a trade listener and a depth listener set.  In these
-  listener's callbacks, the feed clients must be updated with trade and depth
-  update messages.
+  To build the ecxhange, the publisher must create a 
+  <code>book::DepthOrderBook</code>, and it set the trade listener and depth
+  listener.  While hanfling these callbacks, the publisher will need to 
+  update the feed clients with trade and depth update messages.
 </p>
 
 <p>
-  In some of these callbacks, a pointer to the order book is provided.  In 
-  others, a pointer to the order is provided.  This gives the client code the
-  opportunity to derive from one of the <code>book::IOrder</code> and
-  <code>book::OrderBook</code> classes, and add custom fields and logic.  The
-  publisher takes advantage of this, providing access to the symbol of the
-  order book's security:
+  Since the order book classes require an order class, and its pointer type
+  to be provided as a template argument, the publisher must decide on an order
+  an pointer scheme.
+</p>
+
+<p>
+  Note that in some of the callbacksd a pointer to the order book is provided,
+  while a pointer to the order is provided in others.
+  This gives the publisher two opportunities to provide additional fields and 
+  logic through inheritance.  The publisher takes advantage of this, providing
+  access to the symbol of the order book's security.
 </p>
 
 <div class="listing">Listing 5 example_order_book.h: ExampleOrderBook class in publisher</div>
@@ -426,7 +426,7 @@ namespace liquibook { namespace examples {
 
 typedef boost::shared_ptr<Order> OrderPtr;
 
-class ExampleOrderBook : public book::DepthOrderBook<OrderPtr> {
+class ExampleOrderBook : public book::DepthOrderBook&lt;OrderPtr&gt; {
 public:
   ExampleOrderBook(const std::string& symbol);
   const std::string& symbol() const;
@@ -439,51 +439,27 @@ private:
 </pre>
 
 <p>
-  Note that the <code>examples::ExampleOrderBook</code> binds a shared pointer
-  to the <code>examples::Order</code> class to its parent's template argument.
+  Here the reader will note that the <code>examples::ExampleOrderBook</code>
+  class specializes <code>book::DepthOrderBook</code> and binds a shared
+  pointer of <code>examples::Order</code> to its parent's template argument.
+  The <code>examples::Order</code> class is shown below.  The trivial
+  implementation of the <code>examples::ExampleOrderBook</code> is omitted
+  from this paper.  The class diagram for order books looks like this:
 </p>
 
-<h3>Order Class</h3>
+<img src="settAug2013_files/OrderBookUML.png"/>
 
-<p>
-  Liquibook requires that the application define an order class to represent 
-  an order to match.  Liquibook requires that it meet the interface defined
-  in the class <code>src/book/order.h</code>, which includes the conversion
-  of the order's price to integer format.
-</p>
-
-<div class="listing">Listing 1 book/order.h: Order class of Liquibook</div>
-<pre class="code">
-namespace liquibook { namespace book {
-
-class Order {
-public:
-  /// @brief is this a limit order?
-  bool is_limit() const;
-
-  /// @brief is this order a buy?
-  virtual bool is_buy() const = 0;
-
-  /// @brief get the price of this order, or 0 if a market order
-  virtual Price price() const = 0;
-
-  /// @brief get the quantity of this order
-  virtual Quantity order_qty() const = 0;
-};
-
-} }
-</pre>
-
-<h3>Mapping from Symbol to Order Book</h3>
+<h3>The Exchange</h3>
 
 <p>
   The <code>examples::ExampleOrderBook</code> class manages the order book and
-  depth for a single security.  Somewhere the example exchange needs to create
-  an order book for each security, and maintain a mapping from symbol to its 
-  order book.  This is done in the <code>examples::Exchange</code> class:
+  depth for a single security.  Since exchanges handle multiple securities, 
+  somewhere the publisher needs to create an order book for each security, and
+  maintain a mapping from a symbol to its order book.  This is done in the
+  <code>examples::Exchange</code> class:
 </p>
 
-<div class="listing">Listing 6 example_order_book.h: Exchange class in publisher</div>
+<div class="listing">Listing 6 exchange.h: Exchange class in publisher</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -491,7 +467,11 @@ class Exchange {
 public:
   Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
            ExampleOrderBook::TypedTradeListener* trade_listener);
+
+  // Permanently add an order book to the exchange
   void add_order_book(const std::string&amp; symbol);
+
+  // Handle an incoming order
   void add_order(const std::string&amp; symbol, OrderPtr&amp; order);
 private:
   typedef std::map&lt;std::string, ExampleOrderBook&gt; OrderBookMap;
@@ -504,9 +484,17 @@ private:
 </pre>
 
 <p>
-  The implementation of the <code>examples::Exchange</code> class is trivial.
-  The constructor saves off the provided listeners, in order to add them to
-  future order books:
+  The class diagram for the exchange looks like this:
+</p>
+
+<img src="settAug2013_files/ExchangeUML.png"/>
+
+<p> 
+  The <code>examples::Exchange</code> class has only three methods: a
+  constructor, a method to add an order book, and a method to handle an order.
+  As expected, it maintains a map of order books.  It also maintains pointers
+  to the depth listener and trade listener.  The constructor does exactly that,
+  in order add the listeners to future order books:
 </p>
 
 <div class="listing">Listing 7 exchange.cpp: Exchange constructor in publisher</div>
@@ -542,7 +530,7 @@ Exchange::add_order_book(const std::string&amp; sym)
 <p>
   Finally, the <code>add_order()</code> method finds the correct order book,
   adds the order to the orer book, and then calls triggers callbacks by calling
-  the <code>perform_callbacks()</code> method.
+  the <code>perform_callbacks()</code> method:
 </p>
 
 <div class="listing">Listing 9 exchange.cpp: add_order() method in publisher</div>
@@ -559,6 +547,286 @@ Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
 
 } } // End namespace
 </pre>
+
+<p>
+  The call to <code>perform_callbacks()</code> will trigger any callbacks to
+  the provided listeners.  This way, a single thread is manipulating the order
+  books.  It is also possible to issue <code>perform_callbacks()</code> calls
+  in a background thread, but the publisher does it this way.
+</p>
+
+<h3>Order Class</h3>
+
+<p>
+  Liquibook requires that the application define an order class to represent 
+  an order to match.  Liquibook requires that it meet the interface defined
+  in the class <code>src/book/order.h</code>:
+</p>
+
+<div class="listing">Listing 1 book/order.h: Order class of Liquibook</div>
+<pre class="code">
+namespace liquibook { namespace book {
+
+class Order {
+public:
+  /// @brief is this a limit order?
+  bool is_limit() const;
+
+  /// @brief is this order a buy?
+  virtual bool is_buy() const = 0;
+
+  /// @brief get the price of this order, or 0 if a market order
+  virtual Price price() const = 0;
+
+  /// @brief get the quantity of this order
+  virtual Quantity order_qty() const = 0;
+};
+
+} }
+</pre>
+
+<p>
+  The publisher defines <code>examples::Order</code> to implement the 
+  <code>book::Order</code> interface:
+</p>
+
+<div class="listing">Listing 2 order.h: Implementation of Order class in example exchange</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+class Order : public book::Order {
+public:
+  Order(bool buy,
+        const double&amp; price,
+        book::Quantity qty);
+
+  virtual bool is_buy() const;
+  virtual book::Quantity order_qty() const;
+  virtual book::Price price() const;
+private:
+  bool is_buy_;
+  double price_;
+  book::Quantity qty_;
+
+  static const uint8_t precision_;
+};
+
+} }
+</pre>
+
+<p>
+  Note that as a template class, Liquibook's <code>book::OrderBook</code> does
+  not strictly require inheriting from the <code>book::Order</code> class,
+  just that the interface be implemented.
+</p>
+
+<p>
+  The <code>examples::Order</code> constructor simply copies the arguments
+  passed to it:
+</p>
+
+<div class="listing">Listing 2 order.cpp: Implementation of Order class in example exchange</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+const uint8_t Order::precision_(100);
+
+Order::Order(bool buy, const double&amp; price, book::Quantity qty)
+: is_buy_(buy),
+  price_(price),
+  qty_(qty)
+{
+}
+</pre>
+
+<p>
+  Note the presence of the static initializer of <code>precision_</code>.
+</p>
+
+<p>
+  The <code>is_buy()</code> are simple accessors:
+  passed to it:
+</p>
+
+<div class="listing">Listing 2 order.cpp: accessors in Order class</div>
+<pre class="code">
+bool
+Order::is_buy() const
+{
+  return is_buy_;
+}
+
+book::Quantity
+Order::order_qty() const
+{
+  return qty_;
+}
+</pre>
+
+<p>
+  The final method is used to provide a price to the order book.  For
+  performance reasons, the order book requires this to be in integer format,
+  so <code>Order</code> converts the price by multiplying by the precision:
+</p>
+
+<div class="listing">Listing 2 order.cpp: price() in Order class</div>
+<pre class="code">
+book::Price
+Order::price() const
+{
+  return price_ * precision_;
+}
+</pre>
+
+<p>
+  There are two implications - first, that the publisher is limited to penny 
+  precision.  This is suitable for purposes of the example, but may need to be
+  increased for other use cases.  The second implication is that all securities
+  in the publisher have the same precision - since a static variable is used to
+  set precsision.  Again, in other use cases, this may not be sufficient.
+</p>
+
+<h3>QuickFAST Templates</h3>
+
+<p>
+  To transmit messages using the FAST protocol, one must first decide on the 
+  messages to transmit on the feed.  This exchange will produce a trade feed
+  and an incremental depth feed.  A simplified view of a trade consists of a
+  symbol, a quantity, and a trade price.  The publisher alters this slightly
+  by providing the trade cost (price times quantity), from which price per
+  share can be derived.
+</p>
+
+<p>
+  QuickFAST uses XML files, called templates to describe the messages in the 
+  feed protocol.  The example's templates can be found in the file 
+  <code>examples/depth_feed_publisher/depth.xml</code>.  The trade message 
+  template looks like this:
+</p>
+
+<pre class="code">
+&lt;template name="Trade" id="1"&gt;
+  &lt;uInt16 name="MessageType" id="100"&gt;
+    &lt;constant value="22"/&gt;
+  &lt;/uInt16&gt;
+  &lt;uInt32 name="SequenceNumber" id="200"&gt;
+    &lt;increment/&gt;
+  &lt;/uInt32&gt;
+  &lt;uInt32 name="Timestamp" id="300"&gt;
+    &lt;copy/&gt;
+  &lt;/uInt32&gt;
+  &lt;string name="Symbol" id="400"&gt;
+    &lt;copy/&gt;
+  &lt;/string&gt;
+  &lt;uInt32 name="Quantity" id="604"&gt;
+    &lt;copy/&gt;
+  &lt;/uInt32&gt;
+  &lt;uInt32 name="Cost" id="603"&gt;
+    &lt;copy/&gt;
+  &lt;/uInt32&gt;
+&lt;/template&gt;
+</pre>
+
+<p>
+  Note that the tag names within the <code>template</code> tag indicate the
+  type of the field.  The reader may be surprised to see a currency field
+  (Cost) represented as an integer (uint32).  This, however is consistent with
+  Liquibook's internal storage of prices as as integer.  This carries this
+  design decision forward to the feed protocol, requiring the clients to
+  convert these prices back to their decimal format.
+</p>
+
+<p>
+  In addition to the expected trade fields, the publisher provides a message type, to indicate to the subscriber that the message is for a trade, a sequence number, so the subscriber can be confident it has received all messages, and processed them in the correct order, and a timestamp, so the subscriber can be confident the message has been received in a timely manner.
+</p>
+
+<p>
+  The depth update template is more complicated:
+</p>
+
+<pre class="code">
+&lt;template name="Depth" id="2"&gt;
+  &lt;uInt16 name="MessageType" id="100"&gt;
+    &lt;constant value="11"/&gt;
+  &lt;/uInt16&gt;
+  &lt;uInt32 name="SequenceNumber" id="200"&gt;
+    &lt;increment/&gt;
+  &lt;/uInt32&gt;
+  &lt;uInt32 name="Timestamp" id="300"&gt;
+    &lt;copy/&gt;
+  &lt;/uInt32&gt;
+  &lt;string name="Symbol" id="400"&gt;
+    &lt;copy/&gt;
+  &lt;/string&gt;
+  &lt;sequence name="Bids" id="500"&gt;
+    &lt;uInt8 name="LevelNum" id="501"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt8&gt;
+    &lt;uInt32 name="OrderCount" id="502"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt32&gt;
+    &lt;uInt32 name="Price" id="503"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt32&gt;
+    &lt;uInt32 name="AggregateQty" id="504"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt32&gt;
+  &lt;/sequence&gt;
+  &lt;sequence name="Asks" id="600"&gt;
+    &lt;uInt8 name="LevelNum" id="601"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt8&gt;
+    &lt;uInt32 name="OrderCount" id="602"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt32&gt;
+    &lt;uInt32 name="Price" id="603"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt32&gt;
+    &lt;uInt32 name="AggregateQty" id="604"&gt;
+      &lt;copy/&gt;
+    &lt;/uInt32&gt;
+  &lt;/sequence&gt;
+&lt;/template&gt;
+</pre>
+
+<p>
+  The depth message begins with the same 4 fields as the trade message: 
+  message type, sequence number, timestamp, and symbol.  The depth message also
+  includes two sequences, or  variable-length lists.  These sequences
+  represent the changed bid and ask levels of the depth for the message
+  security.  The sequences themselves contain a set of fields, although in
+  this case both sequences are of the same type.
+</p>
+
+<p>
+  The changed depth level begins with a level number, indicating which level 
+  has changed.  If the exchange were to produce all depth levels on every 
+  change, this would not be necessary.  Since the sequence element could 
+  represent any of the 5 levels in an incremental feed, it is required.
+</p>
+
+<p>
+  Order count indicates the number of orders which were aggregated at this 
+  level.  If the order count is 0, it indicates a deleted level.  Price is the
+  price common to all the aggregated orders at this level.  As in the trade
+  message, it is represented by an integer.  Finally, aggregate quantity shows
+  the sum of all the order quantities at this level.
+</p>
+
+<h3>Using QuickFAST Template</h3>
+template_consumer
+<h3>Handling Liquibook Events</h3>
+depth_feed_publisher
+<h3>Initialization</h3>
+publisher_main.cpp
+
+<h3>Mapping from Symbol to Order Book</h3>
+
+<p>
+  The implementation of the <code>examples::Exchange</code> class is trivial.
+  The constructor saves off the provided listeners, in order to add them to
+  future order books:
+</p>
 
 <h3>Setting up the Exchange</h3>
 
@@ -650,37 +918,6 @@ int main(int argc, const char* argv[])
 </p>
 
 <p>
-  Liquibook accepts pointers to orders in the API for order books, and 
-  provides those pointers back in callbacks.  A client program can extend the
-  order interface to add whatever additional information is needed in the
-  callbacks.  The order class for the example exchange looks like this:
-</p>
-
-<div class="listing">Listing 2 order.h: Implementation of Order class in example exchange</div>
-<pre class="code">
-namespace liquibook { namespace examples {
-
-class Order : public book::Order {
-public:
-  Order(bool buy,
-        const double&amp; price,          
-        book::Quantity qty);
-
-  virtual bool is_buy() const;
-  virtual book::Price price() const;
-  virtual book::Quantity order_qty() const;
-private:
-  bool is_buy_;
-  double price_;
-  book::Quantity qty_;
-
-  static const uint8_t precision_;
-};
-
-} }
-</pre>
-
-<p>
   The example exchange's order class inherits from <code>book::Order</code>
   and implements its 3 pure virtual functions.  Inheriting from the 
   <code>book::Order</code> class is not strictly necessary as the rest of 
@@ -702,145 +939,6 @@ private:
 <h3></h3>
 
 <h3>The Feed Protocol</h3>
-
-<p>
-  To transmit messages using the FAST protocol, one must first decide on the 
-  messages to transmit on the feed.  This exchange will produce a trade feed
-  and an incremental depth feed.  The trade messages include:
-</p>
-
-<ul>
-  <li>Message Type - an indicator that this message is a trade, rather than a
-      depth update.</li>
-  <li>Sequence Number - so the client can be confident it has received all
-      messages, and in the correct order.</li>
-  <li>Timestamp - so the client can be confident the message has been received
-      in a timely manner.</li>
-  <li>Symbol - the symbol of the security which has traded.</li>
-  <li>Quantity - the number of shares traded.</li>
-  <li>Cost - the total value of the trade.</li>
-</ul>
-
-<p>
-  QuickFAST uses XML files, called templates to describe the messages in the 
-  feed protocol.  The example's templates can be found in the file 
-  <code>examples/depth_feed_publisher/depth.xml</code>.  The trade message 
-  template looks like this:
-</p>
-
-<pre class="code">
-&lt;template name="Trade" id="1"&gt;
-  &lt;uInt16 name="MessageType" id="100"&gt;
-    &lt;constant value="22"/&gt;
-  &lt;/uInt16&gt;
-  &lt;uInt32 name="SequenceNumber" id="200"&gt;
-    &lt;increment/&gt;
-  &lt;/uInt32&gt;
-  &lt;uInt32 name="Timestamp" id="300"&gt;
-    &lt;copy/&gt;
-  &lt;/uInt32&gt;
-  &lt;string name="Symbol" id="400"&gt;
-    &lt;copy/&gt;
-  &lt;/string&gt;
-  &lt;uInt32 name="Quantity" id="604"&gt;
-    &lt;copy/&gt;
-  &lt;/uInt32&gt;
-  &lt;uInt32 name="Cost" id="603"&gt;
-    &lt;copy/&gt;
-  &lt;/uInt32&gt;
-&lt;/template&gt;
-</pre>
-
-<p>
-  Note that the tag names within the <code>template</code> tag indicate the type
-  of the field.  The reader may be surprised to see a currency field (Cost) 
-  represented as an integer (uint32).  This, however is consistent with
-  Liquibook's internal storage of prices as as integer.  Using this scheme,
-  prices are converted to integer, by shifting the decimal point, so that no
-  floating point comparisons need be done in the order book.  This protocol
-  carries this design decision forward to the feed protocol, requiring the
-  clients to convert these prices back to their decimal format.
-</p>
-
-<p>
-  The depth update template is more complicated:
-</p>
-
-<pre class="code">
-&lt;template name="Depth" id="2"&gt;
-  &lt;uInt16 name="MessageType" id="100"&gt;
-    &lt;constant value="11"/&gt;
-  &lt;/uInt16&gt;
-  &lt;uInt32 name="SequenceNumber" id="200"&gt;
-    &lt;increment/&gt;
-  &lt;/uInt32&gt;
-  &lt;uInt32 name="Timestamp" id="300"&gt;
-    &lt;copy/&gt;
-  &lt;/uInt32&gt;
-  &lt;string name="Symbol" id="400"&gt;
-    &lt;copy/&gt;
-  &lt;/string&gt;
-  &lt;sequence name="Bids" id="500"&gt;
-    &lt;uInt8 name="LevelNum" id="501"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt8&gt;
-    &lt;uInt32 name="OrderCount" id="502"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt32&gt;
-    &lt;uInt32 name="Price" id="503"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt32&gt;
-    &lt;uInt32 name="AggregateQty" id="504"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt32&gt;
-  &lt;/sequence&gt;
-  &lt;sequence name="Asks" id="600"&gt;
-    &lt;uInt8 name="LevelNum" id="601"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt8&gt;
-    &lt;uInt32 name="OrderCount" id="602"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt32&gt;
-    &lt;uInt32 name="Price" id="603"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt32&gt;
-    &lt;uInt32 name="AggregateQty" id="604"&gt;
-      &lt;copy/&gt;
-    &lt;/uInt32&gt;
-  &lt;/sequence&gt;
-&lt;/template&gt;
-</pre>
-
-<p>
-  The depth message begins with the same 4 fields as the trade message: 
-  message type, sequence number, timestamp, and symbol.  The depth message also
-  includes two sequences, or  variable-length lists.  These sequences represent 
-  the changed bid and ask levels of the depth for the message security.  The
-  sequences themselves contain a set of fields, although in this case both
-  sequences are of the same type.
-</p>
-
-<p>
-  The changed depth level begins with a level number, indicating which level 
-  has changed.  If the exchange were to produce all depth levels on every 
-  change, this would not be necessary.  Since the sequence element could 
-  represent any of the 5 levels in an incremental feed, it is required.
-</p>
-
-<p>
-  Order count indicates the number of orders which were aggregated at this 
-  level.  If the order count is 0, it indicates a deleted level.
-</p>
-
-<p>
-  Price is the price common to all the aggregated orders at this level.  As in
-  the trade message, it is represented by an integer.
-</p>
-
-<p>
-  Finally, aggregate quantity shows the sum of all the order quantities at this
-  level.
-</p>
 
 <p>
 </p>
