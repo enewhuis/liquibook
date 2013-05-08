@@ -1,0 +1,115 @@
+body {
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);
+    font-family: Verdana, sans-serif;
+    margin-left: 0.25in;
+    margin-right: 0.25in;
+}
+
+a.career {
+    font-weight: bold;
+}
+
+a:hover {
+    color: rgb(0, 0, 255);
+    background-color: rgb(255, 253, 160);
+}
+
+code {
+    font-family: "Courier New", monospace;
+}
+
+div.center {
+    text-align: center;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    text-align: left;
+}
+
+h3 {
+    text-align: left;
+}
+
+h4 {
+    text-align: left;
+}
+
+h5 {
+    text-align: left;
+}
+
+hr {
+    height: 1px;
+    color: rgb(17, 59, 86);
+    background-color: transparent;
+}
+
+kbd {
+    font-family: "Courier New", monospace;
+}
+
+p {
+    text-align: justify;
+}
+
+p.author {
+    text-align: center;
+}
+
+p.footer {
+    text-align: justify;
+}
+
+pre {
+    font-family: "Courier New", monospace;
+}
+
+.educationquicklinks {
+    text-align: center;
+}
+
+.quicklinks {
+    text-align: right;
+}
+
+.red {
+    color: rgb(255, 0, 0);
+    background-color: rgb(255, 255, 255);
+}
+
+.green {
+    color: rgb(0, 128, 0);
+    background-color: rgb(255, 255, 255);
+}
+
+.blue {
+    color: rgb(0, 0, 192);
+    background-color: rgb(255, 255, 255);
+}
+
+.code {
+    background-color: #FFFFF0;
+    border: dashed black 1px;
+    padding-left: 10px;
+}
+
+.comment {
+    color: rgb(128, 128, 128);
+    font-weight: normal;
+    font-style: italic;
+}
+
+.table_name {
+    font-weight: bold;
+    vertical-align: top;
+}
+
+.table_desc {
+    font-weight: normal;
+    vertical-align: top;
+}
