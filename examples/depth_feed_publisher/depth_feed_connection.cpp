@@ -131,7 +131,10 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
 : connected_(false),
-  templates_(TemplateConsumer::parse_templates("./templates/depth.xml")),
+  template_filename_(template_file_from_args(argc, argv)),
+  host_(host_from_args(argc, argv)),
+  port_(port_from_args(argc, argv)),
+  templates_(TemplateConsumer::parse_templates(template_filename_)),
   socket_(ios_)
 {
 }
@@ -145,7 +148,7 @@ void
 DepthFeedConnection::connect()
 {
   std::cout << "Connecting to feed" << std::endl;
-  tcp::endpoint endpoint(address::from_string("127.0.0.1"), 10003);
+  tcp::endpoint endpoint(address::from_string(host_), port_);
   socket_.async_connect(endpoint, boost::bind(&DepthFeedConnection::on_connect,
                                               this, _1));
 }
@@ -155,7 +158,7 @@ DepthFeedConnection::accept()
 {
   if (!acceptor_) {
     acceptor_.reset(new tcp::acceptor(ios_));
-    tcp::endpoint endpoint(tcp::v4(), 10003);
+    tcp::endpoint endpoint(tcp::v4(), port_);
     acceptor_->open(endpoint.protocol());
     boost::system::error_code ec;
     acceptor_->set_option(boost::asio::socket_base::reuse_address(true), ec);
@@ -171,6 +174,7 @@ DepthFeedConnection::accept()
 void
 DepthFeedConnection::run()
 {
+std::cout << "DepthFeedConnection::run()" << std::endl;
   // Keep on running
   work_ptr_.reset(new boost::asio::io_service::work(ios_));
   ios_.run();
@@ -348,6 +352,48 @@ DepthFeedConnection::issue_read()
   boost::asio::mutable_buffers_1 buffer(
       boost::asio::buffer(*bp, bp->size()));
   socket_.async_receive(buffer, 0, recv_handler);
+}
+
+const char*
+DepthFeedConnection::template_file_from_args(int argc, const char* argv[])
+{
+  bool next_is_name = false;
+  for (int i = 0; i < argc; ++i) {
+    if (next_is_name) {
+      return argv[i];
+    } else if (strcmp(argv[i], "-t") == 0) {
+      next_is_name = true;
+    }
+  }
+  return "./templates/depth.xml";
+}
+
+const char*
+DepthFeedConnection::host_from_args(int argc, const char* argv[])
+{
+  bool next_is_host = false;
+  for (int i = 0; i < argc; ++i) {
+    if (next_is_host) {
+      return argv[i];
+    } else if (strcmp(argv[i], "-h") == 0) {
+      next_is_host = true;
+    }
+  }
+  return "127.0.0.1";
+}
+
+int
+DepthFeedConnection::port_from_args(int argc, const char* argv[])
+{
+  bool next_is_port = false;
+  for (int i = 0; i < argc; ++i) {
+    if (next_is_port) {
+      return atoi(argv[i]);
+    } else if (strcmp(argv[i], "-p") == 0) {
+      next_is_port = true;
+    }
+  }
+  return 10003;
 }
 
 } } // End namespace

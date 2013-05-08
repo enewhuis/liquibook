@@ -120,6 +120,9 @@ namespace liquibook { namespace examples {
     typedef std::deque<BufferPtr> Buffers;
     typedef std::vector<SessionPtr> Sessions;
     bool connected_;
+    const char* template_filename_;
+    const char* host_;
+    int port_;
     MessageHandler msg_handler_;
     ResetHandler reset_handler_;
     QuickFAST::Codecs::TemplateRegistryPtr templates_;
@@ -133,6 +136,9 @@ namespace liquibook { namespace examples {
     boost::shared_ptr<boost::asio::io_service::work> work_ptr_;
 
     void issue_read();
+    static const char* template_file_from_args(int argc, const char* argv[]);
+    static const char* host_from_args(int argc, const char* argv[]);
+    static int port_from_args(int argc, const char* argv[]);
   };
 } } // End namespace
 
