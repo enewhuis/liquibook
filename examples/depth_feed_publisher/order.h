@@ -12,8 +12,8 @@ public:
         book::Quantity qty);
 
   virtual bool is_buy() const;
-  virtual book::Price price() const;
   virtual book::Quantity order_qty() const;
+  virtual book::Price price() const;
 private:
   bool is_buy_;
   double price_;

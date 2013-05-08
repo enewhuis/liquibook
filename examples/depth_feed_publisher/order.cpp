@@ -17,16 +17,16 @@ Order::is_buy() const
   return is_buy_;
 }
 
-book::Price
-Order::price() const
-{
-  return price_ * precision_;
-}
-
 book::Quantity
 Order::order_qty() const
 {
   return qty_;
+}
+
+book::Price
+Order::price() const
+{
+  return price_ * precision_;
 }
 
 } } // End namespace

@@ -14,7 +14,11 @@ class Exchange {
 public:
   Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
            ExampleOrderBook::TypedTradeListener* trade_listener);
+
+  // Permanently add an order book to the exchange
   void add_order_book(const std::string& symbol);
+
+  // Handle an incoming order
   void add_order(const std::string& symbol, OrderPtr& order);
 private:
   typedef std::map<std::string, ExampleOrderBook> OrderBookMap;

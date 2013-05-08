@@ -30,13 +30,10 @@ void generate_orders(examples::Exchange& exchange,
 
 int main(int argc, const char* argv[])
 {
-  SecurityVector securities;
-
-  // Create securities
-  create_securities(securities);
+  // Feed connection
+  examples::DepthFeedConnection connection(argc, argv);
 
   // Open connection in background thread
-  examples::DepthFeedConnection connection(argc, argv);
   connection.accept();
   boost::function<void ()> acceptor(
       boost::bind(&examples::DepthFeedConnection::run, &connection));
@@ -48,6 +45,10 @@ int main(int argc, const char* argv[])
 
   // Create exchange
   examples::Exchange exchange(&feed, &feed);
+
+  // Create securities
+  SecurityVector securities;
+  create_securities(securities);
 
   // Populate exchange with securities
   populate_exchange(exchange, securities);
