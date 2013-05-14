@@ -814,8 +814,109 @@ Order::price() const
 </p>
 
 <h3>Using QuickFAST Template</h3>
-template_consumer
-<h3>Handling Liquibook Events</h3>
+
+<p>
+  With the template in place, the publisher (and subscriber) must use
+  QuickFAST to put the templates to use for encoding (and decoding).  The 
+  publisher (and subscriber) do this by means of the
+  <code>examples::TemplateConsumer</code> class:
+</p>
+
+<div class="listing">Listing 2 tempate_consumer.h: TemplateConsumer class</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+class TemplateConsumer {
+public:
+  static QuickFAST::Codecs::TemplateRegistryPtr 
+             parse_templates(const std::string&amp; template_filename);
+
+  // Trade field identities
+  static const QuickFAST::Messages::FieldIdentityCPtr id_qty_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_cost_;
+
+  // Common field identities
+  static const QuickFAST::Messages::FieldIdentityCPtr id_seq_num_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_msg_type_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_timestamp_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_symbol_;
+
+  // Depth field identities
+  static const QuickFAST::Messages::FieldIdentityCPtr id_bids_length_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_bids_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_asks_length_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_asks_;
+
+  static const QuickFAST::Messages::FieldIdentityCPtr id_level_num_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_order_count_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_price_;
+  static const QuickFAST::Messages::FieldIdentityCPtr id_size_;
+};
+
+} }
+</pre>
+
+<p>
+  The <code>examples::TemplateConsumer</code> class has a static
+  <code>parse_templates()</code> method, and a number of static members of
+  type <code>const QuickFAST::Messages::FieldIdentityCPtr</code>.  These
+  members are used by QuickFAST to establish identities of fields within the
+  various messages.
+</p>
+
+<p>
+  These members are initialized in a manner consistent with the template 
+  definition:
+</p>
+
+<div class="listing">Listing 2 tempate_consumer.cpp: initialization of TemplateConsumer static members</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+using namespace QuickFAST::Messages;
+
+const FieldIdentityCPtr
+TemplateConsumer::id_seq_num_(new FieldIdentity("SequenceNumber"));
+
+const FieldIdentityCPtr
+TemplateConsumer::id_msg_type_(new FieldIdentity("MessageType"));
+
+const FieldIdentityCPtr
+TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
+
+// more like this...
+</pre>
+
+<p>
+  The remaining members are initialized in a similar manner, and thus are not
+  included in this paper.  Finally, there is the
+  <code>parse_templates() method</code> which parses the QuickFAST templates:
+</p>
+
+<div class="listing">Listing 2 tempate_consumer.cpp: parse_templates() method</div>
+<pre class="code">
+QuickFAST::Codecs::TemplateRegistryPtr 
+TemplateConsumer::parse_templates(const std::string& template_filename)
+{
+  std::ifstream template_stream(template_filename.c_str());
+  QuickFAST::Codecs::XMLTemplateParser parser;
+  return parser.parse(template_stream);
+}
+
+} } 
+</pre>
+
+<p>
+  The <code>parse_templates()</code> method opens an input file stream using
+  the filename passed to it.  Then it creates a
+  <code>QuickFAST::Codecs::XMLTemplateParser</code> and calls the
+  <code>parse()</code> method on it, passing it the input file stream.  This 
+  parses the template file, and produces the
+  <code>QuickFAST::Codecs::TemplateRegistryPtr</code> which preserves the
+  parsed form of the template file.
+</p>
+
+<h3>Handling Liquibook Events</h3>QuickFAST::Codecs::XMLTemplateParser
 depth_feed_publisher
 <h3>Initialization</h3>
 publisher_main.cpp
