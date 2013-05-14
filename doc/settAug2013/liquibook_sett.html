@@ -857,11 +857,19 @@ public:
 </pre>
 
 <p>
-  The <code>examples::TemplateConsumer</code> class has a static
-  <code>parse_templates()</code> method, and a number of static members of
-  type <code>const QuickFAST::Messages::FieldIdentityCPtr</code>.  These
-  members are used by QuickFAST to establish identities of fields within the
-  various messages.
+  The <code>examples::TemplateConsumer</code> class also has a static
+  <code>parse_templates()</code> method for parsing of templates.  It also 
+  includes several static members of type
+  <code>const QuickFAST::Messages::FieldIdentityCPtr</code>.  These members
+  are used by QuickFAST to establish identities of fields within the various
+  messages.  The reader will notice that the field identifiers correspond to
+  fields in the template definition, with two exceptions:
+  <code>id_bids_length_</code>, and <code>id_asks_length_</code>.  This is
+  because the FAST protocol specifies that a sequence length is required for
+  each sequence, but can be implicitly declared.
+</p>
+
+<p>
 </p>
 
 <p>
@@ -889,8 +897,8 @@ TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
 
 <p>
   The remaining members are initialized in a similar manner, and thus are not
-  included in this paper.  Finally, there is the
-  <code>parse_templates() method</code> which parses the QuickFAST templates:
+  included in this paper.  Finally, there is the <code>parse_templates()
+  method</code> which parses the QuickFAST templates:
 </p>
 
 <div class="listing">Listing 2 tempate_consumer.cpp: parse_templates() method</div>
@@ -916,7 +924,209 @@ TemplateConsumer::parse_templates(const std::string& template_filename)
   parsed form of the template file.
 </p>
 
-<h3>Handling Liquibook Events</h3>QuickFAST::Codecs::XMLTemplateParser
+<h3>Connecting the Publisher and Subscriber</h3>
+
+<p>
+  The publisher and subscriber communicate over TCP/IP using boost::ASIO.  The
+  communication between publisher and subscriber is one way - the publisher
+  only sends messages, and the subscriber only receives them.  The
+  communication is also one-to-many, as multiple subscribers connect to a 
+  single publisher.  Since QuickFAST encodes a stream of data, uniquely
+  compressed for each recipient, the pubilsher will need to maintain a
+  QuickFAST state for each subscriber's encoder.  This is done through a class
+  called <code>examples::DepthFeedSession</code>.
+</p>
+
+<p>
+  The publisher also uses the <code>examples::DepthFeedConnection</code> to listen for connections from subscribers.  The <code>DepthFeedConnection</code> will establish many <code>DepthFeedSession</code> instances.
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+  typedef boost::shared_ptr<QuickFAST::WorkingBuffer> WorkingBufferPtr;
+  typedef std::deque<WorkingBufferPtr> WorkingBuffers;
+  typedef boost::array<unsigned char, 128> Buffer;
+  typedef boost::shared_ptr<Buffer> BufferPtr;
+  typedef boost::function<bool (BufferPtr, size_t)> MessageHandler;
+  typedef boost::function<void ()> ResetHandler;
+  typedef boost::function<void (const boost::system::error_code& error,
+                                std::size_t bytes_transferred)> SendHandler;
+  typedef boost::function<void (const boost::system::error_code& error,
+                                std::size_t bytes_transferred)> RecvHandler;
+
+  class DepthFeedConnection;
+
+  // Session between a publisher and one subscriber
+  class DepthFeedSession : boost::noncopyable {
+  public:
+    DepthFeedSession(boost::asio::io_service&amp; ios,
+                     DepthFeedConnection* connection,
+                     QuickFAST::Codecs::TemplateRegistryPtr&amp; templates);
+</pre>
+
+<p>
+  In addition to declaring some typedefs and a forward declaration, this
+  snippet of code declares <code>DepthFeedSession</code>'s  constructor.  This
+  constructor accepts (1) an IO Servive object through which it can create a
+  TCP socket, (2) the <code>DepthFeedConnection</code> and (3) the parsed 
+  QuickFAST templates, so it can encode outgoing messages.
+</p>
+
+<p>
+  Next are an accessor and setter for the session's connection status, and an
+  accessor for the session's TCP socket:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+    // Is this session connected?
+    bool connected() const { return connected_; }
+
+    // Mark this session as connected
+    void set_connected() { connected_ = true; }
+
+    // Get the socket for this session
+    boost::asio::ip::tcp::socket&amp; socket() { return socket_; }
+</pre>
+
+<p>
+  The real meat of the class is next, where messages are sent to the
+  subscriber, in <code>send_trade()</code> for trades, and both <code>send_incr_update()</code>and <code>send_full_update()</code> for depth updates.
+
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+    // Send a trade messsage to all clients
+    void send_trade(QuickFAST::Messages::FieldSet& message);
+
+    // Send an incremental update - if this client has handled this symbol
+    //   return true if handled
+    bool send_incr_update(const std::string& symbol,
+                          QuickFAST::Messages::FieldSet& message);
+
+    // Send a full update - if the client has not yet received for this symbol
+    void send_full_update(const std::string& symbol,
+                          QuickFAST::Messages::FieldSet& message);
+</pre>
+
+<p>
+  The reader may wonder why there are two methods for sending depth updates.  
+  This is because the publisher produces an incremental feed for depth updates,
+  allowing only the changed depth levels to be published to the subscriber, 
+  rather than all 5 levels of depth.  This is particularly effective because of
+  the nature of this data - most changes to depth are at the top one or two
+  levels of the limit order book.
+</p>
+
+<p>
+  Note that the trade feed is not an incremental feed - each trade stands on
+  its own.  This could be different if the trade carried accumulating values,
+  such as volume for the day, or average traded price.  In this case, an
+  incremental feed may be suitable for trades as well.  
+</p>
+
+<p>
+  For the depth feed, two update methods are provided, for sending an 
+  incremental update, and for sending a full update.  Even though the depth
+  feed is an incremental feed, it is necessary to send full udpates on
+  occasion.  A full update is required, for example, when the subscriber does
+  not yet have the depth state for a security, such as when it first connects
+  to the publisher.
+</p>
+
+<p>
+  Finally, there is a handler for the accepting a connection from a subscriber:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+    // Handle an accepted connection
+    void on_accept(const boost::system::error_code&amp; error);
+</pre>
+
+<p>
+  The <code>DepthSession</code> class includes a number of private members:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+  private:       
+    bool connected_;
+    uint64_t seq_num_;
+
+    boost::asio::io_service&amp; ios_;
+    boost::asio::ip::tcp::socket socket_;
+</pre>
+
+<p>
+  The first member indicates the connection status of the session.  Next, is a sequence number counter for the session.  This is followed by two low-level ASIO members: a reference to the IO service, and a socket for the session.
+</p>
+
+<p>
+  This is followed by a pointer to the one <code>DepthFeedConnection</code> of
+  the publisher, and the session's QuickFAST encoder:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+    DepthFeedConnection* connection_;
+    QuickFAST::Codecs::Encoder encoder_;
+</pre>
+
+<p>
+  Next, is a <code>set</code> to track which securities have had depth
+  information published, in order to track which securities still need a full
+  update:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+    typedef std::set&lt;std::string&gt; StringSet;
+    StringSet sent_symbols_;
+</pre>
+
+<p>
+  Next are two static members that store the template IDS for the trade and
+  depth messages:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+    static QuickFAST::template_id_t TID_TRADE_MESSAGE;
+    static QuickFAST::template_id_t TID_DEPTH_MESSAGE;
+</pre>
+
+<p>
+  Finally, there are two private methods, to set the sequence number on a 
+  message, and to handle a sent message:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<pre class="code">
+
+    void set_sequence_num(QuickFAST::Messages::FieldSet&amp; message);
+
+    void on_send(WorkingBufferPtr wb,
+                 const boost::system::error_code&amp; error,
+                 std::size_t bytes_transferred);
+  };
+</pre>
+
+<p>
+</p>
+
+<p>
+</p>
+
+<p>
+</p>
+
+<p>
+</p>
+
+<h3>Handling Liquibook Events</h3>
 depth_feed_publisher
 <h3>Initialization</h3>
 publisher_main.cpp
