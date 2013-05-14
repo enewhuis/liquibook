@@ -27,10 +27,6 @@ DepthFeedSession::DepthFeedSession(
 {
 }
 
-DepthFeedSession::~DepthFeedSession()
-{
-}
-
 void
 DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
 {

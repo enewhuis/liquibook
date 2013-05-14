@@ -27,18 +27,20 @@ namespace liquibook { namespace examples {
 
   class DepthFeedConnection;
 
-  // Socket connection
+  // Session between a publisher and one subscriber
   class DepthFeedSession : boost::noncopyable {
   public:
     DepthFeedSession(boost::asio::io_service& ios,
                      DepthFeedConnection* connection,
                      QuickFAST::Codecs::TemplateRegistryPtr& templates);
 
-    ~DepthFeedSession();
-
+    // Is this session connected?
     bool connected() const { return connected_; }
+
+    // Mark this session as connected
     void set_connected() { connected_ = true; }
 
+    // Get the socket for this session
     boost::asio::ip::tcp::socket& socket() { return socket_; }
 
     // Send a trade messsage to all clients
@@ -52,6 +54,8 @@ namespace liquibook { namespace examples {
     // Send a full update - if the client has not yet received for this symbol
     void send_full_update(const std::string& symbol,
                           QuickFAST::Messages::FieldSet& message);
+
+    // Handle an accepted connection
     void on_accept(const boost::system::error_code& error);
   private:       
     bool connected_;
@@ -82,14 +86,25 @@ namespace liquibook { namespace examples {
     DepthFeedConnection(int argc, const char* argv[]);
     ~DepthFeedConnection();
 
+    // Connect to publisher
     void connect();
+
+    // Accept connection from subscriber
     void accept();
+
+    // Let the IO service run
     void run();
 
+    // Set a callback to handle a message
     void set_message_handler(MessageHandler msg_handler);
+
+    // Set a callback to handle a reset connection
     void set_reset_handler(ResetHandler reset_handler);
 
-    BufferPtr        reserve_recv_buffer();
+    // Reserve a buffer for receiving a message
+    BufferPtr reserve_recv_buffer();
+
+    // Reserve a buffer for sending a message
     WorkingBufferPtr reserve_send_buffer();
 
     void send_buffer(WorkingBufferPtr& buf);
@@ -106,12 +121,18 @@ namespace liquibook { namespace examples {
     void send_full_update(const std::string& symbol, 
                           QuickFAST::Messages::FieldSet& message);
 
+    // Handle a connection
     void on_connect(const boost::system::error_code& error);
+
+    // Handle an accepted connection
     void on_accept(SessionPtr session,
                    const boost::system::error_code& error);
+
+    // Handle a received message
     void on_receive(BufferPtr bp,
                     const boost::system::error_code& error,
                     std::size_t bytes_transferred);
+    // Handle a sent message
     void on_send(WorkingBufferPtr wb,
                  const boost::system::error_code& error,
                  std::size_t bytes_transferred);
