@@ -28,21 +28,6 @@ DepthFeedSession::DepthFeedSession(
 }
 
 void
-DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
-{
-  // Create the field
-  QuickFAST::Messages::FieldCPtr value = 
-      QuickFAST::Messages::FieldUInt32::create(++seq_num_);
-  std::cout << "Updating sequence number to " << seq_num_ << std::endl;
-  // Update the sequece number
-  if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
-    std::cout << "  Not found, add sequence number of " << seq_num_ << std::endl;
-    // Not found, add the sequece number
-    message.addField(TemplateConsumer::id_seq_num_, value);
-  }
-}
-
-void
 DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet& message)
 {
   // Add or update sequence number in message
@@ -108,6 +93,21 @@ DepthFeedSession::send_full_update(const std::string& symbol,
     boost::asio::const_buffers_1 buffer(
         boost::asio::buffer(wb->begin(), wb->size()));
     socket_.async_send(buffer, 0, send_handler);
+  }
+}
+
+void
+DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
+{
+  // Create the field
+  QuickFAST::Messages::FieldCPtr value = 
+      QuickFAST::Messages::FieldUInt32::create(++seq_num_);
+  std::cout << "Updating sequence number to " << seq_num_ << std::endl;
+  // Update the sequence number
+  if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
+    std::cout << "  Not found, add sequence number of " << seq_num_ << std::endl;
+    // Not found, add the sequece number
+    message.addField(TemplateConsumer::id_seq_num_, value);
   }
 }
 
