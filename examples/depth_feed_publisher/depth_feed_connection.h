@@ -54,9 +54,6 @@ namespace liquibook { namespace examples {
     // Send a full update - if the client has not yet received for this symbol
     void send_full_update(const std::string& symbol,
                           QuickFAST::Messages::FieldSet& message);
-
-    // Handle an accepted connection
-    void on_accept(const boost::system::error_code& error);
   private:       
     bool connected_;
     uint64_t seq_num_;
