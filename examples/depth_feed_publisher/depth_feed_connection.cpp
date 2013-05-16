@@ -310,15 +310,14 @@ DepthFeedConnection::on_receive(BufferPtr bp,
     if (!msg_handler_(bp, bytes_transferred)) {
       socket_.close();
     }
-
-    // Restore buffer
-    unused_recv_buffers_.push_back(bp);
   } else {
     std::cout << "Error " << error << " receiving message" << std::endl;
     socket_.close();
     sleep(3);
     connect();
   }
+  // Restore buffer
+  unused_recv_buffers_.push_back(bp);
 }
 
 void
