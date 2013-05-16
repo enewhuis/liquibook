@@ -134,7 +134,6 @@ namespace liquibook { namespace examples {
   private:
     typedef std::deque<BufferPtr> Buffers;
     typedef std::vector<SessionPtr> Sessions;
-    bool connected_;
     const char* template_filename_;
     const char* host_;
     int port_;

@@ -124,8 +124,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
 }
 
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
-: connected_(false),
-  template_filename_(template_file_from_args(argc, argv)),
+: template_filename_(template_file_from_args(argc, argv)),
   host_(host_from_args(argc, argv)),
   port_(port_from_args(argc, argv)),
   templates_(TemplateConsumer::parse_templates(template_filename_)),
@@ -270,7 +269,6 @@ DepthFeedConnection::on_connect(const boost::system::error_code& error)
 {
   if (!error) {
     std::cout << "connected to feed" << std::endl;
-    connected_ = true;
     reset_handler_();
     issue_read();
   } else {
