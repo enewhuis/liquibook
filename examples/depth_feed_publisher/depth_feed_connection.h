@@ -81,7 +81,6 @@ namespace liquibook { namespace examples {
   class DepthFeedConnection : boost::noncopyable {
   public:
     DepthFeedConnection(int argc, const char* argv[]);
-    ~DepthFeedConnection();
 
     // Connect to publisher
     void connect();
@@ -104,8 +103,6 @@ namespace liquibook { namespace examples {
     // Reserve a buffer for sending a message
     WorkingBufferPtr reserve_send_buffer();
 
-    void send_buffer(WorkingBufferPtr& buf);
-                     
     // Send a trade messsage to all clients
     void send_trade(QuickFAST::Messages::FieldSet& message);
 

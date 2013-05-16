@@ -102,10 +102,8 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
   // Create the field
   QuickFAST::Messages::FieldCPtr value = 
       QuickFAST::Messages::FieldUInt32::create(++seq_num_);
-  std::cout << "Updating sequence number to " << seq_num_ << std::endl;
   // Update the sequence number
   if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
-    std::cout << "  Not found, add sequence number of " << seq_num_ << std::endl;
     // Not found, add the sequece number
     message.addField(TemplateConsumer::id_seq_num_, value);
   }
@@ -114,7 +112,7 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
 void
 DepthFeedSession::on_send(WorkingBufferPtr wb,
                           const boost::system::error_code& error,
-                      std::size_t bytes_transferred)
+                          std::size_t bytes_transferred)
 {
   if (error) {
     std::cout << "Error " << error << " sending message" << std::endl;
@@ -133,11 +131,6 @@ DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
   templates_(TemplateConsumer::parse_templates(template_filename_)),
   socket_(ios_)
 {
-}
-
-DepthFeedConnection::~DepthFeedConnection()
-{
-  std::cout << "DepthFeedConnection dtor" << std::endl;
 }
 
 void
