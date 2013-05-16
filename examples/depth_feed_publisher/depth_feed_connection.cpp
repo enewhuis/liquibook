@@ -180,18 +180,6 @@ DepthFeedConnection::set_reset_handler(ResetHandler handler)
   reset_handler_ = handler;
 }
 
-WorkingBufferPtr
-DepthFeedConnection::reserve_send_buffer()
-{
-  if (unused_send_buffers_.empty()) {
-    return WorkingBufferPtr(new QuickFAST::WorkingBuffer());
-  } else {
-    WorkingBufferPtr wb = unused_send_buffers_.front();
-    unused_send_buffers_.pop_front();
-    return wb;
-  }
-}
-
 BufferPtr
 DepthFeedConnection::reserve_recv_buffer()
 {
@@ -201,6 +189,18 @@ DepthFeedConnection::reserve_recv_buffer()
     BufferPtr bp = unused_recv_buffers_.front();
     unused_recv_buffers_.pop_front();
     return bp;
+  }
+}
+
+WorkingBufferPtr
+DepthFeedConnection::reserve_send_buffer()
+{
+  if (unused_send_buffers_.empty()) {
+    return WorkingBufferPtr(new QuickFAST::WorkingBuffer());
+  } else {
+    WorkingBufferPtr wb = unused_send_buffers_.front();
+    unused_send_buffers_.pop_front();
+    return wb;
   }
 }
 
