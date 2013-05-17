@@ -86,6 +86,7 @@
   involves multiple partries, and in a conceptual view looks like this:
 </p>
 
+<div class="figure">Figure 1 Conceptual View of Exchange</div>
 <img src="settAug2013_files/Exchange.png"/>
 
 <p>
@@ -254,6 +255,7 @@
   exchange.
 </p>
 
+<a name="figure2"><div class="figure">Figure 2 Example Exchange Data Flow</div></a>
 <img src="settAug2013_files/ExampleExchange.png"/>
 
 <h2>Publisher Application</h2>
@@ -447,6 +449,7 @@ private:
   from this paper.  The class diagram for order books looks like this:
 </p>
 
+<div class="figure">Figure 3 Order Book Class Diagram</div>
 <img src="settAug2013_files/OrderBookUML.png"/>
 
 <h3>The Exchange</h3>
@@ -487,6 +490,7 @@ private:
   The class diagram for the exchange looks like this:
 </p>
 
+<div class="figure">Figure 4 Exchange Class Diagram</div>
 <img src="settAug2013_files/ExchangeUML.png"/>
 
 <p> 
@@ -1943,21 +1947,60 @@ DepthFeedConnection::port_from_args(int argc, const char* argv[])
 <p>
   At this point, the publisher is able to accept subscriber connections and
   route QuickFAST messages to the subscriber.  What is missing is handling
-  Liquibook events, and creating the QuickFAST messages to send.  This is done
-  in the <code>DepthFeedPublisher</code> class:
+  Liquibook events, and creating the QuickFAST messages to send.  As shown in 
+  <a href="#figure2">figure 2</a>, the publisher needs a proprerly-typed
+  <code>TradeListener</code> for trade events, and a properly-typed
+  <code>DepthListener</code> for depth events.  Declarations for these 
+  interefaces exist in Liquibook's order book clases.  The publisher implements
+  these interfaces in the <code>DepthFeedPublisher</code> class:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
 class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
                            public ExampleOrderBook::TypedTradeListener,
                            public TemplateConsumer {
-public:
-  DepthFeedPublisher(const std::string&amp; template_filename);
-  void set_message_handler(DepthFeedConnection* connection);
+</pre>
 
+<p>
+  Thre <code>DepthFeedPublisher</code> class implements both the 
+  <code>ExampleOrderBook::TypedDepthListener</code> and the 
+  <code>ExampleOrderBook::TypedTradeListener</code> interfaces.  It also 
+  inherits from <code>TemplateConsumer</code>, but this is simply a
+  convenience (to reduce the need for name qualifiers), as 
+  <code>TemplateConsumer</code>'s data and methods are entirely static.
+</p>
+
+<p>
+  The <code>DepthFeedPublisher</code> has a simple constructor, for
+  initializing it's pointer.
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<pre class="code">
+public:
+  DepthFeedPublisher();
+</pre>
+
+<p>
+  The <code>DepthFeedPublisher</code> keeps a pointer to a
+  <code>DepthFeedConnection</code>, and receives that pointer through a setter
+  method:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<pre class="code">
+  void set_connection(DepthFeedConnection* connection);
+</pre>
+
+<p>
+  Next are the two event handlers to implement the two interfaces:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<pre class="code">
   virtual void on_trade(
       const book::OrderBook&lt;OrderPtr&gt;* order_book,
       book::Quantity qty,
@@ -1966,11 +2009,25 @@ public:
   virtual void on_depth_change(
       const book::DepthOrderBook&lt;OrderPtr&gt;* order_book,
       const book::DepthOrderBook&lt;OrderPtr&gt;::DepthTracker* tracker);
+</pre>
+
+<p>
+  The private section has a single member - the
+  <code>DepthFeedConnection</code> pointer:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<pre class="code">
 private:
-  const QuickFAST::template_id_t tid_depth_message_;
-
   DepthFeedConnection* connection_;
+</pre>
 
+<p>
+  Next are methods to build the feed messages:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<pre class="code">
   // Build an trade message
   void build_trade_message(
       QuickFAST::Messages::FieldSet&amp; message,
@@ -1988,8 +2045,15 @@ private:
       QuickFAST::Messages::SequencePtr&amp; level_seq,
       const book::DepthLevel* level,
       int level_index);
-  uint32_t time_stamp();
+</pre>
 
+<p>
+  And finally a method to generate a time stamp for the messages:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<pre class="code">
+  uint32_t time_stamp();
 };
 
 } } // End namespace
