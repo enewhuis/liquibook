@@ -282,7 +282,7 @@
   <code>book::OrderBook</code> class are:
 </p>
 
-<div class="listing">Listing 3 book/order_book.h: OrderBook class of Liquibook</div>
+<div class="listing">Listing 1 book/order_book.h: OrderBook class of Liquibook</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -347,7 +347,7 @@ public:
   The derived <code>book::DepthOrderBook</code> class is simpiler:
 </p>
 
-<div class="listing">Listing 4 book/depth_order_book.h: DepthOrderBook class of Liquibook</div>
+<div class="listing">Listing 2 book/depth_order_book.h: DepthOrderBook class of Liquibook</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -420,7 +420,7 @@ private:
   access to the symbol of the order book's security.
 </p>
 
-<div class="listing">Listing 5 example_order_book.h: ExampleOrderBook class in publisher</div>
+<div class="listing">Listing 3 example_order_book.h: ExampleOrderBook class in publisher</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -459,7 +459,7 @@ private:
   <code>examples::Exchange</code> class:
 </p>
 
-<div class="listing">Listing 6 exchange.h: Exchange class in publisher</div>
+<div class="listing">Listing 4 exchange.h: Exchange class in publisher</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -497,7 +497,7 @@ private:
   in order add the listeners to future order books:
 </p>
 
-<div class="listing">Listing 7 exchange.cpp: Exchange constructor in publisher</div>
+<div class="listing">Listing 5 exchange.cpp: Exchange constructor in publisher</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -515,7 +515,7 @@ Exchange::Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
   order book:
 </p>
 
-<div class="listing">Listing 8 exchange.cpp: add_order_book() method in publisher</div>
+<div class="listing">Listing 6 exchange.cpp: add_order_book() method in publisher</div>
 <pre class="code">
 void
 Exchange::add_order_book(const std::string&amp; sym)
@@ -533,7 +533,7 @@ Exchange::add_order_book(const std::string&amp; sym)
   the <code>perform_callbacks()</code> method:
 </p>
 
-<div class="listing">Listing 9 exchange.cpp: add_order() method in publisher</div>
+<div class="listing">Listing 7 exchange.cpp: add_order() method in publisher</div>
 <pre class="code">
 void
 Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
@@ -563,7 +563,7 @@ Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
   in the class <code>src/book/order.h</code>:
 </p>
 
-<div class="listing">Listing 1 book/order.h: Order class of Liquibook</div>
+<div class="listing">Listing 8 book/order.h: Order class of Liquibook</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -590,7 +590,7 @@ public:
   <code>book::Order</code> interface:
 </p>
 
-<div class="listing">Listing 2 order.h: Implementation of Order class in example exchange</div>
+<div class="listing">Listing 9 order.h: Implementation of Order class in example exchange</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -625,7 +625,7 @@ private:
   passed to it:
 </p>
 
-<div class="listing">Listing 2 order.cpp: Implementation of Order class in example exchange</div>
+<div class="listing">Listing 10 order.cpp: Implementation of Order class in example exchange</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -648,7 +648,7 @@ Order::Order(bool buy, const double&amp; price, book::Quantity qty)
   passed to it:
 </p>
 
-<div class="listing">Listing 2 order.cpp: accessors in Order class</div>
+<div class="listing">Listing 11 order.cpp: accessors in Order class</div>
 <pre class="code">
 bool
 Order::is_buy() const
@@ -669,7 +669,7 @@ Order::order_qty() const
   so <code>Order</code> converts the price by multiplying by the precision:
 </p>
 
-<div class="listing">Listing 2 order.cpp: price() in Order class</div>
+<div class="listing">Listing 12 order.cpp: price() in Order class</div>
 <pre class="code">
 book::Price
 Order::price() const
@@ -822,7 +822,7 @@ Order::price() const
   <code>examples::TemplateConsumer</code> class:
 </p>
 
-<div class="listing">Listing 2 tempate_consumer.h: TemplateConsumer class</div>
+<div class="listing">Listing 13 tempate_consumer.h: TemplateConsumer class</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -877,7 +877,7 @@ public:
   definition:
 </p>
 
-<div class="listing">Listing 2 tempate_consumer.cpp: initialization of TemplateConsumer static members</div>
+<div class="listing">Listing 14 tempate_consumer.cpp: initialization of TemplateConsumer static members</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -901,7 +901,7 @@ TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
   method</code> which parses the QuickFAST templates:
 </p>
 
-<div class="listing">Listing 2 tempate_consumer.cpp: parse_templates() method</div>
+<div class="listing">Listing 15 tempate_consumer.cpp: parse_templates() method</div>
 <pre class="code">
 QuickFAST::Codecs::TemplateRegistryPtr 
 TemplateConsumer::parse_templates(const std::string& template_filename)
@@ -941,7 +941,7 @@ TemplateConsumer::parse_templates(const std::string& template_filename)
   The publisher also uses the <code>examples::DepthFeedConnection</code> to listen for connections from subscribers.  The <code>DepthFeedConnection</code> will establish many <code>DepthFeedSession</code> instances.
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration</div>
+<div class="listing">Listing 16 depth_feed_connection.h: DepthFeedSession class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
   typedef boost::shared_ptr<QuickFAST::WorkingBuffer> WorkingBufferPtr;
@@ -978,7 +978,7 @@ namespace liquibook { namespace examples {
   accessor for the session's TCP socket:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">Listing 17 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     // Is this session connected?
     bool connected() const { return connected_; }
@@ -996,7 +996,7 @@ namespace liquibook { namespace examples {
 
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">Listing 18 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     // Send a trade messsage to all clients
     void send_trade(QuickFAST::Messages::FieldSet& message);
@@ -1040,7 +1040,7 @@ namespace liquibook { namespace examples {
   The <code>DepthFeedSession</code> class includes a number of private members:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">Listing 19 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
   private:       
     bool connected_;
@@ -1059,7 +1059,7 @@ namespace liquibook { namespace examples {
   the publisher, and the session's QuickFAST encoder:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">Listing 20 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     DepthFeedConnection* connection_;
     QuickFAST::Codecs::Encoder encoder_;
@@ -1939,14 +1939,62 @@ DepthFeedConnection::port_from_args(int argc, const char* argv[])
   followed by a port number.  All three return default values.
 </p>
 
-<p>
-</p>
-
-<p>
-</p>
-
 <h3>Handling Liquibook Events</h3>
-depth_feed_publisher
+<p>
+  At this point, the publisher is able to accept subscriber connections and
+  route QuickFAST messages to the subscriber.  What is missing is handling
+  Liquibook events, and creating the QuickFAST messages to send.  This is done
+  in the <code>DepthFeedPublisher</code> class:
+</p>
+
+<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
+                           public ExampleOrderBook::TypedTradeListener,
+                           public TemplateConsumer {
+public:
+  DepthFeedPublisher(const std::string&amp; template_filename);
+  void set_message_handler(DepthFeedConnection* connection);
+
+  virtual void on_trade(
+      const book::OrderBook&lt;OrderPtr&gt;* order_book,
+      book::Quantity qty,
+      book::Cost cost);
+
+  virtual void on_depth_change(
+      const book::DepthOrderBook&lt;OrderPtr&gt;* order_book,
+      const book::DepthOrderBook&lt;OrderPtr&gt;::DepthTracker* tracker);
+private:
+  const QuickFAST::template_id_t tid_depth_message_;
+
+  DepthFeedConnection* connection_;
+
+  // Build an trade message
+  void build_trade_message(
+      QuickFAST::Messages::FieldSet&amp; message,
+      const std::string&amp; symbol,
+      book::Quantity qty,
+      book::Cost cost);
+
+  // Build an incremental depth message
+  void build_depth_message(
+      QuickFAST::Messages::FieldSet&amp; message,
+      const std::string&amp; symbol,
+      const book::DepthOrderBook&lt;OrderPtr&gt;::DepthTracker* tracker,
+      bool full_message);
+  void build_depth_level(
+      QuickFAST::Messages::SequencePtr&amp; level_seq,
+      const book::DepthLevel* level,
+      int level_index);
+  uint32_t time_stamp();
+
+};
+
+} } // End namespace
+</pre>
+
 <h3>Initialization</h3>
 publisher_main.cpp
 
