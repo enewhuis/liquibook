@@ -23,8 +23,8 @@ class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
                            public ExampleOrderBook::TypedTradeListener,
                            public TemplateConsumer {
 public:
-  DepthFeedPublisher(const std::string& template_filename);
-  void set_message_handler(DepthFeedConnection* connection);
+  DepthFeedPublisher();
+  void set_connection(DepthFeedConnection* connection);
 
   virtual void on_trade(
       const book::OrderBook<OrderPtr>* order_book,
@@ -35,8 +35,6 @@ public:
       const book::DepthOrderBook<OrderPtr>* order_book,
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
 private:
-  const QuickFAST::template_id_t tid_depth_message_;
-
   DepthFeedConnection* connection_;
 
   // Build an trade message
@@ -57,7 +55,6 @@ private:
       const book::DepthLevel* level,
       int level_index);
   uint32_t time_stamp();
-
 };
 
 } } // End namespace

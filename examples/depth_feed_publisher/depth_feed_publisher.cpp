@@ -15,14 +15,13 @@ namespace liquibook { namespace examples {
 
 using namespace QuickFAST::Messages;
 
-DepthFeedPublisher::DepthFeedPublisher(const std::string& template_filename)
-: tid_depth_message_(1),
-  connection_(NULL)
+DepthFeedPublisher::DepthFeedPublisher()
+: connection_(NULL)
 {
 }
 
 void
-DepthFeedPublisher::set_message_handler(DepthFeedConnection* connection)
+DepthFeedPublisher::set_connection(DepthFeedConnection* connection)
 {
   connection_ = connection;
 }

@@ -40,8 +40,8 @@ int main(int argc, const char* argv[])
   boost::thread acceptor_thread(acceptor);
   
   // Create feed publisher
-  examples::DepthFeedPublisher feed("./templates/Simple.xml");
-  feed.set_message_handler(&connection);
+  examples::DepthFeedPublisher feed;
+  feed.set_connection(&connection);
 
   // Create exchange
   examples::Exchange exchange(&feed, &feed);
