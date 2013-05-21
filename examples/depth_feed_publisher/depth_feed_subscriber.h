@@ -21,7 +21,9 @@ namespace liquibook { namespace examples {
 
   class DepthFeedSubscriber : public TemplateConsumer {
   public:
-    DepthFeedSubscriber(const std::string& template_filename);
+    DepthFeedSubscriber(
+        const QuickFAST::Codecs::TemplateRegistryPtr& templates);
+
     // Handle a message
     // return false if failure
     bool handle_message(BufferPtr& bp, size_t bytes_transferred);

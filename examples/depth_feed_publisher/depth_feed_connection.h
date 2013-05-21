@@ -82,6 +82,10 @@ namespace liquibook { namespace examples {
   public:
     DepthFeedConnection(int argc, const char* argv[]);
 
+    // Get the template registry
+    const QuickFAST::Codecs::TemplateRegistryPtr&
+          get_templates() { return templates_; }
+
     // Connect to publisher
     void connect();
 
@@ -150,6 +154,7 @@ namespace liquibook { namespace examples {
     boost::shared_ptr<boost::asio::io_service::work> work_ptr_;
 
     void issue_read();
+  public:
     static const char* template_file_from_args(int argc, const char* argv[]);
     static const char* host_from_args(int argc, const char* argv[]);
     static int port_from_args(int argc, const char* argv[]);

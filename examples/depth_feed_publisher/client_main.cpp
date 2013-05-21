@@ -5,11 +5,14 @@
 
 int main(int argc, const char* argv[])
 {
+
+  // Creater the connection
+  liquibook::examples::DepthFeedConnection connection(argc, argv);
+
   // Create feed subscriber
-  liquibook::examples::DepthFeedSubscriber feed("./templates/depth.xml");
+  liquibook::examples::DepthFeedSubscriber feed(connection.get_templates());
 
   // Connect to server
-  liquibook::examples::DepthFeedConnection connection(argc, argv);
   liquibook::examples::MessageHandler msg_handler =
       boost::bind(&liquibook::examples::DepthFeedSubscriber::handle_message,
                   &feed, _1, _2);

@@ -13,8 +13,9 @@ const uint64_t DepthFeedSubscriber::MSG_TYPE_TRADE(22);
 
 using QuickFAST::ValueType;
 
-DepthFeedSubscriber::DepthFeedSubscriber(const std::string& template_filename)
-: decoder_(parse_templates(template_filename)),
+DepthFeedSubscriber::DepthFeedSubscriber(
+        const QuickFAST::Codecs::TemplateRegistryPtr& templates)
+: decoder_(templates),
   expected_seq_(1)
 {
 }
