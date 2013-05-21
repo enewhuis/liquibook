@@ -2325,6 +2325,7 @@ DepthFeedPublisher::time_stamp()
 } } // End namespace
 </pre>
 
+<h3>Initialization</h3>
 <p>
   At this point the publisher has all the necessary parts to publish a trade
   feed and an incremental depth feed for the exchange.  The only things that
@@ -2332,17 +2333,12 @@ DepthFeedPublisher::time_stamp()
   generate the random orders.
 </p>
 
-<h3>Initialization</h3>
-publisher_main.cpp
-
-<h3>Setting up the Exchange</h3>
-
 <p>
   The exchange is initialized in the file <code>publisher_main.cpp</code>.
   The <code>main()</code> function starts by establishing the securities to
-  "trade" in our exchange - in this case the NASDAQ 100 - taken from a snapshot 
-  in April 2013.  <code>main()</code> records the symbol and a base price in
-  a structure:
+  "trade" in our exchange - in this case the NASDAQ 100 - taken from a
+  snapshot in April 2013.  <code>main()</code> records the symbol and a base
+  price in a structure:
 </p>
 
 <div class="listing">publisher_main.cpp: SecurityInfo structure</div>
@@ -2364,17 +2360,14 @@ typedef std::vector<SecurityInfo> SecurityVector;
 <p>
   The base price serves as a basis for generating random prices for the
   example exchange.  <code>main()</code> keeps this security information in a
-  <code>SecurityVector</code>  and populates it the 
+  <code>SecurityVector</code>  and populates it in the 
   <code>create_securities()</code> method, later in <code>main()</code>.
 </p>
 
-<h3>Listening for Client Connections</h3>
-
 <p>
-  An exchange must accept connections from feed clients in order to 
-  disseminate market data to them.  The publisher does this through a class
-  called <code>DepthFeedConnection</code>, which is created in 
-  <code>main()</code>:
+  The <code>main()</code> function begins by creating the
+  <code>DepthFeedConnection</code>, and having it accept connections in a
+  background thread, using Boost's thread library:
 </p>
 
 <div class="listing">publisher_main.cpp: main() function</div>
@@ -2392,109 +2385,136 @@ int main(int argc, const char* argv[])
 </pre>
 
 <p>
-  The example exchange creates an instance of <code>DepthFeedConnection</code>,
-  passing in the command-line arguments to configure it.  The publisher then
-  calls <code>DepthFeedConnection::accept()</code> creates a background thread
-  to execute <code>DepthFeedConnection::run()</code>, using Boost's thread
-  library.
+  Next, the <code>DepthFeedPublisher</code> and the <code>Exchange</code> are
+  created, and the<code>DepthFeedPublisher</code> is made aware of the 
+  <code>DepthFeedConnection</code>:
+</p>
+
+<div class="listing">publisher_main.cpp: main() function, continued</div>
+<pre class="code">
+  // Create feed publisher
+  examples::DepthFeedPublisher feed;
+  feed.set_connection(&amp;connection);
+
+  // Create exchange
+  examples::Exchange exchange(&amp;feed, &amp;feed);
+</pre>
+
+<p>
+  Note that the exchange constructor requires a <code>TradeListrner</code> and
+  a <code>DepthListener</code>, both of which the
+  <code>DepthFeedPublisher</code> implements.
 </p>
 
 <p>
+  Finally, the securities are created and used to populate the exchange, and
+  orders are generated.
 </p>
 
-<h3>Populating the Exhange with Securities</h3>
-<p>
-  The body of <code>create_securities()</code> is not shown here, but it adds
-  each of the one hundred constituents of the NASDAQ-100 to the vector.  These
-  are later added to the exchange, and also referenced while generating random
-  orders.
-</p>
+<div class="listing">publisher_main.cpp: main() function, continued</div>
+<pre class="code">
+  // Create securities
+  SecurityVector securities;
+  create_securities(securities);
 
-<h3>Establishing the Publisher</h3>
+  // Populate exchange with securities
+  populate_exchange(exchange, securities);
+  
+  // Generate random orders
+  generate_orders(exchange, securities);
 
-<h3>Populating the Exchange</h3>
-
-<h3>Generating Random Orders</h3>
-
-<h2>Subscriber Application</h2>
-<p>
-  There is also one or more subscribers, who are responsible for decoding the
-  FAST messages and displaying the results in the console.  The publisher
-  listens for connections, and the subscribers connect to the publisher.
-</p>
+  return 0;
+}
+</pre>
 
 <p>
-  The example exchange's order class inherits from <code>book::Order</code>
-  and implements its 3 pure virtual functions.  Inheriting from the 
-  <code>book::Order</code> class is not strictly necessary as the rest of 
-  Liquibook uses templates to bind to a specific order class.  The trivial 
-  implementation of this class is omitted from this paper.
-</p>
-
-<h3>Handling Trade Events</h3>
-
-<p>
-</p>
-
-<h3>Handling Order Book Events</h3>
-
-<p>
-</p>
-
-<h3></h3>
-<h3></h3>
-
-<h3>The Feed Protocol</h3>
-
-<p>
+  The final function call, to <code>generate_orders()</code> is an infinite
+  loop, so there is no need to worry about the <code>main()</code> method
+  returning.
 </p>
 
 <p>
-    Here is an example of using some code in a sentence. When using the
-    <code>String</code> class, be sure to use <code>equals()</code>
-    instead of <code>=</code> when comparing two strings.
+  The helper function <code>create_securities()</code> adds 100 securities to
+  the <code>SecurityVector</code>:
 </p>
 
-<p>
-    See <a href="http://sett.ociweb.com/sett/settOct2012.html">October 2012 SETT article</a> for
-    an example of displaying code. This method displays line numbers and handles multiple languages.
+<div class="listing">publisher_main.cpp: main() helper functions</div>
+<pre class="code">
+void
+create_securities(SecurityVector&amp; securities) {
+  securities.push_back(SecurityInfo("AAPL", 436.36));
+  securities.push_back(SecurityInfo("ADBE", 45.06));
+  securities.push_back(SecurityInfo("ADI", 43.93));
+
+  // Repeated for 100 securities...
+}
+</pre>
+
 </p>
+  Due to the mercy of the author, the other 97 securities were omitted from
+  this paper.  The next helper function, <code>populate_exchange()</code> adds
+  these securities to the exchange:
+<p>
+
+<div class="listing">publisher_main.cpp: main() helper functions, continued</div>
+<pre class="code">
+void
+populate_exchange(examples::Exchange&amp; exchange, const SecurityVector&amp; securities) {
+  SecurityVector::const_iterator sec;
+  for (sec = securities.begin(); sec != securities.end(); ++sec) {
+    exchange.add_order_book(sec-&gt;symbol);
+  }
+}
+</pre>
+
+</p>
+  The final helper function, <code>generate_orders()</code> creates random
+  orders and adds them to the exchange:
+<p>
+
+<div class="listing">publisher_main.cpp: main() helper functions, continued</div>
+<pre class="code">
+
+void
+generate_orders(examples::Exchange&amp; exchange, const SecurityVector&amp; securities) {
+  time_t now;
+  time(&amp;now);
+  std::srand(now);
+
+  size_t num_securities = securities.size();
+  while (true) {
+    // which security
+    size_t index = std::rand() % num_securities;
+    const SecurityInfo&amp; sec = securities[index];
+    // side
+    bool is_buy = std::rand() % 2;
+    // price
+    uint32_t price_base = sec.ref_price * 100;
+    uint32_t delta_range = price_base / 50;  // +/- 2% of base
+    int32_t delta = std::rand() % delta_range;
+    delta -= (delta_range / 2);
+    double price = double (price_base + delta) / 100;
+
+    // qty
+    book::Quantity qty = (std::rand() % 10 + 1) * 100;
+
+    // order
+    examples::OrderPtr order(new examples::Order(is_buy, price, qty));
+
+    // add order
+    exchange.add_order(sec.symbol, order);
+
+    // Wait for eyes to read
+    sleep(1);
+  }
+}
+</pre>
 
 <p>
-    Make sure to put all referenced files used by the article in a folder called settMmmYyyy_files where Mmm is the
-    article month and Yyyy is the article year. For example, settOct2012_files.
-</p>
-
-<p>
-    Also, make sure your article contains standard ascii characters. Use ", ', - instead of
-    forward/backward quotes or ticks. Microsoft word replaces these characters by default. Please
-    ensure your article encode these characters properly.
-</p>
-<table border="2" cellpadding="2" cellspacing="5">
-    <tr>
-        <th>Bad Example</th>
-        <th>Good Example</th>
-    </tr>
-    <tr>
-        <td>“example quotes”</td>
-        <td>&#8220;example quotes&#8221;</td>
-    </tr>
-    <tr>
-        <td>‘another example’</td>
-        <td>&#8216;another example&#8217;</td>
-    </tr>
-    <tr>
-        <td>hyphens – anyone?</td>
-        <td>hyphens &#8212; anyone?</td>
-    </tr>
-    <tr>
-        <td>dot dot dot</td>
-        <td>dot dot dot &#8230;</td>
-    </tr>
-</table>
-
-<p>
-    If you need to use these, be sure to use the appropriate unicode escape sequence.
+  The implementation of <code>generate_orders()</code> is somewhat complex, but
+  not relevant.  There is a call to <code>sleep()</code> inside the loop, so
+  that the data stream is produced at a somewhat readable pace.  At this
+  point, the publisher is complete.
 </p>
 
 <h2>Final Big Topic</h2>
