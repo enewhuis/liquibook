@@ -29,12 +29,14 @@ DepthFeedSubscriber::handle_reset()
 bool
 DepthFeedSubscriber::handle_message(BufferPtr& bp, size_t bytes_transferred)
 {
+  // Decode the message
   QuickFAST::Codecs::DataSourceBuffer source(bp->c_array(), bytes_transferred);
   QuickFAST::Codecs::SingleMessageConsumer consumer;
   QuickFAST::Codecs::GenericMessageBuilder builder(consumer);
   decoder_.decodeMessage(source, builder);
   QuickFAST::Messages::Message& msg(consumer.message());
 
+  // Examine message contents
   uint64_t seq_num, msg_type, timestamp;
   const QuickFAST::StringBuffer* string_buffer;
   size_t bids_length, asks_length;
@@ -227,8 +229,6 @@ DepthFeedSubscriber::handle_trade_message(
     std::cout << "Could not get cost from trade msg" << std::endl;
     return false;
   }
-
-std::cout << "Trade " << symbol << " cost " << cost << std::endl;
 
   double price = (double) cost / (qty * 100);
   std::cout << timestamp

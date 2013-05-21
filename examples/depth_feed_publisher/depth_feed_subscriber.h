@@ -24,12 +24,12 @@ namespace liquibook { namespace examples {
     DepthFeedSubscriber(
         const QuickFAST::Codecs::TemplateRegistryPtr& templates);
 
+    // Handle a reset of the connection
+    void handle_reset();
+
     // Handle a message
     // return false if failure
     bool handle_message(BufferPtr& bp, size_t bytes_transferred);
-
-    // Handle a reset of the connection
-    void handle_reset();
 
   private:
     QuickFAST::Codecs::Decoder decoder_;
