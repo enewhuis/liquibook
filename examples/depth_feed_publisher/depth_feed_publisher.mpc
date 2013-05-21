@@ -14,7 +14,7 @@ project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_
 
 project(depth_feed_subscriber) : QuickFASTApplication, liquibook_book, liquibook_impl {
   Source_Files {
-    client_main.cpp
+    subscriber_main.cpp
     depth_feed_connection.cpp
     depth_feed_subscriber.cpp
     template_consumer.cpp
