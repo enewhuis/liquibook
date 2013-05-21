@@ -5,8 +5,7 @@
 
 int main(int argc, const char* argv[])
 {
-
-  // Creater the connection
+  // Create the connection
   liquibook::examples::DepthFeedConnection connection(argc, argv);
 
   // Create feed subscriber
