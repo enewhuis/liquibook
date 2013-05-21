@@ -284,7 +284,7 @@
   <code>book::OrderBook</code> class are:
 </p>
 
-<div class="listing">Listing 1 book/order_book.h: OrderBook class of Liquibook</div>
+<div class="listing">book/order_book.h: OrderBook class of Liquibook</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -349,7 +349,7 @@ public:
   The derived <code>book::DepthOrderBook</code> class is simpiler:
 </p>
 
-<div class="listing">Listing 2 book/depth_order_book.h: DepthOrderBook class of Liquibook</div>
+<div class="listing">book/depth_order_book.h: DepthOrderBook class of Liquibook</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -422,7 +422,7 @@ private:
   access to the symbol of the order book's security.
 </p>
 
-<div class="listing">Listing 3 example_order_book.h: ExampleOrderBook class in publisher</div>
+<div class="listing">example_order_book.h: ExampleOrderBook class</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -462,7 +462,7 @@ private:
   <code>examples::Exchange</code> class:
 </p>
 
-<div class="listing">Listing 4 exchange.h: Exchange class in publisher</div>
+<div class="listing">exchange.h: Exchange class</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -501,7 +501,7 @@ private:
   in order add the listeners to future order books:
 </p>
 
-<div class="listing">Listing 5 exchange.cpp: Exchange constructor in publisher</div>
+<div class="listing">exchange.cpp: Exchange constructor</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -519,7 +519,7 @@ Exchange::Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
   order book:
 </p>
 
-<div class="listing">Listing 6 exchange.cpp: add_order_book() method in publisher</div>
+<div class="listing">exchange.cpp: add_order_book() method</div>
 <pre class="code">
 void
 Exchange::add_order_book(const std::string&amp; sym)
@@ -537,7 +537,7 @@ Exchange::add_order_book(const std::string&amp; sym)
   the <code>perform_callbacks()</code> method:
 </p>
 
-<div class="listing">Listing 7 exchange.cpp: add_order() method in publisher</div>
+<div class="listing">exchange.cpp: add_order() method</div>
 <pre class="code">
 void
 Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
@@ -567,7 +567,7 @@ Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
   in the class <code>src/book/order.h</code>:
 </p>
 
-<div class="listing">Listing 8 book/order.h: Order class of Liquibook</div>
+<div class="listing">book/order.h: Order class of Liquibook</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -594,7 +594,7 @@ public:
   <code>book::Order</code> interface:
 </p>
 
-<div class="listing">Listing 9 order.h: Implementation of Order class in example exchange</div>
+<div class="listing">order.h: Implementation of Order class in example exchange</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -629,7 +629,7 @@ private:
   passed to it:
 </p>
 
-<div class="listing">Listing 10 order.cpp: Implementation of Order class in example exchange</div>
+<div class="listing">order.cpp: Implementation of Order class in example exchange</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -652,7 +652,7 @@ Order::Order(bool buy, const double&amp; price, book::Quantity qty)
   passed to it:
 </p>
 
-<div class="listing">Listing 11 order.cpp: accessors in Order class</div>
+<div class="listing">order.cpp: accessors in Order class</div>
 <pre class="code">
 bool
 Order::is_buy() const
@@ -673,7 +673,7 @@ Order::order_qty() const
   so <code>Order</code> converts the price by multiplying by the precision:
 </p>
 
-<div class="listing">Listing 12 order.cpp: price() in Order class</div>
+<div class="listing">order.cpp: price() in Order class</div>
 <pre class="code">
 book::Price
 Order::price() const
@@ -826,7 +826,7 @@ Order::price() const
   <code>examples::TemplateConsumer</code> class:
 </p>
 
-<div class="listing">Listing 13 tempate_consumer.h: TemplateConsumer class</div>
+<div class="listing">tempate_consumer.h: TemplateConsumer class</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -881,7 +881,7 @@ public:
   definition:
 </p>
 
-<div class="listing">Listing 14 tempate_consumer.cpp: initialization of TemplateConsumer static members</div>
+<div class="listing">tempate_consumer.cpp: initialization of TemplateConsumer static members</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -905,7 +905,7 @@ TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
   method</code> which parses the QuickFAST templates:
 </p>
 
-<div class="listing">Listing 15 tempate_consumer.cpp: parse_templates() method</div>
+<div class="listing">tempate_consumer.cpp: parse_templates() method</div>
 <pre class="code">
 QuickFAST::Codecs::TemplateRegistryPtr 
 TemplateConsumer::parse_templates(const std::string& template_filename)
@@ -945,7 +945,7 @@ TemplateConsumer::parse_templates(const std::string& template_filename)
   The publisher also uses the <code>examples::DepthFeedConnection</code> to listen for connections from subscribers.  The <code>DepthFeedConnection</code> will establish many <code>DepthFeedSession</code> instances.
 </p>
 
-<div class="listing">Listing 16 depth_feed_connection.h: DepthFeedSession class declaration</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
   typedef boost::shared_ptr<QuickFAST::WorkingBuffer> WorkingBufferPtr;
@@ -982,7 +982,7 @@ namespace liquibook { namespace examples {
   accessor for the session's TCP socket:
 </p>
 
-<div class="listing">Listing 17 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     // Is this session connected?
     bool connected() const { return connected_; }
@@ -1001,7 +1001,7 @@ namespace liquibook { namespace examples {
   depth updates.
 </p>
 
-<div class="listing">Listing 18 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     // Send a trade messsage to all clients
     void send_trade(QuickFAST::Messages::FieldSet& message);
@@ -1045,7 +1045,7 @@ namespace liquibook { namespace examples {
   The <code>DepthFeedSession</code> class includes a number of private members:
 </p>
 
-<div class="listing">Listing 19 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
   private:       
     bool connected_;
@@ -1064,7 +1064,7 @@ namespace liquibook { namespace examples {
   the publisher, and the session's QuickFAST encoder:
 </p>
 
-<div class="listing">Listing 20 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     DepthFeedConnection* connection_;
     QuickFAST::Codecs::Encoder encoder_;
@@ -1076,7 +1076,7 @@ namespace liquibook { namespace examples {
   update:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     typedef std::set&lt;std::string&gt; StringSet;
     StringSet sent_symbols_;
@@ -1087,7 +1087,7 @@ namespace liquibook { namespace examples {
   depth messages:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     static QuickFAST::template_id_t TID_TRADE_MESSAGE;
     static QuickFAST::template_id_t TID_DEPTH_MESSAGE;
@@ -1098,7 +1098,7 @@ namespace liquibook { namespace examples {
   message, and to handle a sent message:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
 <pre class="code">
     void set_sequence_num(QuickFAST::Messages::FieldSet&amp; message);
 
@@ -1114,7 +1114,7 @@ namespace liquibook { namespace examples {
   <code>TID_DEPTH_MESSAGE</code>.
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation</div>
 <pre class="code">
 using namespace boost::asio::ip;
 
@@ -1130,7 +1130,7 @@ QuickFAST::template_id_t DepthFeedSession::TID_DEPTH_MESSAGE(2);
   service and connection, and provides the templates to the QuickFAST encoder:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
 DepthFeedSession::DepthFeedSession(
     boost::asio::io_service&amp; ios,
@@ -1150,7 +1150,7 @@ DepthFeedSession::DepthFeedSession(
   The next method sends a trade to the subscriber:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet&amp; message)
@@ -1204,7 +1204,7 @@ DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet&amp; message)
   differences:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
 bool
 DepthFeedSession::send_incr_update(const std::string&amp; symbol,
@@ -1254,7 +1254,7 @@ DepthFeedSession::send_incr_update(const std::string&amp; symbol,
   for that security.
 <p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedSession::send_full_update(const std::string&amp; symbol,
@@ -1289,7 +1289,7 @@ DepthFeedSession::send_full_update(const std::string&amp; symbol,
   message:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet&amp; message)
@@ -1326,7 +1326,7 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet&amp; message)
   version of the method:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
 
 void
@@ -1351,7 +1351,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   arguments:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration</div>
 <pre class="code">
   typedef boost::shared_ptr<DepthFeedSession> SessionPtr;
 
@@ -1366,7 +1366,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   <code>connect()</code>:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
     // Connect to publisher
     void connect();
@@ -1380,7 +1380,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   publisher and subscriber must cal <code>run()</code>.
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
     // Let the IO service run
     void run();
@@ -1390,7 +1390,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   The next two methods set up handlers for events:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
     // Set a callback to handle a message
     void set_message_handler(MessageHandler msg_handler);
@@ -1409,7 +1409,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   The next two methods are for buffer management:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
     // Reserve a buffer for receiving a message
     BufferPtr reserve_recv_buffer();
@@ -1438,7 +1438,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   subscriber:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
     // Send a trade messsage to all clients
     void send_trade(QuickFAST::Messages::FieldSet&amp; message);
@@ -1459,7 +1459,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   with a number of event handlers:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
     // Handle a connection
     void on_connect(const boost::system::error_code&amp; error);
@@ -1497,7 +1497,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   command line arguments:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
+<div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
   private:
     typedef std::deque&lt;BufferPtr&gt; Buffers;
@@ -1531,7 +1531,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
   <code>*_from_args()</code> methods:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation</div>
 <pre class="code">
 DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
 : template_filename_(template_file_from_args(argc, argv)),
@@ -1550,7 +1550,7 @@ DepthFeedConnection::DepthFeedConnection(int argc, const char* argv[])
   <code>on_connect()</code> as its callback:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedConnection::connect()
@@ -1570,7 +1570,7 @@ DepthFeedConnection::connect()
   <code>on_accept()</code> as its callback:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedConnection::accept()
@@ -1598,7 +1598,7 @@ DepthFeedConnection::accept()
   <code>run()</code> does not exit:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedConnection::run()
@@ -1614,7 +1614,7 @@ std::cout &lt;&lt; "DepthFeedConnection::run()" &lt;&lt; std::endl;
   The next two methods simply save off the two message handlers:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 
 void
@@ -1636,7 +1636,7 @@ DepthFeedConnection::set_reset_handler(ResetHandler handler)
   provide unused buffers to the caller:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation</div>
 <pre class="code">
 BufferPtr
 DepthFeedConnection::reserve_recv_buffer()
@@ -1674,7 +1674,7 @@ DepthFeedConnection::reserve_send_buffer()
   iterating through the sesions and invoking the corresponding method on each:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedConnection::send_trade(QuickFAST::Messages::FieldSet&amp; message)
@@ -1748,7 +1748,7 @@ DepthFeedConnection::send_full_update(const std::string&amp; symbol,
   The next method handles a connection within the subscriber:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 
 void
@@ -1777,7 +1777,7 @@ DepthFeedConnection::on_connect(const boost::system::error_code&amp; error)
   The next handler is the counterpart in the publisher:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedConnection::on_accept(SessionPtr session,
@@ -1812,7 +1812,7 @@ DepthFeedConnection::on_accept(SessionPtr session,
   The next event handler handles a message received by the subscriber:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedConnection::on_receive(BufferPtr bp,
@@ -1852,7 +1852,7 @@ DepthFeedConnection::on_receive(BufferPtr bp,
   The next handler is called after a send of a message to the subscriber:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 
 void
@@ -1874,7 +1874,7 @@ DepthFeedConnection::on_send(WorkingBufferPtr wb,
   The next method starts an ASIO read on the subscriber's socket:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 
 void
@@ -1898,7 +1898,7 @@ DepthFeedConnection::issue_read()
   configuration variables:
 </p>
 
-<div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
+<div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
 const char*
 DepthFeedConnection::template_file_from_args(int argc, const char* argv[])
@@ -1962,7 +1962,7 @@ DepthFeedConnection::port_from_args(int argc, const char* argv[])
   these interfaces in the <code>DepthFeedPublisher</code> class:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -1985,7 +1985,7 @@ class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
   initializing it's pointer.
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
 <pre class="code">
 public:
   DepthFeedPublisher();
@@ -1997,7 +1997,7 @@ public:
   method:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
 <pre class="code">
   void set_connection(DepthFeedConnection* connection);
 </pre>
@@ -2006,7 +2006,7 @@ public:
   Next are the two event handlers to implement the two interfaces:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
 <pre class="code">
   virtual void on_trade(
       const book::OrderBook&lt;OrderPtr&gt;* order_book,
@@ -2023,7 +2023,7 @@ public:
   <code>DepthFeedConnection</code> pointer:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
 <pre class="code">
 private:
   DepthFeedConnection* connection_;
@@ -2033,7 +2033,7 @@ private:
   Next are methods to build the feed messages:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
 <pre class="code">
   // Build an trade message
   void build_trade_message(
@@ -2058,7 +2058,7 @@ private:
   And finally a method to generate a time stamp for the messages:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
+<div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
 <pre class="code">
   uint32_t time_stamp();
 };
@@ -2071,7 +2071,7 @@ private:
   pointer, which is set by a separate setter method:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation</div>
 <pre class="code">
 namespace liquibook { namespace examples { 
 
@@ -2095,7 +2095,7 @@ DepthFeedPublisher::set_connection(DepthFeedConnection* connection)
   <code>on_trade()</code>:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
 <pre class="code">
 
 void
@@ -2127,7 +2127,7 @@ DepthFeedPublisher::on_trade(
   The next event handler handles depth change events:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedPublisher::on_depth_change(
@@ -2170,7 +2170,7 @@ DepthFeedPublisher::on_depth_change(
   <code>on_trade()</code> to build a trade message:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedPublisher::build_trade_message(
@@ -2197,7 +2197,7 @@ DepthFeedPublisher::build_trade_message(
   repeating sequences of data, and is more complex:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedPublisher::build_depth_message(
@@ -2284,7 +2284,7 @@ DepthFeedPublisher::build_depth_message(
   By comparison, <code>build_depth_level()</code> is simple:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedPublisher::build_depth_level(
@@ -2314,7 +2314,7 @@ DepthFeedPublisher::build_depth_level(
   The final method is a helper, to create an integer timestamp for a message:
 </p>
 
-<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<div class="listing">depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
 <pre class="code">
 uint32_t
 DepthFeedPublisher::time_stamp()
@@ -2352,7 +2352,7 @@ publisher_main.cpp
   a structure:
 </p>
 
-<div class="listing">Listing 10 publisher_main.cpp: SecurityInfo structure of publisher</div>
+<div class="listing">publisher_main.cpp: SecurityInfo structure</div>
 <pre class="code">
 struct SecurityInfo {
   std::string symbol;
@@ -2384,8 +2384,7 @@ typedef std::vector<SecurityInfo> SecurityVector;
   <code>main()</code>:
 </p>
 
-<div class="listing">Listing 12 publisher_main.cpp: main() function of
-  publisher</div>
+<div class="listing">publisher_main.cpp: main() function</div>
 <pre class="code">
 int main(int argc, const char* argv[])
 {
