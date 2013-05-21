@@ -54,7 +54,7 @@ DepthFeedPublisher::on_depth_change(
           dynamic_cast<const ExampleOrderBook*>(order_book);
   build_depth_message(message, exob->symbol(), tracker, false);
   if (!connection_->send_incr_update(exob->symbol(), message)) {
-    // Published all levels of order book
+    // Publish all levels of order book
     QuickFAST::Messages::FieldSet full_message(20);
     build_depth_message(full_message, exob->symbol(), tracker, true);
     connection_->send_full_update(exob->symbol(), full_message);
