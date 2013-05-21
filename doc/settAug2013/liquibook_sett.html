@@ -1360,13 +1360,17 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
 </pre>
 
 <p>
-  Next, are two methods for connecting the publisher and subscribers.  The 
-  publisher calls <code>accept()</code> and the subscriber calls
-  <code>connect()</code>:
+  Next are an accessor for the templates parsed by the connection, and two
+  methods for connecting the publisher and subscribers.  The publisher calls
+  <code>accept()</code> and the subscriber calls <code>connect()</code>:
 </p>
 
 <div class="listing">depth_feed_connection.h: DepthFeedConnection class declaration, continued</div>
 <pre class="code">
+    // Get the template registry
+    const QuickFAST::Codecs::TemplateRegistryPtr&amp;
+          get_templates() { return templates_; }
+
     // Connect to publisher
     void connect();
 
@@ -2474,7 +2478,6 @@ populate_exchange(examples::Exchange&amp; exchange, const SecurityVector&amp; se
 
 <div class="listing">publisher_main.cpp: main() helper functions, continued</div>
 <pre class="code">
-
 void
 generate_orders(examples::Exchange&amp; exchange, const SecurityVector&amp; securities) {
   time_t now;
@@ -2516,6 +2519,55 @@ generate_orders(examples::Exchange&amp; exchange, const SecurityVector&amp; secu
   that the data stream is produced at a somewhat readable pace.  At this
   point, the publisher is complete.
 </p>
+
+<h2>Subscriber Application</h2>
+
+<p>
+  With the publisher in place, focus turns to the subscriber.  The subscriber
+  must connect to the publisher, decode the FAST feed, recreate the depth 
+  state for each security and display the results.  As noted earlier, the
+  connection is handled by the <code>DepthFeedConnection</code> class.  The 
+  decoding and display of messages is handled by a the 
+  <code>DepthFeedSubscriber</code> class:
+</p>
+
+<div class="listing">publisher_main.cpp: main() helper functions, continued</div>
+<pre class="code">
+namespace liquibook { namespace examples {
+
+  class DepthFeedSubscriber : public TemplateConsumer {
+  public:
+    DepthFeedSubscriber(
+        const QuickFAST::Codecs::TemplateRegistryPtr&amp; templates);
+
+    // Handle a message
+    // return false if failure
+    bool handle_message(BufferPtr&amp; bp, size_t bytes_transferred);
+
+    // Handle a reset of the connection
+    void handle_reset();
+
+  private:
+    QuickFAST::Codecs::Decoder decoder_;
+    typedef std::map&lt;std::string, book::Depth&lt;5&gt; &gt; DepthMap;
+    DepthMap depth_map_;
+    uint64_t expected_seq_;
+
+    static const uint64_t MSG_TYPE_DEPTH;
+    static const uint64_t MSG_TYPE_TRADE;
+
+    void log_depth(book::Depth&lt;5&gt;&amp; depth);
+    bool handle_trade_message(const std::string&amp; symbol,
+                              uint64_t&amp; seq_num,
+                              uint64_t&amp; timestamp,
+                              QuickFAST::Messages::Message&amp; msg);
+    bool handle_depth_message(const std::string&amp; symbol,
+                              uint64_t&amp; seq_num,
+                              uint64_t&amp; timestamp,
+                              QuickFAST::Messages::Message&amp; msg);
+  };
+} }
+</pre>
 
 <h2>Final Big Topic</h2>
 
