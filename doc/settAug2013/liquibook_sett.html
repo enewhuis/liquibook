@@ -2329,7 +2329,7 @@ DepthFeedPublisher::time_stamp()
 } } // End namespace
 </pre>
 
-<h3>Initialization</h3>
+<h3>Publisher Initialization</h3>
 <p>
   At this point the publisher has all the necessary parts to publish a trade
   feed and an incremental depth feed for the exchange.  The only things that
@@ -2887,6 +2887,7 @@ DepthFeedSubscriber::handle_depth_message(
 <p>
   The final helper method handles a trade message:
 </p>
+
 <div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation, continued</div>
 <pre class="code">
 bool
@@ -2927,23 +2928,53 @@ DepthFeedSubscriber::handle_trade_message(
   size).  The result is then logged.
 </p>
 
-<h2>Final Big Topic</h2>
+<h3>Subscriber Initialization</h3>
+
+<p>
+  Finally, the subscriber can create, initialize, and associate its components.
+  The <code>main()</code> function of subscriber starts by creating the
+  <code>DepthFeedConnection</code> and the <code>DepthFeedSubscriber</code>:
+</p>
+
+<div class="listing">subscriber_main.cpp: main() function</div>
+<pre class="code">
+int main(int argc, const char* argv[])
+{
+  // Create the connection
+  liquibook::examples::DepthFeedConnection connection(argc, argv);
+
+  // Create feed subscriber
+  liquibook::examples::DepthFeedSubscriber feed(connection.get_templates());
+
+  // Set up handlers
+  liquibook::examples::MessageHandler msg_handler =
+      boost::bind(&amp;liquibook::examples::DepthFeedSubscriber::handle_message,
+                  &amp;feed, _1, _2);
+  liquibook::examples::ResetHandler reset_handler =
+      boost::bind(&amp;liquibook::examples::DepthFeedSubscriber::handle_reset,
+                  &amp;feed);
+  connection.set_message_handler(msg_handler);
+  connection.set_reset_handler(reset_handler);
+
+  // Connect to server
+  connection.connect();
+  connection.run();
+
+  return 0;
+}
+</pre>
+
+<p>
+  Next, the handlers for messages, and connection resets are set up, and 
+  finally, the subscriber connects to the publisher.  This completes the 
+  subscriber application.
+</p>
+
+<h2>Running the Example</h2>
 
 <p>
     Here is how to include blocks of code in the article using the &lt;pre&gt; tag and syntax highlighter:
 </p>
-
-<pre class="brush: java">
-    import java.io.*;
-
-    public class Foobar extends Whatever {
-        public static void main(String[] args) {
-            <span class="green">// 4-space indent according to JavaSoft conventions</span>
-        }
-    }
-</pre>
-
-<p>Now describe the code.</p>
 
 <h2>Summary</h2>
 
