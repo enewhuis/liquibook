@@ -3042,7 +3042,17 @@ int main(int argc, const char* argv[])
 <h2>Summary</h2>
 
 <p>
-    The 
+  Although much code has been walked through in this example, very little
+  custom code was related to the order book.  Most of the code was either 
+  general networking code using ASIO, or QuickFAST code.  In addition, the
+  complexities of order book maintenance and depth-building are contained -
+  most of the code shown was simple, or even trivial.
+</p>
+
+<p>
+  Liquibook makes it very simple to implement a limit order book matching 
+  engine, whether you are building an exchange, or are a trader simulating an
+  exchange's matching capability.
 </p>
 
 <h2>References</h2>
@@ -3067,9 +3077,6 @@ int main(int argc, const char* argv[])
     </li>
     <li>NASDAQ 100 -
         <a href="http://www.nasdaq.com/markets/indices/nasdaq-100.aspx" shape="rect">http://www.nasdaq.com/markets/indices/nasdaq-100.aspx</a>
-    </li>
-    <li>Other -
-        <a href="" shape="rect"></a>
     </li>
 </ul>
 
