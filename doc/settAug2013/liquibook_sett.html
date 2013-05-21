@@ -996,8 +996,9 @@ namespace liquibook { namespace examples {
 
 <p>
   The real meat of the class is next, where messages are sent to the
-  subscriber, in <code>send_trade()</code> for trades, and both <code>send_incr_update()</code>and <code>send_full_update()</code> for depth updates.
-
+  subscriber, in <code>send_trade()</code> for trades, and both
+  <code>send_incr_update()</code>and <code>send_full_update()</code> for
+  depth updates.
 </p>
 
 <div class="listing">Listing 18 depth_feed_connection.h: DepthFeedSession class declaration, continued</div>
@@ -1200,7 +1201,7 @@ DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet&amp; message)
 
 <p>
   The <code>send_incr_update</code> method is similar, with some key
-  differences
+  differences:
 </p>
 
 <div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
@@ -1738,7 +1739,13 @@ DepthFeedConnection::send_full_update(const std::string&amp; symbol,
 
 <p>
   In any of the cases, if the session is no longer connected, the session
-  is removed.  The next method handles a connection within the subscriber:
+  is removed.  There is one important difference in
+  <code>send_incr_update()</code> - the method's return value indicates if any
+  of the sessions gave back a return value of false.
+</p>
+
+<p>
+  The next method handles a connection within the subscriber:
 </p>
 
 <div class="listing">Listing 2 depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
@@ -2058,6 +2065,271 @@ private:
 
 } } // End namespace
 </pre>
+
+<p>
+  The <code>DepthFeedPublisher</code> constructor initializes its connection
+  pointer, which is set by a separate setter method:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation</div>
+<pre class="code">
+namespace liquibook { namespace examples { 
+
+using namespace QuickFAST::Messages;
+
+DepthFeedPublisher::DepthFeedPublisher()
+: connection_(NULL)
+{
+}
+
+void
+DepthFeedPublisher::set_connection(DepthFeedConnection* connection)
+{
+  connection_ = connection;
+}
+</pre>
+
+<p>
+  The <code>DepthFeedPublisher</code>'s primary responsibility is to build 
+  feed messages, in response to events.  The first event handler is
+  <code>on_trade()</code>:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<pre class="code">
+
+void
+DepthFeedPublisher::on_trade(
+    const book::OrderBook&lt;OrderPtr&gt;* order_book,
+    book::Quantity qty,
+    book::Cost cost)
+{
+  // Publish trade
+  QuickFAST::Messages::FieldSet message(20);
+  const ExampleOrderBook* exob = 
+          dynamic_cast&lt;const ExampleOrderBook*&gt;(order_book);
+  std::cout &lt;&lt; "Got trade for " &lt;&lt; exob-&gt;symbol() 
+            &lt;&lt; " qty " &lt;&lt; qty
+            &lt;&lt; " cost " &lt;&lt; cost &lt;&lt; std::endl;
+  build_trade_message(message, exob-&gt;symbol(), qty, cost);
+  connection_-&gt;send_trade(message);
+}
+</pre>
+
+<p>
+  <code>on_trade()</code> starts by casting the order book to the derived type.
+  The reader will recall that the derived order book is used to store the
+  symbol of the order book.  It then builds the trade message, and distributes
+  the message through the <code>DepthFeedConnection</code>.
+</p>
+
+<p>
+  The next event handler handles depth change events:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<pre class="code">
+void
+DepthFeedPublisher::on_depth_change(
+    const book::DepthOrderBook&lt;OrderPtr&gt;* order_book,
+    const book::DepthOrderBook&lt;OrderPtr&gt;::DepthTracker* tracker)
+{
+  // Publish changed levels of order book
+  QuickFAST::Messages::FieldSet message(20);
+  const ExampleOrderBook* exob = 
+          dynamic_cast&lt;const ExampleOrderBook*&gt;(order_book);
+  build_depth_message(message, exob-&gt;symbol(), tracker, false);
+  if (!connection_-&gt;send_incr_update(exob-&gt;symbol(), message)) {
+    // Publish all levels of order book
+    QuickFAST::Messages::FieldSet full_message(20);
+    build_depth_message(full_message, exob-&gt;symbol(), tracker, true);
+    connection_-&gt;send_full_update(exob-&gt;symbol(), full_message);
+  }
+}
+</pre>
+
+<p>
+  Similar to <code>on_trade()</code>, the depth change event handler casts the
+  order book to the derived class, builds a feed message, and sends it to the
+  clients through the <code>DepthFeedConnection</code>.  What is different in
+  <code>on_depth_change()</code> is that the depth feed is incremental, and as
+  noted above, the clients must be known to be in a valid state for the
+  security of the update to handle the next message.
+</p>
+
+<p>
+  The reader will recall that the call to
+  <code>DepthFeedConnection::send_incr_update()</code> returns true if and only
+  if all of the clients could handle the message.  If not, a full update is
+  created and sent.  In the steady state, only the incremental messge need by
+  built.
+</p>
+
+<p>
+  The <code>build_trader_message()</code> method is used by
+  <code>on_trade()</code> to build a trade message:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<pre class="code">
+void
+DepthFeedPublisher::build_trade_message(
+    QuickFAST::Messages::FieldSet&amp; message,
+    const std::string&amp; symbol,
+    book::Quantity qty,
+    book::Cost cost)
+{
+  message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
+  message.addField(id_symbol_, FieldString::create(symbol));
+  message.addField(id_qty_, FieldUInt32::create(qty));
+  message.addField(id_cost_, FieldUInt32::create(cost));
+}
+</pre>
+
+<p>
+  Building a QuickFAST message is relatively simple.  Each field is added to
+  the message through the <code>addField()</code> call.  The sequence number is
+  added later, is particular to a client.
+</p>
+
+<p>
+  The next message builder, <code>build_depth_message()</code>, builds
+  repeating sequences of data, and is more complex:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<pre class="code">
+void
+DepthFeedPublisher::build_depth_message(
+    QuickFAST::Messages::FieldSet&amp; message,
+    const std::string&amp; symbol,
+    const book::DepthOrderBook&lt;OrderPtr&gt;::DepthTracker* tracker,
+    bool full_message)
+{
+  size_t bid_count(0), ask_count(0);
+
+  message.addField(id_timestamp_, FieldUInt32::create(time_stamp()));
+  message.addField(id_symbol_, FieldString::create(symbol));
+
+  // Build the changed levels
+  book::ChangeId last_published_change = tracker-&gt;last_published_change();
+  
+  // Build changed bids
+  {
+    SequencePtr bids(new Sequence(id_bids_length_, 1));
+    int index = 0;
+    const book::DepthLevel* bid = tracker-&gt;bids();
+    // Create sequence of bids
+    while (true) {
+      if (full_message || bid-&gt;changed_since(last_published_change)) {
+        build_depth_level(bids, bid, index);
+        ++bid_count;
+      }
+      ++index;
+      if (bid == tracker-&gt;last_bid_level()) {
+        break;
+      } else {
+        ++bid;
+      }
+    }
+    message.addField(id_bids_, FieldSequence::create(bids));
+  }
+
+  // Build changed asks
+  {
+    SequencePtr asks(new Sequence(id_asks_length_, 1));
+    int index = 0;
+    const book::DepthLevel* ask = tracker-&gt;asks();
+    // Create sequence of asks
+    while (true) {
+      if (full_message || ask-&gt;changed_since(last_published_change)) {
+        build_depth_level(asks, ask, index);
+        ++ask_count;
+      }
+      ++index;
+      if (ask == tracker-&gt;last_ask_level()) {
+        break;
+      } else {
+        ++ask;
+      }
+    }
+    message.addField(id_asks_, FieldSequence::create(asks));
+  }
+  std::cout &lt;&lt; "Encoding " &lt;&lt; (full_message ? "full" : "incr")
+            &lt;&lt; " depth message for symbol " &lt;&lt; symbol 
+            &lt;&lt; " with " &lt;&lt; bid_count &lt;&lt; " bids, "
+            &lt;&lt; ask_count &lt;&lt; " asks" &lt;&lt; std::endl;
+}
+</pre>
+
+<p>
+  This method starts like <code>add_trade()</code>, adding the timestamp and 
+  symbol fields.  Next two sequences are built, for the changed bid, and ask
+  levels.  To support an incremrntal feed, Liquibook tracks a change number
+  (called <code>ChangeId</code>) on each depth level, and the ID of the last
+  published change in the depth, which is set after the callback completes.
+  To determine the levels to publish, the publisher needs to compare the last
+  change of each level to the last published change of the depth.
+</p>
+
+<p>
+  In <code>build_depth_message()</code>, a bid sequence is created, and an
+  asociated length is attached.  The changed bid levels are each added to the
+  sequence through calls to <code>build_depth_level()</code>.  The iteration 
+  here must be careful to not move beyond the last bid level.  Finally, the
+  sequence is added to the message.  The same is done for changed ask levels.
+</p>
+
+<p>
+  By comparison, <code>build_depth_level()</code> is simple:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<pre class="code">
+void
+DepthFeedPublisher::build_depth_level(
+    QuickFAST::Messages::SequencePtr&amp; level_seq,
+    const book::DepthLevel* level,
+    int level_index)
+{
+  FieldSetPtr level_fields(new FieldSet(4));
+  level_fields-&gt;addField(id_level_num_, FieldUInt8::create(level_index));
+  level_fields-&gt;addField(id_order_count_, 
+                         FieldUInt32::create(level-&gt;order_count()));
+  level_fields-&gt;addField(id_price_,
+                         FieldUInt32::create(level-&gt;price()));
+  level_fields-&gt;addField(id_size_,
+                         FieldUInt32::create(level-&gt;aggregate_qty()));
+  level_seq-&gt;addEntry(level_fields);
+}
+</pre>
+
+<p>
+  This method shows how to add an entry to a QuickFAST sequence - by creating
+  a <code>FieldSet</code>, adding fields to it, and adding the
+  <code>FieldSet</code> to the sequence.
+</p>
+
+<p>
+  The final method is a helper, to create an integer timestamp for a message:
+</p>
+
+<div class="listing">Listing 2 depth_feed_publisher.cpp: DepthFeedPublisher class implementation, continued</div>
+<pre class="code">
+uint32_t
+DepthFeedPublisher::time_stamp()
+{
+  time_t now;
+  time(&amp;now);
+  return now;
+}
+
+} } // End namespace
+</pre>
+
+<p>
+  At this point the publisher has the capability to 
+</p>
 
 <h3>Initialization</h3>
 publisher_main.cpp
