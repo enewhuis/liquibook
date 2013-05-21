@@ -28,7 +28,7 @@ namespace liquibook { namespace examples {
     // return false if failure
     bool handle_message(BufferPtr& bp, size_t bytes_transferred);
 
-    // Handle a reset
+    // Handle a reset of the connection
     void handle_reset();
 
   private:
