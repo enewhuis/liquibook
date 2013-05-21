@@ -284,7 +284,7 @@
   <code>book::OrderBook</code> class are:
 </p>
 
-<div class="listing">book/order_book.h: OrderBook class of Liquibook</div>
+<div class="listing">book/order_book.h: OrderBook class declaration</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -349,7 +349,7 @@ public:
   The derived <code>book::DepthOrderBook</code> class is simpiler:
 </p>
 
-<div class="listing">book/depth_order_book.h: DepthOrderBook class of Liquibook</div>
+<div class="listing">book/depth_order_book.h: DepthOrderBook class declaration</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -422,7 +422,7 @@ private:
   access to the symbol of the order book's security.
 </p>
 
-<div class="listing">example_order_book.h: ExampleOrderBook class</div>
+<div class="listing">example_order_book.h: ExampleOrderBook class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -462,7 +462,7 @@ private:
   <code>examples::Exchange</code> class:
 </p>
 
-<div class="listing">exchange.h: Exchange class</div>
+<div class="listing">exchange.h: Exchange class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -501,7 +501,7 @@ private:
   in order add the listeners to future order books:
 </p>
 
-<div class="listing">exchange.cpp: Exchange constructor</div>
+<div class="listing">exchange.cpp: Exchange class implementation</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -519,7 +519,7 @@ Exchange::Exchange(ExampleOrderBook::TypedDepthListener* depth_listener,
   order book:
 </p>
 
-<div class="listing">exchange.cpp: add_order_book() method</div>
+<div class="listing">exchange.cpp: Exchange class implementation, continued</div>
 <pre class="code">
 void
 Exchange::add_order_book(const std::string&amp; sym)
@@ -537,7 +537,7 @@ Exchange::add_order_book(const std::string&amp; sym)
   the <code>perform_callbacks()</code> method:
 </p>
 
-<div class="listing">exchange.cpp: add_order() method</div>
+<div class="listing">exchange.cpp: Exchange class implementation, continued</div>
 <pre class="code">
 void
 Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
@@ -567,7 +567,7 @@ Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
   in the class <code>src/book/order.h</code>:
 </p>
 
-<div class="listing">book/order.h: Order class of Liquibook</div>
+<div class="listing">book/order.h: Order class (Liquibook) declaration</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -594,7 +594,7 @@ public:
   <code>book::Order</code> interface:
 </p>
 
-<div class="listing">order.h: Implementation of Order class in example exchange</div>
+<div class="listing">order.h: Order class (publisher) declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -629,7 +629,7 @@ private:
   passed to it:
 </p>
 
-<div class="listing">order.cpp: Implementation of Order class in example exchange</div>
+<div class="listing">order.h: Order class implementation</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -652,7 +652,7 @@ Order::Order(bool buy, const double&amp; price, book::Quantity qty)
   passed to it:
 </p>
 
-<div class="listing">order.cpp: accessors in Order class</div>
+<div class="listing">order.h: Order class implementation, continued</div>
 <pre class="code">
 bool
 Order::is_buy() const
@@ -673,7 +673,7 @@ Order::order_qty() const
   so <code>Order</code> converts the price by multiplying by the precision:
 </p>
 
-<div class="listing">order.cpp: price() in Order class</div>
+<div class="listing">order.h: Order class implementation, continued</div>
 <pre class="code">
 book::Price
 Order::price() const
@@ -826,7 +826,7 @@ Order::price() const
   <code>examples::TemplateConsumer</code> class:
 </p>
 
-<div class="listing">tempate_consumer.h: TemplateConsumer class</div>
+<div class="listing">tempate_consumer.h: TemplateConsumer class declaration</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -881,7 +881,7 @@ public:
   definition:
 </p>
 
-<div class="listing">tempate_consumer.cpp: initialization of TemplateConsumer static members</div>
+<div class="listing">tempate_consumer.cpp: TemplateConsumer class implementation</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -905,7 +905,7 @@ TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
   method</code> which parses the QuickFAST templates:
 </p>
 
-<div class="listing">tempate_consumer.cpp: parse_templates() method</div>
+<div class="listing">tempate_consumer.cpp: TemplateConsumer class implementation, continued</div>
 <pre class="code">
 QuickFAST::Codecs::TemplateRegistryPtr 
 TemplateConsumer::parse_templates(const std::string& template_filename)
@@ -1328,7 +1328,6 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet&amp; message)
 
 <div class="listing">depth_feed_connection.cpp: DepthFeedSession class implementation, continued</div>
 <pre class="code">
-
 void
 DepthFeedSession::on_send(WorkingBufferPtr wb,
                           const boost::system::error_code&amp; error,
@@ -1854,7 +1853,6 @@ DepthFeedConnection::on_receive(BufferPtr bp,
 
 <div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
 <pre class="code">
-
 void
 DepthFeedConnection::on_send(WorkingBufferPtr wb,
                              const boost::system::error_code&amp; error,
@@ -2328,19 +2326,14 @@ DepthFeedPublisher::time_stamp()
 </pre>
 
 <p>
-  At this point the publisher has the capability to 
+  At this point the publisher has all the necessary parts to publish a trade
+  feed and an incremental depth feed for the exchange.  The only things that
+  remains are to create, initialize, and associate the various parts, and to
+  generate the random orders.
 </p>
 
 <h3>Initialization</h3>
 publisher_main.cpp
-
-<h3>Mapping from Symbol to Order Book</h3>
-
-<p>
-  The implementation of the <code>examples::Exchange</code> class is trivial.
-  The constructor saves off the provided listeners, in order to add them to
-  future order books:
-</p>
 
 <h3>Setting up the Exchange</h3>
 
