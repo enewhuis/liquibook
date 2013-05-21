@@ -2973,19 +2973,76 @@ int main(int argc, const char* argv[])
 <h2>Running the Example</h2>
 
 <p>
-    Here is how to include blocks of code in the article using the &lt;pre&gt; tag and syntax highlighter:
+  By default the publisher and subscriber connect on port 10003 on localhost.
+  To run on a different port, add the -p &lt;port&gt; to each command line.
+  The subscriber may also specify a remote host with the -h &lt;host&gt;
+  option.  To specify a different template file, or template file location, use
+  the -t &lt;filename&gt; option.
+</p>
+<p>
+  For example:
+</p>
+
+<pre>
+  $ ./depth_feed_publisher -p 9999
+  $ ./depth_feed_subscriber -p 9999
+</pre>
+
+<p>
+  The subscriber produces output like this:
+</p>
+
+<pre>
+1369167639 Got depth msg 8182 for symbol GILD
+----------BID----------    ----------ASK----------
+   49.93       400 [ 1]       50.12       500 [ 1]
+   49.66       300 [ 1]       50.13       500 [ 1]
+   49.59      1000 [ 3]       50.14       500 [ 1]
+   49.58       700 [ 1]       50.19       500 [ 1]
+                              50.26       800 [ 1]
+1369167640 Got depth msg 8183 for symbol XLNX
+----------BID----------    ----------ASK----------
+   37.40       400 [ 1]       37.60      1000 [ 2]
+   37.36       400 [ 1]       37.61      1900 [ 3]
+   37.35      1000 [ 1]       37.65       900 [ 3]
+   37.28       500 [ 2]       37.70       600 [ 1]
+   37.25      1700 [ 2]       37.71      1000 [ 2]
+1369167641 Got depth msg 8184 for symbol GOLD
+----------BID----------    ----------ASK----------
+   78.30       300 [ 1]       78.43       300 [ 1]
+   78.18       300 [ 1]       78.48       700 [ 1]
+   78.17       900 [ 1]       78.64       600 [ 1]
+   78.09       200 [ 1]       78.70       600 [ 1]
+   78.06       900 [ 1]       79.12       500 [ 1]
+1369167642 Got trade msg 8185 for symbol HSIC: 600@89.47
+1369167642 Got trade msg 8186 for symbol HSIC: 200@89.49
+1369167642 Got depth msg 8187 for symbol HSIC
+----------BID----------    ----------ASK----------
+   89.32       700 [ 1]       89.49       500 [ 1]
+   89.09       500 [ 1]       89.52       200 [ 1]
+   88.96       600 [ 1]       89.68       500 [ 1]
+   88.82       200 [ 1]       89.76       900 [ 1]
+   88.59       100 [ 1]       89.91       100 [ 1]
+</pre>
+
+<p>
+  These updates show the full depth for each security updated, and not just 
+  the changed levels.  The first three updates shows the depth for various
+  securities, followed by some trades and a depth update for a fourth security.
+  The trades go hand-in-hand with a depth update.  Some depth updates cause
+  trades, and some do not.
+</p>
+<p>
+  Note that a very good test of the incremental feed is to start two
+  subscribers at different times, so that the first subscriber has handled a
+  good number of messages before the second subscriber is started.  The two
+  should still be perfectly in sync, and produce identical output.
 </p>
 
 <h2>Summary</h2>
 
 <p>
-    Wrap things up.
-</p>
-
-<p>
-    Tip: avoid &amp;nbsp; for indentation. When specific indentation is
-    required (usually for code examples), use a &lt;pre&gt; block
-    instead.
+    The 
 </p>
 
 <h2>References</h2>
