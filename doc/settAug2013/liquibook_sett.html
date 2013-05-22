@@ -86,15 +86,16 @@
   involves multiple partries, and in a conceptual view looks like this:
 </p>
 
-<div class="figure">Figure 1 Conceptual View of Exchange</div>
+<div class="figure">Figure 1: Conceptual View of Exchange</div>
 <img src="settAug2013_files/Exchange.png"/>
 
 <p>
   Building such an exchange is a complex undertaking, involving order taking,
-  matching, compression, dissemination, decompression, and interpretation. 
-  This paper will demonstrate how to build such a system using only open-source
-  components, including Liquibook for limit order book matching, QuickFAST for
-  compression and decompression, and Boost ASIO for distribution.
+  matching, serialization and compression to a feed, dissemination,
+  deserialization, decompression, and interpretation.  This paper will
+  demonstrate how to build such a system using only open-source components,
+  including Liquibook for limit order book matching, QuickFAST for compression
+  and decompression, and Boost ASIO for distribution.
 </p>
 
 <h3>Liquibook Background</h3>
@@ -124,13 +125,9 @@
 <h2>Example System</h2>
 
 <p>
-  The example project for this paper will take on a more advanced use case - 
-  simulating an exchange producing a 5-level depth feed, aggregated by price,
-  and a trade feed.
-</p>
-
-<p>  
-  This example involves a number of steps:
+  The example project for this paper will take on a more advanced use case:
+  simulating an exchange producing a 5-level depth feed - aggregated by price,
+  and a trade feed.  This example involves a number of steps:
 </p>
 
 <h3>Accept Orders</h3>
@@ -142,33 +139,34 @@
   generated orders will suffice.
 </p>
 
-<h3>Maintain a Limit Order Book of all Unfilled Orders for Each Security</h3>
+<h3>Maintain a Limit Order Book for Each Security</h3>
 
 <p>
   The example exchange must be ready to match unfilled orders against inbound
   orders.  This is done by means of a limit order book.  The limit order book
   keeps these orders sorted so that when multiple existing orders can match a
   new inbound order, the matching is performed in a sequence determined by
-  established exchange rules.  The example exchange uses Liquibook's OrderBook
-  class to maintain the limit order book.
+  established exchange rules.  The example exchange uses Liquibook's 
+  DepthOrderBook class to maintain the limit order book.
 </p>
 
 <h3>Match Buy and Sell Orders</h3>
 
 <p>
   The example exchange must match new inbound orders against those in the 
-  limit order book.  The exchange must detect a match, and fill the appropriate 
-  orders.  Liquibook's OrderBook class naturally includes matching capability.
+  limit order book.  The exchange must detect a match, and fill the appropriate
+  orders.  Liquibook's order book classes naturally includes matching
+  capability.
 </p>
 
 <h3>Update Trading Client Order Status</h3>
 
 <p>
-  A real exchange must always notify traders of changes in their order status.
-  This includes accepting, filling, and rejecting, orders, but also accepting
-  or rejecting an order cancellation or replacement requests.  In the example
-  exchange, this will be skipped because there are no trading clients - the
-  orders are randomly generated.  Liquibook does, however, provide an interface
+  An exchange must always notify traders of changes in their order status.
+  This includes accepting, filling, and rejecting orders, but also accepting
+  or rejecting order cancellation and replacement requests.  In the example
+  exchange, there are no trading clients (the orders are randomly generated),
+  so this step will be skipped.  Liquibook does, however, provide an interface
   and make callbacks for changes in order status, which can easily be turned
   into notifications sent to trading clients.
 </p>
@@ -176,10 +174,10 @@
 <h3>Aggregate the Top 5 Price Levels into Depth</h3>
 
 <p>
-  While a full order book feed is useful, some markets choose to send 
+  While a full order book feed is useful, some exchanges choose to send 
   aggregated forms of data instead, known as depth.  Rather than
-  representing individual orders, the depth models price levels as a whole.
-  The market will also limit the number of levels distributed - top 5 and 
+  representing individual orders, depth models price levels as a whole.
+  An exchange will also limit the number of levels distributed - top 5 and 
   top 10 are common limits.  
 </p>
 <p>
@@ -206,27 +204,27 @@
 
 <p>
   In order to effectively trade, feed clients have a need to understand order
-  flow in the exchange.  Feeds in which clients are norified of all possible
-  order detail are known as "quote" feeds or "full order book" feeds.  The
-  example exchange, however, summarizes the order book using dept.  It 
-  notifies feed clients of trades and changes in the depth.  Liquibook supports
-  building a trade feed through the TradeListener inteface, and a depth feed
-  through the DepthListener class.  It also supports building a full order book
-  feed, through the OrderListener class.
+  flow in the exchange.  Feeds in which clients are notified of all possible
+  order detail are known as "quote" feeds or "full order book" feeds, while
+  those which aggregate orders by price are called "depth" feeds.  A "BBO"
+  feed gives only the top-level quote for a security, and a "trade" feed 
+  reflects all trades, or matched orders.  Liquibook has support for building
+  all of these feeds.
 </p>
 
 <p>
-  The example exchange then compresses the trade and depth messages using
-  QuickFAST and sends them to clients using Boost ASIO.
+  The example exchange builds both a trade and depth feed, then compresses the
+  trade and depth messages using QuickFAST and sends them to clients using
+  Boost ASIO.
 </p>
 
 <h3>Handle the Feed in a Client Program</h3>
 
 <p>
-  Finally, the example includes feed clients that connect to the feed, and 
-  decodes the updates (in the FAST protocol), and recreates the trade events 
-  and the market depth.  The clients use QuickFAST for decoding, and Boost ASIO
-  to handle network I/O.
+  Finally, the example includes feed clients that connect to the feed, decode
+  the updates to recreate the trade events and reproduce the market depth.
+  The clients use QuickFAST for decoding, Boost ASIO to handle network I/O, and
+  Liquibook to reproduce the depth.
 </p>
 
 <h2>Getting Started</h2>
@@ -255,22 +253,16 @@
   exchange.
 </p>
 
-<a name="figure2"><div class="figure">Figure 2 Example Exchange Data Flow</div></a>
+<a name="figure2"><div class="figure">Figure 2: Example Exchange Data Flow</div></a>
 <img src="settAug2013_files/ExampleExchange.png"/>
 
 <h2>Publisher Application</h2>
 
 <p>
   The publisher implements the exchange in the example project.  The publisher
-  is therefore responsible for maintaining the various order books (one per
-  security), building the feed messages, and publishing the messages, in a
-  FAST-encoded format.
-</p>
-
-<p>
-  The publisher also simulates the trading clients, generating random orders
-  inside the process, and adding them to the appropriate order book.  Finally,
-  the publisher accepts network connections from one or more subscribers.
+  generates orders and adds them to the proper order book, handles the trade
+  and depth events through listeners, encodes these using QuickFAST, and sends
+  them using Boost ASIO.
 </p>
 
 <h3>The Order Book</h3>
@@ -284,7 +276,7 @@
   <code>book::OrderBook</code> class are:
 </p>
 
-<div class="listing">book/order_book.h: OrderBook class declaration</div>
+<div class="listing">book/order_book.h: Selected parts of OrderBook class declaration</div>
 <pre class="code">
 namespace liquibook { namespace book {
 
@@ -335,9 +327,9 @@ public:
 </p>
 
 <p>
-  Finally, there is a method to perform the callbacks on the order book.  The
-  client code is responsible for calling this method.  In that way, it can
-  decide whether it is done in the calling thread, or in a background thread.
+  Finally, there is a method to perform the callbacks on the order book.
+  Liquibook gives the client code the responsibility to execute this method,
+  so that it can be done in the calling thread, or a background thread.
   By default, this method calls <code>perform_callback()</code> for each
   callback in the queue.  Naturally, <code>perform_callback()</code> can be
   overridden, but that is not necessary in the publisher.  The default
@@ -391,35 +383,25 @@ private:
 
 <p>
   <code>book::DepthOrderBook</code> overrides <code>perform_callback()</code>
-  to update the depth, which is accessible through the <code>depth()</code>
-  accessor methods.
+  to update its depth, which is accessible through the <code>depth()</code>
+  accessor methods.  In addition, <code>book::DepthOrderBook</code> adds two
+  new listeners - a BBO listener, for tracking only changes to the best bid
+  and best offer, and a depth listener, for tracking all depth changes.
 </p>
 
 <p>
-  In addition, <code>book::DepthOrderBook</code> adds two new listeners -
-  a BBO listener, for tracking only changes to the best bid and best offer,
-  and a depth listener, for tracking all depth changes.
-</p>
-
-<p>
-  To build the ecxhange, the publisher must create a 
+  To build the exchange, the publisher must create a 
   <code>book::DepthOrderBook</code>, and it set the trade listener and depth
-  listener.  While hanfling these callbacks, the publisher will need to 
+  listener.  While handling these callbacks, the publisher will need to 
   update the feed clients with trade and depth update messages.
 </p>
 
 <p>
-  Since the order book classes require an order class, and its pointer type
-  to be provided as a template argument, the publisher must decide on an order
-  an pointer scheme.
-</p>
-
-<p>
-  Note that in some of the callbacksd a pointer to the order book is provided,
+  Note that in some of the callbacks, a pointer to the order book is provided,
   while a pointer to the order is provided in others.
   This gives the publisher two opportunities to provide additional fields and 
   logic through inheritance.  The publisher takes advantage of this, providing
-  access to the symbol of the order book's security.
+  access to the symbol of the order book's security:
 </p>
 
 <div class="listing">example_order_book.h: ExampleOrderBook class declaration</div>
@@ -441,25 +423,25 @@ private:
 </pre>
 
 <p>
-  Here the reader will note that the <code>examples::ExampleOrderBook</code>
+  Here the reader will note that the <code>ExampleOrderBook</code>
   class specializes <code>book::DepthOrderBook</code> and binds a shared
-  pointer of <code>examples::Order</code> to its parent's template argument.
-  The <code>examples::Order</code> class is shown below.  The trivial
-  implementation of the <code>examples::ExampleOrderBook</code> is omitted
+  pointer of <code>Order</code> to its parent's template argument.
+  The <code>Order</code> class is shown below.  The trivial
+  implementation of the <code>ExampleOrderBook</code> is omitted
   from this paper.  The class diagram for order books looks like this:
 </p>
 
-<div class="figure">Figure 3 Order Book Class Diagram</div>
+<div class="figure">Figure 3: Order Book Class Diagram</div>
 <img src="settAug2013_files/OrderBookUML.png"/>
 
 <h3>The Exchange</h3>
 
 <p>
-  The <code>examples::ExampleOrderBook</code> class manages the order book and
+  The <code>ExampleOrderBook</code> class manages the order book and
   depth for a single security.  Since exchanges handle multiple securities, 
   somewhere the publisher needs to create an order book for each security, and
-  maintain a mapping from a symbol to its order book.  This is done in the
-  <code>examples::Exchange</code> class:
+  maintain a mapping from a symbol to its order book.  The publisher does this
+  in the <code>Exchange</code> class:
 </p>
 
 <div class="listing">exchange.h: Exchange class declaration</div>
@@ -486,19 +468,12 @@ private:
 } }
 </pre>
 
-<p>
-  The class diagram for the exchange looks like this:
-</p>
-
-<div class="figure">Figure 4 Exchange Class Diagram</div>
-<img src="settAug2013_files/ExchangeUML.png"/>
-
 <p> 
-  The <code>examples::Exchange</code> class has only three methods: a
+  The <code>Exchange</code> class has only three methods: a
   constructor, a method to add an order book, and a method to handle an order.
   As expected, it maintains a map of order books.  It also maintains pointers
   to the depth listener and trade listener.  The constructor does exactly that,
-  in order add the listeners to future order books:
+  in order to add the listeners to future order books:
 </p>
 
 <div class="listing">exchange.cpp: Exchange class implementation</div>
@@ -533,7 +508,7 @@ Exchange::add_order_book(const std::string&amp; sym)
 
 <p>
   Finally, the <code>add_order()</code> method finds the correct order book,
-  adds the order to the orer book, and then calls triggers callbacks by calling
+  adds the order to the orer book, and then triggers callbacks by calling
   the <code>perform_callbacks()</code> method:
 </p>
 
@@ -556,7 +531,7 @@ Exchange::add_order(const std::string&amp; symbol, OrderPtr&amp; order)
   The call to <code>perform_callbacks()</code> will trigger any callbacks to
   the provided listeners.  This way, a single thread is manipulating the order
   books.  It is also possible to issue <code>perform_callbacks()</code> calls
-  in a background thread, but the publisher does it this way.
+  in a background thread, but the publisher does it this way for simplicity.
 </p>
 
 <h3>Order Class</h3>
@@ -590,7 +565,7 @@ public:
 </pre>
 
 <p>
-  The publisher defines <code>examples::Order</code> to implement the 
+  The publisher defines <code>Order</code> to implement the 
   <code>book::Order</code> interface:
 </p>
 
@@ -607,12 +582,12 @@ public:
   virtual bool is_buy() const;
   virtual book::Quantity order_qty() const;
   virtual book::Price price() const;
+
+  static const uint8_t precision_;
 private:
   bool is_buy_;
   double price_;
   book::Quantity qty_;
-
-  static const uint8_t precision_;
 };
 
 } }
@@ -623,10 +598,13 @@ private:
   not strictly require inheriting from the <code>book::Order</code> class,
   just that the interface be implemented.
 </p>
+<p>
+  The example's <code>Order</code> class implements <code>book::Order</code>,
+  and adds a static field called <code>precision_</code> for price conversion.
+</p>
 
 <p>
-  The <code>examples::Order</code> constructor simply copies the arguments
-  passed to it:
+  The <code>Order</code> constructor simply copies the arguments passed to it:
 </p>
 
 <div class="listing">order.h: Order class implementation</div>
@@ -648,8 +626,7 @@ Order::Order(bool buy, const double&amp; price, book::Quantity qty)
 </p>
 
 <p>
-  The <code>is_buy()</code> are simple accessors:
-  passed to it:
+  The <code>is_buy()</code> and <code>order_qty()</code> are simple accessors:
 </p>
 
 <div class="listing">order.h: Order class implementation, continued</div>
@@ -669,7 +646,7 @@ Order::order_qty() const
 
 <p>
   The final method is used to provide a price to the order book.  For
-  performance reasons, the order book requires this to be in integer format,
+  performance reasons, the Liquibook requires this to be in integer format,
   so <code>Order</code> converts the price by multiplying by the precision:
 </p>
 
@@ -732,16 +709,20 @@ Order::price() const
 </pre>
 
 <p>
-  Note that the tag names within the <code>template</code> tag indicate the
-  type of the field.  The reader may be surprised to see a currency field
-  (Cost) represented as an integer (uint32).  This, however is consistent with
-  Liquibook's internal storage of prices as as integer.  This carries this
-  design decision forward to the feed protocol, requiring the clients to
-  convert these prices back to their decimal format.
+  Note that the tag names within the <code>&lt;template&gt;</code> tag
+  indicate the type of the field.  The reader may be surprised to see a
+  currency field (Cost) represented as an integer (uint32).  This, however is
+  consistent with Liquibook's internal storage of prices as as integer.  
+  Liquibook's design decision is thus carried forward to the feed protocol,
+  requiring the clients to convert these prices back to their decimal format.
 </p>
 
 <p>
-  In addition to the expected trade fields, the publisher provides a message type, to indicate to the subscriber that the message is for a trade, a sequence number, so the subscriber can be confident it has received all messages, and processed them in the correct order, and a timestamp, so the subscriber can be confident the message has been received in a timely manner.
+  In addition to the expected trade fields, the publisher provides a message
+  type, to indicate to the subscriber that the message is for a trade, a
+  sequence number, so the subscriber can be confident it has received all
+  messages, and processed them in the correct order, and a timestamp, so the
+  subscriber can be confident the message has been received in a timely manner.
 </p>
 
 <p>
@@ -803,10 +784,10 @@ Order::price() const
 </p>
 
 <p>
-  The changed depth level begins with a level number, indicating which level 
+  Each changed depth level begins with a level number, indicating which level 
   has changed.  If the exchange were to produce all depth levels on every 
-  change, this would not be necessary.  Since the sequence element could 
-  represent any of the 5 levels in an incremental feed, it is required.
+  change, this would not be necessary.  Because in an incremental feed the
+  sequence element could represent any of the 5 levels, it is required.
 </p>
 
 <p>
@@ -823,7 +804,7 @@ Order::price() const
   With the template in place, the publisher (and subscriber) must use
   QuickFAST to put the templates to use for encoding (and decoding).  The 
   publisher (and subscriber) do this by means of the
-  <code>examples::TemplateConsumer</code> class:
+  <code>TemplateConsumer</code> class:
 </p>
 
 <div class="listing">tempate_consumer.h: TemplateConsumer class declaration</div>
@@ -861,7 +842,7 @@ public:
 </pre>
 
 <p>
-  The <code>examples::TemplateConsumer</code> class also has a static
+  The <code>TemplateConsumer</code> class also has a static
   <code>parse_templates()</code> method for parsing of templates.  It also 
   includes several static members of type
   <code>const QuickFAST::Messages::FieldIdentityCPtr</code>.  These members
@@ -938,11 +919,11 @@ TemplateConsumer::parse_templates(const std::string& template_filename)
   single publisher.  Since QuickFAST encodes a stream of data, uniquely
   compressed for each recipient, the pubilsher will need to maintain a
   QuickFAST state for each subscriber's encoder.  This is done through a class
-  called <code>examples::DepthFeedSession</code>.
+  called <code>DepthFeedSession</code>.
 </p>
 
 <p>
-  The publisher also uses the <code>examples::DepthFeedConnection</code> to listen for connections from subscribers.  The <code>DepthFeedConnection</code> will establish many <code>DepthFeedSession</code> instances.
+  The publisher also uses the <code>DepthFeedConnection</code> to listen for connections from subscribers.  The <code>DepthFeedConnection</code> will establish many <code>DepthFeedSession</code> instances.
 </p>
 
 <div class="listing">depth_feed_connection.h: DepthFeedSession class declaration</div>
@@ -1177,11 +1158,10 @@ DepthFeedSession::send_trade(QuickFAST::Messages::FieldSet&amp; message)
 <p>
   The <code>send_trade()</code> accepts an argument, reference to type 
   <code>QuickFAST::Messages::FieldSet</code>, which contains the method in a
-  protocol-neutral foermat.  The method starts by setting the sequence number
+  protocol-neutral format.  The method starts by setting the sequence number
   of the message by passing the field set to  <code>set_sequence_num()</code>.
   The caller is responsible for filling out the other fields of the message, 
-  while the session sets the sequence number.  This is followed by logging a
-  message to standard output.
+  while the session sets the sequence number.
 </p>
 
 <p>
@@ -1959,9 +1939,60 @@ DepthFeedConnection::port_from_args(int argc, const char* argv[])
   Liquibook events, and creating the QuickFAST messages to send.  As shown in 
   <a href="#figure2">figure 2</a>, the publisher needs a proprerly-typed
   <code>TradeListener</code> for trade events, and a properly-typed
-  <code>DepthListener</code> for depth events.  Declarations for these 
-  interefaces exist in Liquibook's order book clases.  The publisher implements
-  these interfaces in the <code>DepthFeedPublisher</code> class:
+  <code>DepthListener</code> for depth events.
+</p>
+
+<p>
+  The <code>TradeListener</code> interface has a single method to implement:
+</p>
+
+<div class="listing">trade_listener.h: TradeListener interface declaration</div>
+<pre class="code">
+namespace liquibook { namespace book {
+
+/// @brief listener of trade events.   Implement to build a trade feed.
+template &lt;class OrderBook &gt;
+class TradeListener {
+public:
+  /// @brief callback for a trade
+  /// @param book the order book of the fill (not defined whether this is before
+  ///      or after fill)
+  /// @param qty the quantity of this fill
+  /// @param cost the cost of this fill (qty * price)
+  virtual void on_trade(const OrderBook* book,
+                        Quantity qty,
+                        Cost cost) = 0;
+};
+
+} }
+</pre>
+
+<p>
+  Likewise, the <code>DepthListener</code> interface has a single method to
+  implement:
+</p>
+
+<div class="listing">trade_listener.h: TradeListener interface declaration</div>
+<pre class="code">
+namespace liquibook { namespace book {
+
+/// @brief listener of depth events.  Implement to build an aggregate depth 
+/// feed.
+template &lt;class OrderBook &gt;
+class DepthListener {
+public:
+  /// @brief callback for change in tracked aggregated depth
+  virtual void on_depth_change(
+      const OrderBook* book,
+      const typename OrderBook::DepthTracker* depth) = 0;
+};
+
+} }
+</pre>
+
+<p>
+  The publisher implements these interfaces in the
+  <code>DepthFeedPublisher</code> class:
 </p>
 
 <div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration</div>
@@ -1974,17 +2005,20 @@ class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
 </pre>
 
 <p>
-  Thre <code>DepthFeedPublisher</code> class implements both the 
+  The <code>DepthFeedPublisher</code> class implements both the 
   <code>ExampleOrderBook::TypedDepthListener</code> and the 
-  <code>ExampleOrderBook::TypedTradeListener</code> interfaces.  It also 
-  inherits from <code>TemplateConsumer</code>, but this is simply a
-  convenience (to reduce the need for name qualifiers), as 
-  <code>TemplateConsumer</code>'s data and methods are entirely static.
+  <code>ExampleOrderBook::TypedTradeListener</code> interfaces, which bind the
+  <code>book::DepthListener</code> and the <code>book::TradeListener</code> 
+  templates to those used in <code>ExampleOrderBook</code>. 
+  <code>DepthFeedPublisher</code> also inherits from
+  <code>TemplateConsumer</code>, but this is simply a convenience (to reduce
+  the need for name qualifiers), as <code>TemplateConsumer</code>'s data and
+  methods are entirely static.
 </p>
 
 <p>
   The <code>DepthFeedPublisher</code> has a simple constructor, for
-  initializing it's pointer.
+  initializing its pointer.
 </p>
 
 <div class="listing">depth_feed_publisher.h: DepthFeedPublisher class declaration, continued</div>
@@ -2121,8 +2155,9 @@ DepthFeedPublisher::on_trade(
 <p>
   <code>on_trade()</code> starts by casting the order book to the derived type.
   The reader will recall that the derived order book is used to store the
-  symbol of the order book.  It then builds the trade message, and distributes
-  the message through the <code>DepthFeedConnection</code>.
+  symbol of the order book.  The method then builds the trade message,
+  through a call to <code>build_trade_message()</code>, and distributes the
+  message through the <code>DepthFeedConnection</code>.
 </p>
 
 <p>
@@ -2151,24 +2186,24 @@ DepthFeedPublisher::on_depth_change(
 </pre>
 
 <p>
-  Similar to <code>on_trade()</code>, the depth change event handler casts the
+  Similar to the trade event handler, the depth change event handler casts the
   order book to the derived class, builds a feed message, and sends it to the
   clients through the <code>DepthFeedConnection</code>.  What is different in
-  <code>on_depth_change()</code> is that the depth feed is incremental, and as
-  noted above, the clients must be known to be in a valid state for the
+  <code>on_depth_change()</code> is that since the depth feed is incremental,
+  as noted above, the clients must be known to be in a valid state for the
   security of the update to handle the next message.
 </p>
 
 <p>
   The reader will recall that the call to
   <code>DepthFeedConnection::send_incr_update()</code> returns true if and only
-  if all of the clients could handle the message.  If not, a full update is
-  created and sent.  In the steady state, only the incremental messge need by
-  built.
+  if all of the clients could handle the message.  If not, false is returned, 
+  and <code>on_depth_change()</code> builds and sends a full update instead.
+  In the steady state, only the incremental messge need by built.
 </p>
 
 <p>
-  The <code>build_trader_message()</code> method is used by
+  The <code>build_trade_message()</code> method is used by
   <code>on_trade()</code> to build a trade message:
 </p>
 
@@ -2190,8 +2225,8 @@ DepthFeedPublisher::build_trade_message(
 
 <p>
   Building a QuickFAST message is relatively simple.  Each field is added to
-  the message through the <code>addField()</code> call.  The sequence number is
-  added later, is particular to a client.
+  the message through the <code>addField()</code> call.  The sequence number,
+  added later, is particular to a specific client.
 </p>
 
 <p>
@@ -2266,20 +2301,21 @@ DepthFeedPublisher::build_depth_message(
 
 <p>
   This method starts like <code>add_trade()</code>, adding the timestamp and 
-  symbol fields.  Next two sequences are built, for the changed bid, and ask
+  symbol fields.  Next, two sequences are built, for the changed bid and ask
   levels.  To support an incremrntal feed, Liquibook tracks a change number
   (called <code>ChangeId</code>) on each depth level, and the ID of the last
   published change in the depth, which is set after the callback completes.
   To determine the levels to publish, the publisher needs to compare the last
-  change of each level to the last published change of the depth.
+  change of each level to the last published change of the depth as a whole.
 </p>
 
 <p>
   In <code>build_depth_message()</code>, a bid sequence is created, and an
   asociated length is attached.  The changed bid levels are each added to the
   sequence through calls to <code>build_depth_level()</code>.  The iteration 
-  here must be careful to not move beyond the last bid level.  Finally, the
-  sequence is added to the message.  The same is done for changed ask levels.
+  logic here must be careful to not move beyond the last bid level.  Finally,
+  the sequence is added to the message.  The same is done for changed ask
+  levels.
 </p>
 
 <p>
@@ -2340,7 +2376,7 @@ DepthFeedPublisher::time_stamp()
 <p>
   The exchange is initialized in the file <code>publisher_main.cpp</code>.
   The <code>main()</code> function starts by establishing the securities to
-  "trade" in our exchange - in this case the NASDAQ 100 - taken from a
+  "trade" in the exchange - in this case the NASDAQ 100 - taken from a
   snapshot in April 2013.  <code>main()</code> records the symbol and a base
   price in a structure:
 </p>
@@ -2370,8 +2406,8 @@ typedef std::vector<SecurityInfo> SecurityVector;
 
 <p>
   The <code>main()</code> function begins by creating the
-  <code>DepthFeedConnection</code>, and having it accept connections in a
-  background thread, using Boost's thread library:
+  <code>DepthFeedConnection</code>, and uses Boost's thread library to 
+  create a background thread to accept connections from subscribers:
 </p>
 
 <div class="listing">publisher_main.cpp: main() function</div>
@@ -2515,9 +2551,9 @@ generate_orders(examples::Exchange&amp; exchange, const SecurityVector&amp; secu
 
 <p>
   The implementation of <code>generate_orders()</code> is somewhat complex, but
-  not relevant.  There is a call to <code>sleep()</code> inside the loop, so
-  that the data stream is produced at a somewhat readable pace.  At this
-  point, the publisher is complete.
+  the details are not relevant.  There is a call to <code>sleep()</code>
+  inside the loop, so that the data stream is produced at a somewhat readable
+  pace.  At this point, the publisher is complete.
 </p>
 
 <h2>Subscriber Application</h2>
@@ -2568,8 +2604,13 @@ namespace liquibook { namespace examples {
   These members include a QuickFAST decoder, an order book for each security
   (kept in a <code>std::map</code>), and the expected sequence number.  The 
   sequence number is tracked to validate the feed, so that the subscriber is
-  sure that every message from the publisher has been handled.  Finally, there
-  are two constants for determining message type.
+  sure that every message from the publisher has been handled.
+</p>
+<p>
+  Finally, there are two constants for determining message type.  The reader
+  will note that these message type fields appear in the message, but the
+  publisher nowhere encoded them.  This is because of their field
+  instructions, found in the FAST template, of constant.
 </p>
 
 <p>
@@ -2595,7 +2636,7 @@ namespace liquibook { namespace examples {
   After initializing the static members comes the class constructor:
 </p>
 
-<div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation</div>
+<div class="listing">depth_feed_subscriber.cpp: DepthFeedSubscriber class implementation</div>
 <pre class="code">
 namespace liquibook { namespace examples {
 
@@ -2618,7 +2659,7 @@ DepthFeedSubscriber::DepthFeedSubscriber(
   which is called when the connection to the publisher is reset:
 </p>
 
-<div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation, continued</div>
+<div class="listing">depth_feed_subscriber.cpp: DepthFeedSubscriber class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedSubscriber::handle_reset()
@@ -2632,7 +2673,7 @@ DepthFeedSubscriber::handle_reset()
   the meaty method <code>handle_message()</code>:
 </p>
 
-<div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation, continued</div>
+<div class="listing">depth_feed_subscriber.cpp: DepthFeedSubscriber class implementation, continued</div>
 <pre class="code">
 
 bool
@@ -2693,7 +2734,7 @@ DepthFeedSubscriber::handle_message(BufferPtr&amp; bp, size_t bytes_transferred)
 <p>
   This method first decodes the FAST message.  This is done by stuffing the 
   message contents into a QuickFAST buffer specific for decoding.  Next, a
-  message builder and consumer are create and associated, and the message is
+  message builder and consumer are created and associated, and the message is
   decoded into the builder.  After this, the  message is available from the 
   consumer.
 </p>
@@ -2708,14 +2749,14 @@ DepthFeedSubscriber::handle_message(BufferPtr&amp; bp, size_t bytes_transferred)
 </p>
 
 <p>
-  Finally, since the message type is known, the proper type-specific handler
-  is called.
+  Finally, since the message type is known, the proper message-type-specific
+  handler is called.
 </p>
 
 <p>
   The first helper method logs the contents of the depth for a security:
 </p>
-<div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation, continued</div>
+<div class="listing">depth_feed_subscriber.cpp: DepthFeedSubscriber class implementation, continued</div>
 <pre class="code">
 void
 DepthFeedSubscriber::log_depth(book::Depth&lt;5&gt;&amp; depth)
@@ -2726,7 +2767,7 @@ DepthFeedSubscriber::log_depth(book::Depth&lt;5&gt;&amp; depth)
   while (bid || ask) {
     if (bid &amp;&amp; bid-&gt;order_count()) {
       printf("%8.2f %9d [%2d]", 
-             (double)bid-&gt;price() / 100.0, 
+             (double)bid-&gt;price() / Order::precision_,
              bid-&gt;aggregate_qty(), bid-&gt;order_count());
       if (bid == depth.last_bid_level()) {
         bid = NULL;
@@ -2741,7 +2782,7 @@ DepthFeedSubscriber::log_depth(book::Depth&lt;5&gt;&amp; depth)
 
     if (ask &amp;&amp; ask-&gt;order_count()) {
       printf("    %8.2f %9d [%2d]\n",
-             (double)ask-&gt;price() / 100.0, 
+             (double)ask-&gt;price() / Order::precision_,
              ask-&gt;aggregate_qty(), ask-&gt;order_count());
       if (ask == depth.last_ask_level()) {
         ask = NULL;
@@ -2766,7 +2807,7 @@ DepthFeedSubscriber::log_depth(book::Depth&lt;5&gt;&amp; depth)
   The next helper handles a depth message:
 </p>
 
-<div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation, continued</div>
+<div class="listing">depth_feed_subscriber.cpp: DepthFeedSubscriber class implementation, continued</div>
 <pre class="code">
 bool
 DepthFeedSubscriber::handle_depth_message(
@@ -2876,19 +2917,16 @@ DepthFeedSubscriber::handle_depth_message(
   Each bid field is then accessed using type-specific extractors, including the
   level number, the price, the number of orders, and the aggregate quantity.
   These updated values are then used to update the depth level for that
-  security.
-</p>
-
-<p>
-  Similar logic is performed for changed ask levels, and the resulting depth
-  is logged using <code>log_depth()</code>.
+  security through a call to <code>set()</code>.  Similar logic is performed
+  for changed ask levels, and the resulting depth is logged using
+  <code>log_depth()</code>.
 </p>
 
 <p>
   The final helper method handles a trade message:
 </p>
 
-<div class="listing">depth_feed_subscriber.h: DepthFeedSubscriber class implementation, continued</div>
+<div class="listing">depth_feed_subscriber.cpp: DepthFeedSubscriber class implementation, continued</div>
 <pre class="code">
 bool
 DepthFeedSubscriber::handle_trade_message(
@@ -2908,7 +2946,7 @@ DepthFeedSubscriber::handle_trade_message(
     return false;
   }
 
-  double price = (double) cost / (qty * 100);
+  double price = (double) cost / (qty * Order::precision_);
   std::cout &lt;&lt; timestamp
             &lt;&lt; " Got trade msg " &lt;&lt; seq_num 
             &lt;&lt; " for symbol " &lt;&lt; symbol 
@@ -2922,10 +2960,10 @@ DepthFeedSubscriber::handle_trade_message(
 </pre>
 
 <p>
-  Like <code>handle_depth_message()</code>, <code>handle_trade_message</code>
+  Like <code>handle_depth_message()</code>, <code>handle_trade_message()</code>
   is passed the common fields.  It extracts the trade quantity and cost, from
-  which it calculates the price of the trade (after adjusting for the tick
-  size).  The result is then logged.
+  which it calculates the price of the trade (after adjusting for the 
+  precision).  The result is then logged.
 </p>
 
 <h3>Subscriber Initialization</h3>
@@ -2965,7 +3003,7 @@ int main(int argc, const char* argv[])
 </pre>
 
 <p>
-  Next, the handlers for messages, and connection resets are set up, and 
+  Next, the handlers for messages and connection resets are set up, and 
   finally, the subscriber connects to the publisher.  This completes the 
   subscriber application.
 </p>
@@ -3057,17 +3095,18 @@ int main(int argc, const char* argv[])
 
 <h2>References</h2>
 
-<p>
-    Providing references is a good idea. Be sure to spell out the URLs,
-    including the protocol, so people can print the article and see the
-    addresses.
-</p>
 <ul>
     <li>Liquibook -
         <a href="https://github.com/objectcomputing/liquibook" shape="rect">https://github.com/objectcomputing/liquibook</a>
     </li>
     <li>QuickFAST -
         <a href="http://quickfast.org" shape="rect">http://quickfast.org</a>
+    </li>
+    <li>Boost -
+        <a href="http://www.boost.org/" shape="rect">http://www.boost.org/</a>
+    </li>
+    <li>Xerces C -
+        <a href="http://xerces.apache.org/xerces-c/" shape="rect">http://xerces.apache.org/xerces-c/</a>
     </li>
     <li>FIX protocol -
         <a href="http://www.fixprotocol.org" shape="rect">http://www.fixprotocol.org</a>
