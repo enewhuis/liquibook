@@ -98,7 +98,7 @@ DepthFeedSubscriber::log_depth(book::Depth<5>& depth)
         ++bid;
       }
     } else {
-      // Blanklines
+      // Blank lines
       printf("                       ");
       bid = NULL;
     }

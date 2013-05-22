@@ -104,7 +104,7 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet& message)
       QuickFAST::Messages::FieldUInt32::create(++seq_num_);
   // Update the sequence number
   if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
-    // Not found, add the sequece number
+    // Not found, add the sequence number
     message.addField(TemplateConsumer::id_seq_num_, value);
   }
 }
