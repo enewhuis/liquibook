@@ -83,7 +83,7 @@
   The financial industry relies heavily on systems to disseminate and interpret
   market data. Both trading decisions and analytics are based on the current
   state of the market for a particular security.  A typical trading exchange
-  involves multiple partries, and in a conceptual view looks like this:
+  involves multiple parties, and in a conceptual view looks like this:
 </p>
 
 <div class="figure">Figure 1: Conceptual View of Exchange</div>
@@ -103,7 +103,7 @@
 <p>
   Liquibook is a C++ open source limit order book matching engine.  It is a
   component library that you can integrate into your project for implementing
-  matching algorithms.  Liquibook includes compoenents for an order book,
+  matching algorithms.  Liquibook includes components for an order book,
   aggregate depth tracking, BBO tracking, and a trade feed.
 </p>
 
@@ -111,7 +111,7 @@
 
 <p>
   The FAST protocol is a compression and encoding mechanism for streaming data.
-  QuickFAST is an impelementation of the FAST protocol in C++ for encoding and 
+  QuickFAST is an implementation of the FAST protocol in C++ for encoding and 
   decoding message streams using the FAST protocol.
 </p>
 
@@ -196,7 +196,7 @@
   levels in the depth, on both the buy and sell sides, in response to a
   single order event.  Liquibook has an interface for interrogating the various
   levels of depth and finding out if it has changed since the last
-  published change.  This makes it trival to build an incremental feed -
+  published change.  This makes it trivial to build an incremental feed -
   sending only changed levels to feed clients.
 </p>
 
@@ -316,7 +316,7 @@ public:
   trade listener.  The <code>book::OrderBook</code> class also includes
   listeners for all order status updates, for providing updates back to the
   trade clients, and a listener for all changes to the order book, to build a
-  full order book feeed.
+  full order book feed.
 </p>
 
 <p>
@@ -338,7 +338,7 @@ public:
 </p>
 
 <p>
-  The derived <code>book::DepthOrderBook</code> class is simpiler:
+  The derived <code>book::DepthOrderBook</code> class is simpler:
 </p>
 
 <div class="listing">book/depth_order_book.h: DepthOrderBook class declaration</div>
@@ -508,7 +508,7 @@ Exchange::add_order_book(const std::string&amp; sym)
 
 <p>
   Finally, the <code>add_order()</code> method finds the correct order book,
-  adds the order to the orer book, and then triggers callbacks by calling
+  adds the order to the order book, and then triggers callbacks by calling
   the <code>perform_callbacks()</code> method:
 </p>
 
@@ -664,7 +664,7 @@ Order::price() const
   precision.  This is suitable for purposes of the example, but may need to be
   increased for other use cases.  The second implication is that all securities
   in the publisher have the same precision - since a static variable is used to
-  set precsision.  Again, in other use cases, this may not be sufficient.
+  set precision.  Again, in other use cases, this may not be sufficient.
 </p>
 
 <h3>QuickFAST Templates</h3>
@@ -917,7 +917,7 @@ TemplateConsumer::parse_templates(const std::string& template_filename)
   only sends messages, and the subscriber only receives them.  The
   communication is also one-to-many, as multiple subscribers connect to a 
   single publisher.  Since QuickFAST encodes a stream of data, uniquely
-  compressed for each recipient, the pubilsher will need to maintain a
+  compressed for each recipient, the publisher will need to maintain a
   QuickFAST state for each subscriber's encoder.  This is done through a class
   called <code>DepthFeedSession</code>.
 </p>
@@ -953,7 +953,7 @@ namespace liquibook { namespace examples {
 <p>
   In addition to declaring some typedefs and a forward declaration, this
   snippet of code declares <code>DepthFeedSession</code>'s  constructor.  This
-  constructor accepts (1) an IO Servive object through which it can create a
+  constructor accepts (1) an IO Service object through which it can create a
   TCP socket, (2) the <code>DepthFeedConnection</code> and (3) the parsed 
   QuickFAST templates, so it can encode outgoing messages.
 </p>
@@ -1016,7 +1016,7 @@ namespace liquibook { namespace examples {
 <p>
   For the depth feed, two update methods are provided, for sending an 
   incremental update, and for sending a full update.  Even though the depth
-  feed is an incremental feed, it is necessary to send full udpates on
+  feed is an incremental feed, it is necessary to send full updates on
   occasion.  A full update is required, for example, when the subscriber does
   not yet have the depth state for a security, such as when it first connects
   to the publisher.
@@ -1279,7 +1279,7 @@ DepthFeedSession::set_sequence_num(QuickFAST::Messages::FieldSet&amp; message)
       QuickFAST::Messages::FieldUInt32::create(++seq_num_);
   // Update the sequence number
   if (!message.replaceField(TemplateConsumer::id_seq_num_, value)) {
-    // Not found, add the sequece number
+    // Not found, add the sequence number
     message.addField(TemplateConsumer::id_seq_num_, value);
   }
 }
@@ -1464,7 +1464,7 @@ DepthFeedSession::on_send(WorkingBufferPtr wb,
 <p>
   These methods handle, the result of a subscriber connecting to the publisher,
   a publisher's accepted connection from a subscriber, a message received from
-  the publisher, and a message sent to the subsriber, respectively.
+  the publisher, and a message sent to the subscriber, respectively.
 </p>
 
 <p>
@@ -1576,7 +1576,7 @@ DepthFeedConnection::accept()
 
 <p>
   The <code>run()</code> method invokes the <code>run()</code> method on the IO
-  serivce object.  Usually <code>run()</code> will exit when there are no more
+  service object.  Usually <code>run()</code> will exit when there are no more
   callbacks to make.  Using the <code>io_service::work</code> object ensures
   <code>run()</code> does not exit:
 </p>
@@ -1654,7 +1654,7 @@ DepthFeedConnection::reserve_send_buffer()
 <p>
   The <code>send_trade()</code>, <code>send_incr_update()</code> and
   <code>send_full_update()</code> methods send a message to all subscribers by
-  iterating through the sesions and invoking the corresponding method on each:
+  iterating through the sessions and invoking the corresponding method on each:
 </p>
 
 <div class="listing">depth_feed_connection.cpp: DepthFeedConnection class implementation, continued</div>
@@ -1782,11 +1782,11 @@ DepthFeedConnection::on_accept(SessionPtr session,
 
 <p>
   In the case of <code>on_accept()</code>, the publisher always restarts the
-  accept cyle - so that another subscriber may connect.  The subscriber, on the
-  other hand, only wants one connection.
+  accept cycle - so that another subscriber may connect.  The subscriber, on
+  the other hand, only wants one connection.
 </p>
 <p>
-  In the case of a successful connection, the publisher saves off the sesion, 
+  In the case of a successful connection, the publisher saves off the session, 
   and marks it as connected, so that messages may be sent to it.  If there is
   failure, the session is deleted (by resetting the shared pointer) and the
   publisher waits momentarily before starting again.
@@ -1937,7 +1937,7 @@ DepthFeedConnection::port_from_args(int argc, const char* argv[])
   At this point, the publisher is able to accept subscriber connections and
   route QuickFAST messages to the subscriber.  What is missing is handling
   Liquibook events, and creating the QuickFAST messages to send.  As shown in 
-  <a href="#figure2">figure 2</a>, the publisher needs a proprerly-typed
+  <a href="#figure2">figure 2</a>, the publisher needs a properly-typed
   <code>TradeListener</code> for trade events, and a properly-typed
   <code>DepthListener</code> for depth events.
 </p>
@@ -2199,7 +2199,7 @@ DepthFeedPublisher::on_depth_change(
   <code>DepthFeedConnection::send_incr_update()</code> returns true if and only
   if all of the clients could handle the message.  If not, false is returned, 
   and <code>on_depth_change()</code> builds and sends a full update instead.
-  In the steady state, only the incremental messge need by built.
+  In the steady state, only the incremental message need by built.
 </p>
 
 <p>
@@ -2302,7 +2302,7 @@ DepthFeedPublisher::build_depth_message(
 <p>
   This method starts like <code>add_trade()</code>, adding the timestamp and 
   symbol fields.  Next, two sequences are built, for the changed bid and ask
-  levels.  To support an incremrntal feed, Liquibook tracks a change number
+  levels.  To support an incremental feed, Liquibook tracks a change number
   (called <code>ChangeId</code>) on each depth level, and the ID of the last
   published change in the depth, which is set after the callback completes.
   To determine the levels to publish, the publisher needs to compare the last
@@ -2311,7 +2311,7 @@ DepthFeedPublisher::build_depth_message(
 
 <p>
   In <code>build_depth_message()</code>, a bid sequence is created, and an
-  asociated length is attached.  The changed bid levels are each added to the
+  associated length is attached.  The changed bid levels are each added to the
   sequence through calls to <code>build_depth_level()</code>.  The iteration 
   logic here must be careful to not move beyond the last bid level.  Finally,
   the sequence is added to the message.  The same is done for changed ask
@@ -2441,7 +2441,7 @@ int main(int argc, const char* argv[])
 </pre>
 
 <p>
-  Note that the exchange constructor requires a <code>TradeListrner</code> and
+  Note that the exchange constructor requires a <code>TradeListener</code> and
   a <code>DepthListener</code>, both of which the
   <code>DepthFeedPublisher</code> implements.
 </p>
@@ -2775,7 +2775,7 @@ DepthFeedSubscriber::log_depth(book::Depth&lt;5&gt;&amp; depth)
         ++bid;
       }
     } else {
-      // Blanklines
+      // Blank lines
       printf("                       ");
       bid = NULL;
     }
@@ -2909,7 +2909,7 @@ DepthFeedSubscriber::handle_depth_message(
   one if this is the first depth message for the security. 
 </p>
 <p>
-  Next the method must iterate through the sequnce of changed bids.  To do
+  Next the method must iterate through the sequence of changed bids.  To do
   this, the sequence length is first extracted, and each entry accessed through
   an accessor.
 </p>
