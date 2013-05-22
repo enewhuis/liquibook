@@ -1,4 +1,5 @@
 
+#include "order.h"
 #include <boost/scoped_ptr.hpp>
 #include "depth_feed_subscriber.h"
 #include <Codecs/DataSourceBuffer.h>
@@ -89,7 +90,7 @@ DepthFeedSubscriber::log_depth(book::Depth<5>& depth)
   while (bid || ask) {
     if (bid && bid->order_count()) {
       printf("%8.2f %9d [%2d]", 
-             (double)bid->price() / 100.0, 
+             (double)bid->price() / Order::precision_,
              bid->aggregate_qty(), bid->order_count());
       if (bid == depth.last_bid_level()) {
         bid = NULL;
@@ -104,7 +105,7 @@ DepthFeedSubscriber::log_depth(book::Depth<5>& depth)
 
     if (ask && ask->order_count()) {
       printf("    %8.2f %9d [%2d]\n",
-             (double)ask->price() / 100.0, 
+             (double)ask->price() / Order::precision_,
              ask->aggregate_qty(), ask->order_count());
       if (ask == depth.last_ask_level()) {
         ask = NULL;
@@ -230,7 +231,7 @@ DepthFeedSubscriber::handle_trade_message(
     return false;
   }
 
-  double price = (double) cost / (qty * 100);
+  double price = (double) cost / (qty * Order::precision_);
   std::cout << timestamp
             << " Got trade msg " << seq_num 
             << " for symbol " << symbol 
