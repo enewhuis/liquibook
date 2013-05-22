@@ -10,7 +10,7 @@ namespace liquibook { namespace book {
 
 /// @brief listener of depth events.  Implement to build an aggregate depth 
 /// feed.
-template <class OrderBook>
+template <class OrderBook >
 class DepthListener {
 public:
   /// @brief callback for change in tracked aggregated depth
