@@ -19,6 +19,25 @@ Open source limit order book matching engine from [OCI](http://ociweb.com)
 * Use your threading system (or be single-threaded)
 * Use your synchronization method
 
+Minimal Example
+---------------
+<pre>
+  // Create type-specific order book
+  book::OrderBook<MyOrder*> order_book;
+
+  // Attach desired event handler(s)
+  order_book.set_order_listener(&amp;listener);
+
+  // Create order - my Order class, not Liquibook's!
+  MyOrder* order = new MyOrder();
+
+  // Add the order to the order book
+  order_book.add(order);
+
+  // Trigger event handlers
+  order_book.perform_callbacks();
+</pre>
+
 Build Dependencies
 ------------------
 
