@@ -23,7 +23,7 @@ Minimal Example
 ---------------
 <pre>
   // Create type-specific order book
-  book::OrderBook&lt;MyOrder*&gt;order_book;
+  book::OrderBook&lt;MyOrder*&gt; order_book;
 
   // Attach desired event handler(s)
   order_book.set_order_listener(&amp;listener);
