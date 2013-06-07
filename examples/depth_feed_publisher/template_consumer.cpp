@@ -8,47 +8,33 @@ namespace liquibook { namespace examples {
 
 using namespace QuickFAST::Messages;
 
-const FieldIdentityCPtr
-TemplateConsumer::id_seq_num_(new FieldIdentity("SequenceNumber"));
+const FieldIdentity TemplateConsumer::id_seq_num_("SequenceNumber");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_msg_type_(new FieldIdentity("MessageType"));
+const FieldIdentity TemplateConsumer::id_msg_type_("MessageType");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
+const FieldIdentity TemplateConsumer::id_timestamp_("Timestamp");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_symbol_(new FieldIdentity("Symbol"));
+const FieldIdentity TemplateConsumer::id_symbol_("Symbol");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_bids_(new FieldIdentity("Bids"));
+const FieldIdentity TemplateConsumer::id_bids_("Bids");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_bids_length_(new FieldIdentity("BidsLength"));
+const FieldIdentity TemplateConsumer::id_bids_length_("BidsLength");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_asks_(new FieldIdentity("Asks"));
+const FieldIdentity TemplateConsumer::id_asks_("Asks");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_asks_length_(new FieldIdentity("AsksLength"));
+const FieldIdentity TemplateConsumer::id_asks_length_("AsksLength");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_level_num_(new FieldIdentity("LevelNum"));
+const FieldIdentity TemplateConsumer::id_level_num_("LevelNum");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_order_count_(new FieldIdentity("OrderCount"));
+const FieldIdentity TemplateConsumer::id_order_count_("OrderCount");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_size_(new FieldIdentity("AggregateQty"));
+const FieldIdentity TemplateConsumer::id_size_("AggregateQty");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_price_(new FieldIdentity("Price"));
+const FieldIdentity TemplateConsumer::id_price_("Price");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_qty_(new FieldIdentity("Quantity"));
+const FieldIdentity TemplateConsumer::id_qty_("Quantity");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_cost_(new FieldIdentity("Cost"));
+const FieldIdentity TemplateConsumer::id_cost_("Cost");
 
 QuickFAST::Codecs::TemplateRegistryPtr 
 TemplateConsumer::parse_templates(const std::string& template_filename)

@@ -835,25 +835,25 @@ public:
              parse_templates(const std::string&amp; template_filename);
 
   // Trade field identities
-  static const QuickFAST::Messages::FieldIdentityCPtr id_qty_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_cost_;
+  static const QuickFAST::Messages::FieldIdentity id_qty_;
+  static const QuickFAST::Messages::FieldIdentity id_cost_;
 
   // Common field identities
-  static const QuickFAST::Messages::FieldIdentityCPtr id_seq_num_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_msg_type_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_timestamp_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_symbol_;
+  static const QuickFAST::Messages::FieldIdentity id_seq_num_;
+  static const QuickFAST::Messages::FieldIdentity id_msg_type_;
+  static const QuickFAST::Messages::FieldIdentity id_timestamp_;
+  static const QuickFAST::Messages::FieldIdentity id_symbol_;
 
   // Depth field identities
-  static const QuickFAST::Messages::FieldIdentityCPtr id_bids_length_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_bids_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_asks_length_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_asks_;
+  static const QuickFAST::Messages::FieldIdentity id_bids_length_;
+  static const QuickFAST::Messages::FieldIdentity id_bids_;
+  static const QuickFAST::Messages::FieldIdentity id_asks_length_;
+  static const QuickFAST::Messages::FieldIdentity id_asks_;
 
-  static const QuickFAST::Messages::FieldIdentityCPtr id_level_num_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_order_count_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_price_;
-  static const QuickFAST::Messages::FieldIdentityCPtr id_size_;
+  static const QuickFAST::Messages::FieldIdentity id_level_num_;
+  static const QuickFAST::Messages::FieldIdentity id_order_count_;
+  static const QuickFAST::Messages::FieldIdentity id_price_;
+  static const QuickFAST::Messages::FieldIdentity id_size_;
 };
 
 } }
@@ -886,14 +886,11 @@ namespace liquibook { namespace examples {
 
 using namespace QuickFAST::Messages;
 
-const FieldIdentityCPtr
-TemplateConsumer::id_seq_num_(new FieldIdentity("SequenceNumber"));
+const FieldIdentity TemplateConsumer::id_seq_num_("SequenceNumber");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_msg_type_(new FieldIdentity("MessageType"));
+const FieldIdentity TemplateConsumer::id_msg_type_("MessageType");
 
-const FieldIdentityCPtr
-TemplateConsumer::id_timestamp_(new FieldIdentity("Timestamp"));
+const FieldIdentity TemplateConsumer::id_timestamp_("Timestamp");
 
 // more like this...
 </pre>
@@ -2709,7 +2706,7 @@ DepthFeedSubscriber::handle_message(BufferPtr&amp; bp, size_t bytes_transferred)
   const QuickFAST::StringBuffer* string_buffer;
   size_t bids_length, asks_length;
   std::string symbol;
-  if (!msg.getUnsignedInteger(*id_seq_num_, ValueType::UINT32, seq_num)) {
+  if (!msg.getUnsignedInteger(id_seq_num_, ValueType::UINT32, seq_num)) {
     std::cout &lt;&lt; "Could not get seq num from msg" &lt;&lt; std::endl;
     return false;
   }
@@ -2718,15 +2715,15 @@ DepthFeedSubscriber::handle_message(BufferPtr&amp; bp, size_t bytes_transferred)
               &lt;&lt; expected_seq_ &lt;&lt; std::endl;
     return false;
   }
-  if (!msg.getUnsignedInteger(*id_msg_type_, ValueType::UINT32, msg_type)) {
+  if (!msg.getUnsignedInteger(id_msg_type_, ValueType::UINT32, msg_type)) {
     std::cout &lt;&lt; "Could not get msg type from msg" &lt;&lt; std::endl;
     return false;
   }
-  if (!msg.getString(*id_symbol_, ValueType::ASCII, string_buffer)) {
+  if (!msg.getString(id_symbol_, ValueType::ASCII, string_buffer)) {
     std::cout &lt;&lt; "Could not get symbol from msg" &lt;&lt; std::endl;
     return false;
   }
-  if (!msg.getUnsignedInteger(*id_timestamp_, ValueType::UINT32, timestamp)) {
+  if (!msg.getUnsignedInteger(id_timestamp_, ValueType::UINT32, timestamp)) {
     std::cout &lt;&lt; "Could not get timestamp from msg" &lt;&lt; std::endl;
     return false;
   }
@@ -2844,27 +2841,27 @@ DepthFeedSubscriber::handle_depth_message(
       std::make_pair(symbol, book::Depth&lt;5&gt;()));
   book::Depth&lt;5&gt;&amp; depth = results.first-&gt;second;
 
-  if (msg.getSequenceLength(*id_bids_, bids_length)) {
+  if (msg.getSequenceLength(id_bids_, bids_length)) {
     for (size_t i = 0; i &lt; bids_length; ++i) {
       const QuickFAST::Messages::MessageAccessor* accessor;
-      if (msg.getSequenceEntry(*id_bids_, i, accessor)) {
+      if (msg.getSequenceEntry(id_bids_, i, accessor)) {
         uint64_t level_num, price, order_count, aggregate_qty;
-        if (!accessor-&gt;getUnsignedInteger(*id_level_num_, ValueType::UINT8,
+        if (!accessor-&gt;getUnsignedInteger(id_level_num_, ValueType::UINT8,
                                          level_num)) {
           std::cout &lt;&lt; "Could not get Bid level from depth msg" &lt;&lt; std::endl;
           return false;
         }
-        if (!accessor-&gt;getUnsignedInteger(*id_price_, ValueType::UINT32,
+        if (!accessor-&gt;getUnsignedInteger(id_price_, ValueType::UINT32,
                                          price)) {
           std::cout &lt;&lt; "Could not get Bid price from depth msg" &lt;&lt; std::endl;
           return false;
         }
-        if (!accessor-&gt;getUnsignedInteger(*id_order_count_, ValueType::UINT32,
+        if (!accessor-&gt;getUnsignedInteger(id_order_count_, ValueType::UINT32,
                                          order_count)) {
           std::cout &lt;&lt; "Could not get Bid count from depth msg" &lt;&lt; std::endl;
           return false;
         }
-        if (!accessor-&gt;getUnsignedInteger(*id_size_, ValueType::UINT32,
+        if (!accessor-&gt;getUnsignedInteger(id_size_, ValueType::UINT32,
                                          aggregate_qty)) {
           std::cout &lt;&lt; "Could not get Bid agg qty  from depth msg" &lt;&lt; std::endl;
           return false;
@@ -2877,30 +2874,30 @@ DepthFeedSubscriber::handle_depth_message(
         std::cout &lt;&lt; "Failed to get bid " &lt;&lt; i &lt;&lt; std::endl;
         return false;
       }
-      msg.endSequenceEntry(*id_bids_, i, accessor);
+      msg.endSequenceEntry(id_bids_, i, accessor);
     }
   }
-  if (msg.getSequenceLength(*id_asks_, asks_length)) {
+  if (msg.getSequenceLength(id_asks_, asks_length)) {
     for (size_t i = 0; i &lt; asks_length; ++i) {
       const QuickFAST::Messages::MessageAccessor* accessor;
-      if (msg.getSequenceEntry(*id_asks_, i, accessor)) {
+      if (msg.getSequenceEntry(id_asks_, i, accessor)) {
         uint64_t level_num, price, order_count, aggregate_qty;
-        if (!accessor-&gt;getUnsignedInteger(*id_level_num_, ValueType::UINT8,
+        if (!accessor-&gt;getUnsignedInteger(id_level_num_, ValueType::UINT8,
                                          level_num)) {
           std::cout &lt;&lt; "Could not get Ask level from depth msg " &lt;&lt; std::endl;
           return false;
         }
-        if (!accessor-&gt;getUnsignedInteger(*id_price_, ValueType::UINT32,
+        if (!accessor-&gt;getUnsignedInteger(id_price_, ValueType::UINT32,
                                          price)) {
           std::cout &lt;&lt; "Could not get Ask price  from depth msg" &lt;&lt; std::endl;
           return false;
         }
-        if (!accessor-&gt;getUnsignedInteger(*id_order_count_, ValueType::UINT32,
+        if (!accessor-&gt;getUnsignedInteger(id_order_count_, ValueType::UINT32,
                                          order_count)) {
           std::cout &lt;&lt; "Could not get Ask count from depth msg " &lt;&lt; std::endl;
           return false;
         }
-        if (!accessor-&gt;getUnsignedInteger(*id_size_, ValueType::UINT32,
+        if (!accessor-&gt;getUnsignedInteger(id_size_, ValueType::UINT32,
                                          aggregate_qty)) {
           std::cout &lt;&lt; "Could not get Ask agg qty from depth msg " &lt;&lt; std::endl;
           return false;
@@ -2913,7 +2910,7 @@ DepthFeedSubscriber::handle_depth_message(
         std::cout &lt;&lt; "Failed to get ask " &lt;&lt; i &lt;&lt; std::endl;
         return false;
       }
-      msg.endSequenceEntry(*id_asks_, i, accessor);
+      msg.endSequenceEntry(id_asks_, i, accessor);
     }
   }
   log_depth(depth);
@@ -2955,11 +2952,11 @@ DepthFeedSubscriber::handle_trade_message(
 {
   uint64_t qty, cost;
   // Get trade fields
-  if (!msg.getUnsignedInteger(*id_qty_, ValueType::UINT32, qty)) {
+  if (!msg.getUnsignedInteger(id_qty_, ValueType::UINT32, qty)) {
     std::cout &lt;&lt; "Could not qty from trade msg" &lt;&lt; std::endl;
     return false;
   }
-  if (!msg.getUnsignedInteger(*id_cost_, ValueType::UINT32, cost)) {
+  if (!msg.getUnsignedInteger(id_cost_, ValueType::UINT32, cost)) {
     std::cout &lt;&lt; "Could not get cost from trade msg" &lt;&lt; std::endl;
     return false;
   }
