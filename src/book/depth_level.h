@@ -40,6 +40,16 @@ public:
   /// @param qty amount to decrease the quantity by
   void decrease_qty(Quantity qty);
 
+  /// @brief overwrite all values of the level
+  /// @param price the level price
+  /// @param qty the aggegate quantity
+  /// @param order_count the number of orders
+  /// @param last_change the last change ID (optional)
+  void set(Price price, 
+           Quantity qty,
+           uint32_t order_count,
+           ChangeId last_change = 0);
+
   /// @brief cancel or fill an order, decrease count and quantity
   /// @param qty the closed quantity
   /// @return true if the level is now empty

@@ -1,0 +1,66 @@
+﻿<?xml version="1.0"?>
+<templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+  <template name="Trade" id="1">
+    <uInt16 name="MessageType" id="100">
+      <constant value="22"/>
+    </uInt16>
+    <uInt32 name="SequenceNumber" id="200">
+      <increment/>
+    </uInt32>
+    <uInt32 name="Timestamp" id="300">
+      <copy/>
+    </uInt32>
+    <string name="Symbol" id="400">
+      <copy/>
+    </string>
+    <uInt32 name="Quantity" id="604">
+      <copy/>
+    </uInt32>
+    <uInt32 name="Cost" id="603">
+      <copy/>
+    </uInt32>
+  </template>
+
+  <template name="Depth" id="2">
+    <uInt16 name="MessageType" id="100">
+      <constant value="11"/>
+    </uInt16>
+    <uInt32 name="SequenceNumber" id="200">
+      <increment/>
+    </uInt32>
+    <uInt32 name="Timestamp" id="300">
+      <copy/>
+    </uInt32>
+    <string name="Symbol" id="400">
+      <copy/>
+    </string>
+    <sequence name="Bids" id="500">
+      <uInt8 name="LevelNum" id="501">
+        <copy/>
+      </uInt8>
+      <uInt32 name="OrderCount" id="502">
+        <copy/>
+      </uInt32>
+      <uInt32 name="Price" id="503">
+        <copy/>
+      </uInt32>
+      <uInt32 name="AggregateQty" id="504">
+        <copy/>
+      </uInt32>
+    </sequence>
+    <sequence name="Asks" id="600">
+      <uInt8 name="LevelNum" id="601">
+        <copy/>
+      </uInt8>
+      <uInt32 name="OrderCount" id="602">
+        <copy/>
+      </uInt32>
+      <uInt32 name="Price" id="603">
+        <copy/>
+      </uInt32>
+      <uInt32 name="AggregateQty" id="604">
+        <copy/>
+      </uInt32>
+    </sequence>
+  </template>
+</templates>

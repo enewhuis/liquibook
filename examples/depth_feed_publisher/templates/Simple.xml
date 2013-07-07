@@ -1,0 +1,27 @@
+﻿<?xml version="1.0"?>
+<templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+
+  <template name="Quote" id="1">
+    <uInt16 name="MessageType" id="100">
+      <constant value="11"/>
+    </uInt16>
+    <uInt32 name="SequenceNumber" id="200">
+      <increment/>
+    </uInt32>
+    <uInt32 name="Timestamp" id="300">
+      <copy/>
+    </uInt32>
+    <uInt32 name="OrderId" id="400">
+      <copy/>
+    </uInt32>
+    <string name="Symbol" id="500">
+      <copy/>
+    </string>
+    <uInt16 name="Size" id="600">
+      <copy/>
+    </uInt16>
+    <uInt32 name="Price" id="700">
+      <copy/>
+    </uInt32>
+  </template>
+</templates>

@@ -8,8 +8,9 @@
 
 namespace liquibook { namespace book {
 
-/// @brief generic listener of order events.  Used by common version of 
-///   OrderBook::process_callback().
+/// @brief interface an order must implement in order to be used by OrderBook.
+/// Note: structly speaking, inheriting from Order should not be required, 
+///       due to the template implementation of OrderBook.
 class Order {
 public:
   /// @brief is this a limit order?

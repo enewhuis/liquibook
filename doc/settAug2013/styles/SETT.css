@@ -1,0 +1,163 @@
+body {
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);
+    font-family: Verdana, sans-serif;
+    margin-left: 0.25in;
+    margin-right: 0.25in;
+    min-width: 800px;
+}
+
+.header {
+    float: left;
+    width: 100%;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.lower_header {
+    height: 34px;
+    float: left;
+    width: 100%;
+    border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
+    margin-bottom: 25px;
+}
+
+.social {
+    margin-top: 6px;
+}
+
+span.rssRow  {
+    margin: 33px;
+    background:transparent url(../images/rss_icon_12x12.gif) no-repeat scroll 0;
+    padding-left:18px;
+}
+
+.headimage_container {
+    position: relative;
+    float: left;
+    width: 100%;
+    background: url('../images/Middle.png') repeat-x 35px;
+    height: 123px;
+}
+
+.headerimage_leftlogo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: white;
+    width: 180px;
+    height: 123px;
+}
+
+.headimage_left {
+    position: absolute;
+    background-color: white;
+    top: 33px;
+    left: 180px;
+    width: 10px;
+}
+
+.headimage_right {
+    position: absolute;
+    background-color: white;
+    width: 278px;
+    right: 0;
+    margin-top: 33px;
+}
+
+a.career {
+    font-weight: bold;
+}
+
+code {
+    font-family: "Courier New", monospace;
+}
+
+div.center {
+    text-align: center;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    text-align: left;
+}
+
+h3 {
+    text-align: left;
+}
+
+h4 {
+    text-align: left;
+}
+
+h5 {
+    text-align: left;
+}
+
+hr {
+    height: 1px;
+    color: rgb(17, 59, 86);
+    background-color: transparent;
+}
+
+kbd {
+    font-family: "Courier New", monospace;
+}
+
+p {
+    text-align: justify;
+}
+
+p.author {
+    text-align: center;
+}
+
+p.footer {
+    text-align: justify;
+}
+
+pre {
+    font-family: "Courier New", monospace;
+}
+
+.quicklinks {
+    text-align: right;
+}
+
+.red {
+    color: rgb(255, 0, 0);
+    background-color: rgb(255, 255, 255);
+}
+
+.green {
+    color: rgb(0, 128, 0);
+    background-color: rgb(255, 255, 255);
+}
+
+.blue {
+    color: rgb(0, 0, 192);
+    background-color: rgb(255, 255, 255);
+}
+
+.code {
+    background-color: #FFFFF0;
+    border: dashed black 1px;
+    padding-left: 10px;
+}
+
+.comment {
+    color: rgb(128, 128, 128);
+    font-weight: normal;
+    font-style: italic;
+}
+

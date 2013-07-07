@@ -1,2 +1,4 @@
 // This file defines MPC features for the liquibook project
 boost=1
+examples=1
+QuickFAST=1
