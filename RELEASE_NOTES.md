@@ -1,7 +1,7 @@
 RELEASE NOTES
 =============
 
-## Release 1.1.0 July 8, 2013
+## Release 1.1.0 July 6, 2013
 * Added release notes.
 * Added example depth_feed_publisher.
 * Added DepthOrderBook, so depth tracking can be part of core of liquibook.
