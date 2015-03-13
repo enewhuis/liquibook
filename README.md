@@ -9,7 +9,6 @@ Open source limit order book matching engine from [OCI](http://ociweb.com)
 * Speed: between __2.0 million__ and __2.5 million__ inserts per second.  See full [performance history](PERFORMANCE.md).
 
 ## Flexibility
-* Works with or without aggregate depth tracking
 * Optional aggregate depth tracking to any number of levels (static) or BBO only
 * Works with smart or regular pointers
 
