@@ -1,0 +1,3 @@
+project (lt_order_book) : liquibook_book, liquibook_impl, liquibook_test {
+  exename = *
+}
