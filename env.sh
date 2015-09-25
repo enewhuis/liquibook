@@ -6,7 +6,7 @@ if (( $? != 0 )); then
     echo "readlink does not exist or it does not support --version"
     echo "maybe it is not GNU readlink but BSD"
     echo "trying with greadlink..."
-    READLINK='xgreadlink'
+    READLINK='greadlink'
 fi
 $READLINK --version >/dev/null 2>/dev/null
 if (( $? != 0 )); then
