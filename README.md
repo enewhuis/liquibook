@@ -66,6 +66,8 @@ $ make depend
 $ make all
 </pre>
 
+If you don't have readlink, set the $LIQUIBOOK_ROOT environment variable before running env.sh
+
 ## Windows Build Notes
 
 Make sure the %BOOST_ROOT% and %MPC_ROOT% environment variables are set, then open the Visual Studio Command Prompt of choice (this example is for Visual Studio 2010):
