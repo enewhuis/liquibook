@@ -69,23 +69,30 @@ $ make all
 If you don't have readlink, set the $LIQUIBOOK_ROOT environment variable before running env.sh
 
 ## Windows Build Notes
+Use the following commands to set up the build environment and create Visual Studio project and solution files.
+Note if you are using MinGW or other linux-on-Windows techniques, follow the Linux instructions; however, OCI does not normally test this.
 
-Make sure the %BOOST_ROOT% and %MPC_ROOT% environment variables are set, then open the Visual Studio Command Prompt of choice (this example is for Visual Studio 2010):
 <pre>
 > cd liquibook
-> winenv.bat
-> mwc.pl -type vc10 liquibook.mwc
+> copy winenv.bat wenv.bat #optional if you want to keep the original
+> edit wenv.bat  #edit is your choice of text editor
+                 # follow the instructions in the file itself.
+> wenv.bat       # sets and verifies environment variables
+> mwc.bat        # generate the visual studio solution and project files.
 </pre>
 
 Then in the same window, start Visual Studio from the command line, opening liquibook.sln
 <pre>
 > liquibook.sln
 </pre>
-In some cases, you may need to provide the path to Visual Studio - This example is the Visual Studio 2010 Express Edition:
+If Windows does not recognize the *.sln file extension as belonging to VisualStudio,
+you may need to provide the path to Visual Studio.
+
+This example is the Visual Studio 2010 Express Edition:
 <pre>
 > "%VS100COMNTOOLS%\..\IDE\VCExpress.exe" liquibook.sln
 </pre>
 
-NOTE: If using Visual Studio 2012, you will be asked to upgrade your project.  This is because MPC does not yet support -type vc11.
+## For any platform
 
 See other [build notes](BUILD_NOTES.md).
