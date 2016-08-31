@@ -175,7 +175,7 @@ void
 generate_orders(examples::Exchange& exchange, const SecurityVector& securities) {
   time_t now;
   time(&now);
-  std::srand(now);
+  std::srand(uint32_t(now));
 
   size_t num_securities = securities.size();
   while (true) {
@@ -183,9 +183,9 @@ generate_orders(examples::Exchange& exchange, const SecurityVector& securities) 
     size_t index = std::rand() % num_securities;
     const SecurityInfo& sec = securities[index];
     // side
-    bool is_buy = std::rand() % 2;
+    bool is_buy = (std::rand() % 2) != 0;
     // price
-    uint32_t price_base = sec.ref_price * 100;
+    uint32_t price_base = uint32_t(sec.ref_price * 100);
     uint32_t delta_range = price_base / 50;  // +/- 2% of base
     int32_t delta = std::rand() % delta_range;
     delta -= (delta_range / 2);

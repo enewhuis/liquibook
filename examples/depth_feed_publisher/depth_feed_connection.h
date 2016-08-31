@@ -1,7 +1,8 @@
 #ifndef example_depth_feed_connection_h
 #define example_depth_feed_connection_h
 
-#include <boost/asio.hpp>
+#include "book\asio_safe_include.h"
+#include "book\sleep.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
@@ -56,7 +57,7 @@ namespace liquibook { namespace examples {
                           QuickFAST::Messages::FieldSet& message);
   private:       
     bool connected_;
-    uint64_t seq_num_;
+    uint32_t seq_num_;
 
     boost::asio::io_service& ios_;
     boost::asio::ip::tcp::socket socket_;

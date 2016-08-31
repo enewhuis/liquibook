@@ -97,7 +97,7 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
       // If the matched order is a limit order
       if (cb.matched_order->is_limit()) {
         bool matched_order_filled = 
-                 cb.fill_flags & DobCallback::ff_matched_filled;
+                 (cb.fill_flags & DobCallback::ff_matched_filled) != 0;
         // Inform the depth
         depth_.fill_order(cb.matched_order->price(), 
                           cb.fill_qty,

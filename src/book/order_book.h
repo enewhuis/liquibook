@@ -17,6 +17,7 @@
 #include <cmath>
 #include <list>
 #include <functional>
+#include <algorithm>
 
 namespace liquibook { namespace book {
 

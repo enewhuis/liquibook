@@ -3,11 +3,11 @@
 // See the file license.txt for licensing information.
 #include "impl/simple_order_book.h"
 #include "book/types.h"
+#include <book/clock_gettime.h>
 
 #include <iostream>
 #include <stdexcept>
 #include <stdlib.h>
-#include <sys/time.h>
 
 using namespace liquibook;
 using namespace liquibook::book;

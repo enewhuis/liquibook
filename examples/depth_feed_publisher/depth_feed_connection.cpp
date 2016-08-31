@@ -1,7 +1,6 @@
-
+#include "depth_feed_connection.h"
 #include <iomanip>
 #include <boost/bind.hpp>
-#include "depth_feed_connection.h"
 #include "template_consumer.h"
 #include <Codecs/DataDestination.h>
 #include <Messages/FieldSet.h>

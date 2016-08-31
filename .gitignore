@@ -6,14 +6,30 @@
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
 # Compiled Static libraries
 *.lai
 *.la
 *.a
+*.lib
+lib/
+
+# Compiled executables (Windows)
+*.exe
 
 Makefile*
 .depend*
+*.sln
 
 # Artifacts
 *.swp
+
+#visual studio work files
+*vcproj*
+*vcxproj*
+*Debug*
+*.pdb
+*.ilk
+.vs/
+*.VC.*
