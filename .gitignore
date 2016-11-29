@@ -33,3 +33,8 @@ Makefile*
 *.ilk
 .vs/
 *.VC.*
+
+#helper/customized commands
+# (use single letter names and don't add to repo)
+?.cmd
+?.bat
