@@ -24,7 +24,9 @@ REM EDIT THE FOLLOWING LINES OR SET THESE VALUES IN YOUR ENVIRONMENT BEFORE RUNN
 if "a" == "a%MPC_ROOT%" set MPC_ROOT=c:\MPC\MPC
 if "a" == "a%BOOST_VERSION%" set BOOST_VERSION=boost_1_61_0
 if "a" == "a%BOOST_ROOT%" set BOOST_ROOT=c:\boost\%BOOST_VERSION%
-@REM TODO: For the example program set QUICKFAST_ROOT *
+if "a" == "a%QUICKFAST_ROOT%" set QUICKFAST_ROOT=noQuickFAST
+@REM TODO: For the example program set QUICKFAST_ROOT to the actual quickfast directory and 
+@REM TODO: Edit the features file.
 REM END OF VALUES TO BE SET
 REM =====================================================================================
 
@@ -41,6 +43,9 @@ if not exist "%BOOST_ROOT%\boost" goto setup_is_bad
 
 set SETUP_CHECKING=BOOST_ROOT lib=%BOOST_ROOT%\lib
 if not exist "%BOOST_ROOT%\lib" goto setup_is_bad
+
+set SETUP_CHECKING=QUICKFAST_ROOT contains QuickFASTApplication.mpb
+if not exist %QUICKFAST_ROOT%\QuickFASTApplication.mpb goto setup_is_bad
 
 REM Find visual studio.  
 REM You can short-circuit this by setting VCVER before running this

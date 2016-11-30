@@ -2,5 +2,7 @@ workspace(liquibook) {
   cmdline += -include mpc 
   cmdline += -include $QUICKFAST_ROOT
   cmdline += -feature_file liquibook.features
+  cmdline += -expand_vars
+  cmdline += -use_env
 }
 

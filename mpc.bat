@@ -8,4 +8,4 @@
 @REM Note: -expand_vars -use_env options force MPC to expand $(BOOST_ROOT) into the absolute path.  This avoids
 @REM        a problem that happened when people were starting Visual Studio from the Start menu rather than
 @REM        from the command line where the BOOST_ROOT environment had been defined.
-"%MPC_ROOT%\mwc.pl" -expand_vars -use_env -type vc%VCVER% liquibook.mwc
+"%MPC_ROOT%\mwc.pl" -type vc%VCVER% liquibook.mwc
