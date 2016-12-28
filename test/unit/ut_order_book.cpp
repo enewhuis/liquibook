@@ -936,7 +936,8 @@ TEST(TestMatchMultipleMarketOrderAsk)
 TEST(TestCancelBid)
 {
   SimpleOrderBook order_book;
-  SimpleOrder ask1(false, 1252, 100);
+  SimpleOrder ask2(false, 1252, 100);
+  SimpleOrder ask1(false, 1251, 100);
   SimpleOrder ask0(false, 1251, 100);
   SimpleOrder bid0(true,  1250, 100);
 
@@ -944,19 +945,24 @@ TEST(TestCancelBid)
   ASSERT_TRUE(add_and_verify(order_book, &bid0, false));
   ASSERT_TRUE(add_and_verify(order_book, &ask0, false));
   ASSERT_TRUE(add_and_verify(order_book, &ask1, false));
+  ASSERT_TRUE(add_and_verify(order_book, &ask2, false));
 
   // Verify sizes
   ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  ASSERT_EQ(3, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
   ASSERT_TRUE(dc.verify_bid(1250, 1, 100));
-  ASSERT_TRUE(dc.verify_ask(1251, 1, 100));
+  ASSERT_TRUE(dc.verify_ask(1251, 2, 200));
   ASSERT_TRUE(dc.verify_ask(1252, 1, 100));
 
   // Cancel bid
   ASSERT_TRUE(cancel_and_verify(order_book, &bid0, impl::os_cancelled));
+
+  // Cancel correctness
+  ASSERT_TRUE(cancel_and_verify(order_book, &ask1, impl::os_cancelled));
+  ASSERT_TRUE(cancel_and_verify(order_book, &ask1, impl::os_cancelled));
 
   // Verify depth
   dc.reset();

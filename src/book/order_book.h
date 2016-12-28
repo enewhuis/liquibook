@@ -786,6 +786,7 @@ OrderBook<OrderPtr>::find_bid(
       break;
     // Else if this bid's price is too low to match the search price
     } else if (result->first < search_price) {
+      result = bids_.end();
       break; // No more possible
     }
   }
@@ -805,6 +806,7 @@ OrderBook<OrderPtr>::find_ask(
       break;
     // Else if this ask's price is too high to match the search price
     } else if (result->first > search_price) {
+      result = asks_.end();
       break; // No more possible
     }
   }
