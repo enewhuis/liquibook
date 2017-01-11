@@ -43,6 +43,7 @@ Build Dependencies
 * [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds
 * [Assertiv](https://github.com/iamtheschmitzer/assertiv) for unit testing
 * BOOST (optional) for shared pointer unit testing only
+* [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example publisher/subscriber
 
 ## Submodule Note
 
@@ -56,7 +57,7 @@ Assertiv is included as a submodule.  After cloning liquibook, you must:
 
 ## Linux Build Notes
 
-Make sure the $BOOST_ROOT and $MPC_ROOT environment variables are set, then open a shell
+Make sure the $BOOST_ROOT, $QUICKFAST_ROOT (set to liquibook/noQuickFAST if you don't want to use QuickFAST) and $MPC_ROOT environment variables are set, then open a shell
 
 <pre>
 $ cd liquibook
