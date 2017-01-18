@@ -75,11 +75,13 @@ Note if you are using MinGW or other linux-on-Windows techniques, follow the Lin
 
 <pre>
 > cd liquibook
-> copy winenv.bat wenv.bat #optional if you want to keep the original
-> edit wenv.bat  #edit is your choice of text editor
-                 # follow the instructions in the file itself.
-> wenv.bat       # sets and verifies environment variables
-> mpc.bat        # generate the visual studio solution and project files.
+> copy winenv.bat w.bat #optional if you want to keep the original
+                        # note that single character batch file names are ignored in .getignore so the customized
+                        # file will not be checked into the git repository.
+> edit w.bat            # edit is your choice of text editor
+                        # follow the instructions in the file itself.
+> w.bat                 # sets and verifies environment variables
+> mpc.bat               # generate the visual studio solution and project files.
 </pre>
 
 Then in the same window, start Visual Studio from the command line, opening liquibook.sln
