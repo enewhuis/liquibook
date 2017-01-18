@@ -79,7 +79,7 @@ Note if you are using MinGW or other linux-on-Windows techniques, follow the Lin
 > edit wenv.bat  #edit is your choice of text editor
                  # follow the instructions in the file itself.
 > wenv.bat       # sets and verifies environment variables
-> mwc.bat        # generate the visual studio solution and project files.
+> mpc.bat        # generate the visual studio solution and project files.
 </pre>
 
 Then in the same window, start Visual Studio from the command line, opening liquibook.sln
