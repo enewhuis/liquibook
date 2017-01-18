@@ -51,36 +51,45 @@ REM Find visual studio.
 REM You can short-circuit this by setting VCVER before running this
 REM However this also avoids the check to see if VC is installed in the expected place.
 set SETUP_CHECKING=Setup checking visual studio common tools
-if not "a" == "a%VCVER%" goto setup_is_ok
+if not "a" == "a%VCVER%" goto vc_is_ok
 
 set VCVER=14
 set SETUP_CHECKING=VS140COMNTOOLS
-if exist "%VS140COMNTOOLS%VSVARS32.BAT" goto setup_is_ok
+if exist "%VS140COMNTOOLS%VSVARS32.BAT" goto vc_is_ok
 
 set VCVER=12
 set SETUP_CHECKING=VS120COMNTOOLS=%VS100COMNTOOLS%
-if exist "%VS120COMNTOOLS%VSVARS32.BAT" goto setup_is_ok
+if exist "%VS120COMNTOOLS%VSVARS32.BAT" goto vc_is_ok
 
 set VCVER=10
 set SETUP_CHECKING=VS100COMNTOOLS=%VS100COMNTOOLS%
-if exist "%VS100COMNTOOLS%VSVARS32.BAT" goto setup_is_ok
+if exist "%VS100COMNTOOLS%VSVARS32.BAT" goto vc_is_ok
 
 set VCVER=9
 set SETUP_CHECKING=VS90COMNTOOLS=%VS90COMNTOOLS%
-if exist "%VS90COMNTOOLS%VSVARS32.BAT" goto setup_is_ok
+if exist "%VS90COMNTOOLS%VSVARS32.BAT" goto vc_is_ok
 
 set VCVER=8
 set SETUP_CHECKING=VS80COMNTOOLS=%VS80COMNTOOLS%
 
-if exist "%VS80COMNTOOLS%VSVARS32.BAT" goto setup_is_ok
-REM goto setup_is_bad  (you are here) 
+if exist "%VS80COMNTOOLS%VSVARS32.BAT" goto vc_is_ok
+goto setup_is_bad  
+
+:vc_is_ok
+set SETUP_CHECKING=assertiv
+
+if exist "test\unit\assertiv.h" goto assertiv_is_ok
+git submodule init
+git submodule update
+if not exist "test\unit\assertiv.h" goto assertiv_is_ok
 
 :setup_is_bad
 ECHO Setup check failed: %SETUP_CHECKING%
 ECHO Edit the setup.cmd file or change environment variables
 goto end
 
-:setup_is_ok
+:assertiv_is_ok
+
 set SETUP_CHECKING=
 
 set LIQUIBOOK_ROOT=%~dp0
