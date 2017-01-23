@@ -30,8 +30,8 @@ public:
 
   void reset()
   {
-    quantities_.erase(quantities_.begin(), quantities_.end());
-    costs_.erase(costs_.begin(), costs_.end());
+    quantities_.clear();
+    costs_.clear();
   }
   std::vector<Quantity> quantities_;
   std::vector<Cost> costs_;
@@ -76,13 +76,13 @@ public:
 
   void reset()
   {
-    accepts_.erase(accepts_.begin(), accepts_.end());
-    rejects_.erase(rejects_.begin(), rejects_.end());
-    fills_.erase(fills_.begin(), fills_.end());
-    cancels_.erase(cancels_.begin(), cancels_.end());
-    cancel_rejects_.erase(cancel_rejects_.begin(), cancel_rejects_.end());
-    replaces_.erase(replaces_.begin(), replaces_.end());
-    replace_rejects_.erase(replace_rejects_.begin(), replace_rejects_.end());
+    accepts_.clear();
+    rejects_.clear();
+    fills_.clear();
+    cancels_.clear();
+    cancel_rejects_.clear();
+    replaces_.clear();
+    replace_rejects_.clear();
   }
 
   typedef std::vector<const SimpleOrder*> OrderVector;
@@ -164,7 +164,7 @@ public:
 
   void reset()
   {
-    changes_.erase(changes_.begin(), changes_.end());
+    changes_.clear();
   }
 
   typedef std::vector<const TypedOrderBook*> OrderBookVector;
@@ -237,7 +237,8 @@ public:
 
   void reset()
   {
-    changes_.erase(changes_.begin(), changes_.end());
+    changes_.clear();
+
   }
   typedef std::vector<const TypedDepthOrderBook*> OrderBooks;
   OrderBooks changes_;
@@ -315,7 +316,7 @@ class BboCbListener
 
   void reset()
   {
-    changes_.erase(changes_.begin(), changes_.end());
+    changes_.clear();
   }
 
   typedef std::vector<const TypedDepthOrderBook*> OrderBooks;

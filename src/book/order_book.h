@@ -660,7 +660,7 @@ inline void
 OrderBook<OrderPtr>::move_callbacks(Callbacks& target)
 {
   target.insert(target.end(), callbacks_.begin(), callbacks_.end());
-  callbacks_.erase(callbacks_.begin(), callbacks_.end());
+  callbacks_.clear();
 }
 
 template <class OrderPtr>
@@ -671,7 +671,7 @@ OrderBook<OrderPtr>::perform_callbacks()
   for (cb = callbacks_.begin(); cb != callbacks_.end(); ++cb) {
     perform_callback(*cb);
   }
-  callbacks_.erase(callbacks_.begin(), callbacks_.end());
+  callbacks_.clear();
 }
 
 template <class OrderPtr>
