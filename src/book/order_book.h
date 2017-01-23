@@ -133,7 +133,7 @@ public:
   virtual void perform_callback(TypedCallback& cb);
 
   /// @brief log the orders in the book.
-  void log() const;
+  std::ostream & log(std::ostream & out) const;
 
 protected:
   /// @brief match a new ask to current bids
@@ -275,6 +275,7 @@ template <class OrderPtr>
 inline bool
 OrderTracker<OrderPtr>::all_or_none() const
 {
+  // TODO: Consider making this a property of the order rather than keeping external flags.
   return bool(conditions_ & oc_all_or_none);
 }
 
@@ -282,7 +283,8 @@ template <class OrderPtr>
 inline bool
 OrderTracker<OrderPtr>::immediate_or_cancel() const
 {
-  return bool((conditions_ & oc_immediate_or_cancel) != 0);
+    // TODO: Consider making this a property of the order rather than keeping external flags.
+    return bool((conditions_ & oc_immediate_or_cancel) != 0);
 }
 
 template <class OrderPtr>
@@ -659,8 +661,16 @@ template <class OrderPtr>
 inline void
 OrderBook<OrderPtr>::move_callbacks(Callbacks& target)
 {
-  target.insert(target.end(), callbacks_.begin(), callbacks_.end());
-  callbacks_.clear();
+  // optimize for common case
+  if(target.empty())
+  {
+    callbacks_.swap(target);
+  }
+  else
+  {
+    target.insert(target.end(), callbacks_.begin(), callbacks_.end());
+    callbacks_.clear();
+  }
 }
 
 template <class OrderPtr>
@@ -725,19 +735,19 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
 }
 
 template <class OrderPtr>
-inline void
-OrderBook<OrderPtr>::log() const
+inline std::ostream &
+OrderBook<OrderPtr>::log(std::ostream & out) const
 {
-  typename Asks::const_reverse_iterator ask;
-  typename Bids::const_iterator bid;
-  for (ask = asks_.rbegin(); ask != asks_.rend(); ++ask) {
-    std::cout << "  Ask " << ask->second.open_qty() << " @ " << ask->first
+  for(typename Asks::const_reverse_iterator ask = asks_.rbegin(); ask != asks_.rend(); ++ask) {
+    out << "  Ask " << ask->second.open_qty() << " @ " << ask->first
                           << std::endl;
   }
-  for (bid = bids_.begin(); bid != bids_.end(); ++bid) {
-    std::cout << "  Bid " << bid->second.open_qty() << " @ " << bid->first
+
+  for(typename Bids::const_iterator bid = bids_.begin(); bid != bids_.end(); ++bid) {
+    out << "  Bid " << bid->second.open_qty() << " @ " << bid->first
                           << std::endl;
   }
+  return out;
 }
 
 template <class OrderPtr>
