@@ -38,3 +38,6 @@ Makefile*
 # (use single letter names and don't add to repo)
 ?.cmd
 ?.bat
+
+#a place to hide documents that should not go into the repo:
+doc/NotGitWorthy/
