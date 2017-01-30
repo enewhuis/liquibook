@@ -9,7 +9,7 @@
 #include "bbo_listener.h"
 #include "depth_listener.h"
 
-#include <iostream>
+//#include <iostream>
 
 namespace liquibook { namespace book {
 
@@ -25,7 +25,7 @@ public:
   typedef Callback<OrderPtr> DobCallback;
 
   /// @brief construct
-  DepthOrderBook();
+  DepthOrderBook(const std::string & symbol = "unknown");
 
   /// @brief set the BBO listener
   void set_bbo_listener(TypedBboListener* bbo_listener);
@@ -49,9 +49,10 @@ private:
 };
 
 template <class OrderPtr, int SIZE>
-DepthOrderBook<OrderPtr, SIZE>::DepthOrderBook()
-: bbo_listener_(NULL),
-  depth_listener_(NULL)
+DepthOrderBook<OrderPtr, SIZE>::DepthOrderBook(const std::string & symbol)
+: OrderBook<OrderPtr>(symbol),
+  bbo_listener_(nullptr),
+  depth_listener_(nullptr)
 {
 }
 

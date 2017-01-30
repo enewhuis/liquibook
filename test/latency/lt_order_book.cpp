@@ -17,7 +17,7 @@ typedef impl::SimpleOrderBook<1> BboOrderBook;
 typedef book::OrderBook<impl::SimpleOrder*> NoDepthOrderBook;
 
 void build_histogram(timespec* timestamps, int count) {
-  timespec* prev = NULL;
+  timespec* prev = nullptr;
   std::cout << "Latency (ns) " << std::endl;
 
   for (timespec* timestamp = timestamps;
@@ -66,7 +66,7 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders,
     order_book.perform_callbacks();
     ++pp_order;
     ++timestamp;
-    if (*pp_order == NULL) {
+    if (*pp_order == nullptr) {
       break;
     }
     ++count;
@@ -115,7 +115,7 @@ bool build_and_run_test(uint32_t num_to_try, bool dry_run = false) {
     Quantity qty = ((rand() % 10) + 1) * 100;
     orders[i] = new impl::SimpleOrder(is_buy, price, qty);
   }
-  orders[num_to_try] = NULL; // Final null
+  orders[num_to_try] = nullptr; // Final null
   
   run_test(order_book, orders, timestamps);
   for (uint32_t i = 0; i <= num_to_try; ++i) {

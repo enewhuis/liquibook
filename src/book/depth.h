@@ -128,7 +128,7 @@ private:
   /// @param price the price to find
   /// @param is_bid indicator of bid or ask
   /// @param should_create should a level for the price be created, if necessary
-  /// @return the level, or NULL if not found and full
+  /// @return the level, or nullptr if not found and full
   DepthLevel* find_level(Price price, bool is_bid, bool should_create = true);
 
   /// @brief insert a new level before this level and shift down

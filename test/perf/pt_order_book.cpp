@@ -24,7 +24,7 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders, clock_t end) {
     order_book.add(*pp_order);
     order_book.perform_callbacks();
     ++pp_order;
-    if (*pp_order == NULL) {
+    if (*pp_order == nullptr) {
       return -1;
     }
     ++count;
@@ -68,7 +68,7 @@ bool build_and_run_test(uint32_t dur_sec, uint32_t num_to_try) {
     Quantity qty = ((rand() % 10) + 1) * 100;
     orders[i] = new impl::SimpleOrder(is_buy, price, qty);
   }
-  orders[num_to_try] = NULL; // Final null
+  orders[num_to_try] = nullptr; // Final null
   
   clock_t start = clock();
   clock_t stop = start + (dur_sec * CLOCKS_PER_SEC);

@@ -298,9 +298,9 @@ OrderTracker<OrderPtr>::immediate_or_cancel() const
 template <class OrderPtr>
 OrderBook<OrderPtr>::OrderBook(const std::string & symbol)
 : symbol_(symbol),
-  order_listener_(NULL),
-  trade_listener_(NULL),
-  order_book_listener_(NULL),
+  order_listener_(nullptr),
+  trade_listener_(nullptr),
+  order_book_listener_(nullptr),
   trans_id_(0)
 {
   callbacks_.reserve(16);
