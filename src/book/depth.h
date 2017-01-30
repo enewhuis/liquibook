@@ -23,24 +23,24 @@ public:
   /// @brief construct
   Depth();
 
-  /// @brief get the first bid level
+  /// @brief get the first bid level (const)
   const DepthLevel* bids() const;
-  /// @brief get the last bid level
+  /// @brief get the last bid level (const)
   const DepthLevel* last_bid_level() const;
-  /// @brief get the first ask level
+  /// @brief get the first ask level (const)
   const DepthLevel* asks() const;
-  /// @brief get the last ask level
+  /// @brief get the last ask level (const)
   const DepthLevel* last_ask_level() const;
-  /// @brief get one past the last ask level
+  /// @brief get one past the last ask level (const)
   const DepthLevel* end() const;
 
-  /// @brief get the first bid level
+  /// @brief get the first bid level (mutable)
   DepthLevel* bids();
-  /// @brief get the last bid level
+  /// @brief get the last bid level (mutable)
   DepthLevel* last_bid_level();
-  /// @brief get the first ask level
+  /// @brief get the first ask level (mutable)
   DepthLevel* asks();
-  /// @brief get the last ask level
+  /// @brief get the last ask level (mutable)
   DepthLevel* last_ask_level();
 
   /// @brief add an order
@@ -109,7 +109,7 @@ public:
   /// @brief what was the ID of the last published change?
   ChangeId last_published_change() const;
 
-  /// @beief note the ID of last published change
+  /// @brief note the ID of last published change
   void published();
 
 private:
