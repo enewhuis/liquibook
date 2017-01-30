@@ -14,7 +14,7 @@ namespace {
     ////////////////////////////////////
     // Command parsing helpers
 
-    std::string nextToken(const std::vector<std::string> & tokens,size_t & pos)
+    std::string nextToken(const std::vector<std::string> & tokens, size_t & pos)
     {
         if(pos < tokens.size())
         {
@@ -26,7 +26,7 @@ namespace {
     uint32_t toUint32(const std::string & input)
     {
         char * end;
-        uint32_t value = strtoul(input.c_str(),&end,10);
+        uint32_t value = strtoul(input.c_str(), &end, 10);
         if(*end != '\0')
         {
             value = INVALID_UINT32;
@@ -37,7 +37,7 @@ namespace {
     uint32_t toInt32(const std::string & input)
     {
         char * end;
-        uint32_t value = strtol(input.c_str(),&end,10);
+        uint32_t value = strtol(input.c_str(), &end, 10);
         if(*end != '\0')
         {
             value = INVALID_INT32;
@@ -61,8 +61,8 @@ namespace {
     {
         std::cout << "\n" << prompt << ": " << std::flush;
         std::string input;
-        std::getline(std::cin,input);
-        std::transform(input.begin(),input.end(),input.begin(),toupper);
+        std::getline(std::cin, input);
+        std::transform(input.begin(), input.end(), input.begin(), toupper);
         return input;
     }
 
@@ -72,13 +72,20 @@ namespace {
         return stringToPrice(str);
     }
 
-
     uint32_t promptForUint32(const std::string & prompt)
     {
         std::cout << "\n" << prompt << ": " << std::flush;
         std::string input;
-        std::getline(std::cin,input);
+        std::getline(std::cin, input);
         return toUint32(input);
+    }
+
+    int32_t promptForInt32(const std::string & prompt)
+    {
+        std::cout << "\n" << prompt << ": " << std::flush;
+        std::string input;
+        std::getline(std::cin, input);
+        return toInt32(input);
     }
 
     bool promptForYesNo(const std::string & prompt)
@@ -99,14 +106,14 @@ namespace {
 
     // trim from start (in place)
     static inline void ltrim(std::string &s) {
-        s.erase(s.begin(),std::find_if(s.begin(),s.end(),
-            std::not1(std::ptr_fun<int,int>(std::isspace))));
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), 
+            std::not1(std::ptr_fun<int, int>(std::isspace))));
     }
 
     // trim from end (in place)
     static inline void rtrim(std::string &s) {
-        s.erase(std::find_if(s.rbegin(),s.rend(),
-            std::not1(std::ptr_fun<int,int>(std::isspace))).base(),s.end());
+        s.erase(std::find_if(s.rbegin(), s.rend(), 
+            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
     }
 
     // trim from both ends (in place)
@@ -152,22 +159,22 @@ Market::~Market()
 const char * 
 Market::prompt()
 {
-    return "\t(A)dd,\n\t(M)odify,\n\t(C)ancel\n\t(D)isplay\n";
+    return "\t(B)uy\n\t(S)ell\n\t(M)odify\n\t(C)ancel\n\t(D)isplay\n";
 }
 
 void 
 Market::help(std::ostream & out)
 {
-    out << "Add: Create a new order and add it to the book\n"
-        << "  Arguments:\n"
-        << "     BUY or SELL\n"
+    out << "Buy: Create a new Buy order and add it to the book\n"
+        << "Sell: Create a new Sell order and add it to the book\n"
+        << "  Arguments for BUY or SELL\n"
         << "     <Quantity>\n"
         << "     <Symbol>\n"
         << "     <Price> or MARKET\n"
         << "     AON            (optional)\n"
         << "     IOC            (optional)\n"
         << "     STOP <Price>   (optional)\n"
-        << "     END            (marks end of order)\n"
+        << "     ;              end of order\n"
         << std::endl;
 
     out << "Modify: Request Modify an existing order\n"
@@ -175,16 +182,19 @@ Market::help(std::ostream & out)
         << "     <order#>\n"
         << "     PRICE <new price>\n"
         << "     QUANTITY <new initial quantity>\n"
+        << "     ;              end of modify requet\n"
         << std::endl;
 
     out << "Cancel: Request cancel an existing order\n"
         << "  Arguments:\n"
         << "     <order#>\n"
+        << "     ;              end of cancel request (optional)\n"
         << std::endl;
 
     out << "Display: Display status of an existing order\n"
         << "  Arguments:\n"
-        << "     <order#> or <symbol> or \"book\"\n"
+        << "     +       (enable verbose display)\n"
+        << "     <order#> or <symbol> or \"all\"\n"
         << std::endl;
 
 }
@@ -193,9 +203,13 @@ bool
 Market::apply(const std::vector<std::string> & tokens)
 {
     const std::string & command = tokens[0];
-    if(command == "ADD" || command == "A")
+    if(command == "BUY" || command == "B")
     {
-        return doAdd(tokens, 1);
+        return doAdd("BUY", tokens, 1);
+    }
+    if(command == "SELL" || command == "S")
+    {
+        return doAdd("SELL", tokens, 1);
     }
     else if (command == "CANCEL" || command == "C")
     {
@@ -207,7 +221,7 @@ Market::apply(const std::vector<std::string> & tokens)
     }
     else if(command == "DISPLAY" || command == "D")
     {
-        return doDisplay(tokens,1);
+        return doDisplay(tokens, 1);
     }
     return false;
 }
@@ -216,27 +230,8 @@ Market::apply(const std::vector<std::string> & tokens)
 ////////
 // ADD
 bool 
-Market::doAdd(const std::vector<std::string> & tokens, size_t pos)
+Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens, size_t pos)
 {
-    std::cout << "Add" << std::endl;
-
-    //////////////
-    // SIDE
-    std::string side = nextToken(tokens, pos);
-    if(side.empty())
-    {
-        side = "?";
-        while (side != "BUY" && side != "SELL" && !side.empty())
-        {
-            side = promptForString("BUY or SELL");
-        }
-    }
-    if(side != "BUY" && side != "SELL")
-    {
-        std::cerr << "--Expecting BUY or SELL" << std::endl;
-        return false;
-    }
-
     //////////////
     // Quantity
     liquibook::book::Quantity quantity;
@@ -265,12 +260,23 @@ Market::doAdd(const std::vector<std::string> & tokens, size_t pos)
     }
     if(!symbolIsDefined(symbol))
     {
-        if(!promptForYesNo("Is this a new symbol?"))
+        if(symbol[0] == '+')
         {
-            std::cerr << "--Expecting valid symbol" << std::endl;
-            return false;
+            symbol = symbol.substr(1);
+            if(!symbolIsDefined(symbol))
+            {
+                addBook(symbol);
+            }
         }
-        add_book(symbol);
+        else
+        {
+            if(!promptForYesNo("Is " + symbol +  " a new symbol?"))
+            {
+                std::cerr << "--Expecting valid symbol" << std::endl;
+                return false;
+            }
+            addBook(symbol);
+        }
     }
 
     ///////////////
@@ -307,7 +313,7 @@ Market::doAdd(const std::vector<std::string> & tokens, size_t pos)
             prompted = true;
             option = promptForString("AON, or IOC, or STOP, or END");
         }
-        if(option == "E" || option == "END")
+        if(option == ";" || option == "E" || option == "END")
         {
             go = true;
             optionOk = true;
@@ -351,7 +357,6 @@ Market::doAdd(const std::vector<std::string> & tokens, size_t pos)
     std::string orderId = std::to_string(++orderIdSeed_);
 
     OrderPtr order = std::make_shared<Order>(orderId, side == "BUY", quantity, symbol, price, stopPrice, aon, ioc);
-    orders_[orderId] = order;
 
     const liquibook::book::OrderConditions AON(liquibook::book::oc_all_or_none);
     const liquibook::book::OrderConditions IOC(liquibook::book::oc_immediate_or_cancel);
@@ -361,9 +366,17 @@ Market::doAdd(const std::vector<std::string> & tokens, size_t pos)
         (aon ? AON : NOC) | (ioc ? IOC : NOC);
 
 
+    auto book = findBook(symbol);
+    if(!book)
+    {
+        std::cerr << "--No order book for symbol" << symbol << std::endl;
+        return false;
+    }
+
+    order->onSubmitted();
     std::cout << "ADDING order:  " << *order << std::endl;
 
-    auto book = find_book(symbol);
+    orders_[orderId] = order;
     book->add(order, conditions);
     book->perform_callbacks();
     return true;
@@ -372,11 +385,10 @@ Market::doAdd(const std::vector<std::string> & tokens, size_t pos)
 ///////////
 // CANCEL
 bool
-Market::doCancel(const std::vector<std::string> & tokens,size_t position)
+Market::doCancel(const std::vector<std::string> & tokens, size_t position)
 {
     OrderPtr order;
     OrderBookPtr book;
-
     if(!findExistingOrder(tokens, position, order, book))
     {
         return false;
@@ -392,17 +404,204 @@ Market::doCancel(const std::vector<std::string> & tokens,size_t position)
 ///////////
 // MODIFY
 bool
-Market::doModify(const std::vector<std::string> & tokens,size_t position)
+Market::doModify(const std::vector<std::string> & tokens, size_t position)
 {
-    std::cout << "Modify" << std::endl;
+    OrderPtr order;
+    OrderBookPtr book;
+    if(!findExistingOrder(tokens, position, order, book))
+    {
+        return false;
+    }
+
+    //////////////
+    // options
+    //////////////////////////
+    // OPTIONS: PRICE (price) ; QUANTITY (delta)
+
+    int32_t quantityChange = liquibook::book::SIZE_UNCHANGED;
+    liquibook::book::Price price = liquibook::book::PRICE_UNCHANGED;
+
+    bool go = false;
+    while(!go)
+    {
+        bool prompted = false;
+        bool optionOk = false;
+        std::string option = nextToken(tokens, position);
+        if(option.empty())
+        {
+            prompted = true;
+            option = promptForString("PRICE, or QUANTITY, or END");
+        }
+        if(option == ";" || option == "E" || option == "END")
+        {
+            go = true;
+            optionOk = true;
+        }
+        else if(option == "P" || option == "PRICE")
+        {
+            uint32_t newPrice = INVALID_UINT32;
+            std::string priceStr = nextToken(tokens, position);
+            if(priceStr.empty())
+            {
+                newPrice = promptForUint32("New Price");
+            }
+            else
+            {
+                newPrice = toUint32(priceStr);
+            }
+
+            if(newPrice > 0 && newPrice != INVALID_UINT32)
+            {
+                price = newPrice;
+                optionOk = true;
+            }
+            else
+            {
+                std::cerr << "Invalid price" << std::endl;
+            }
+        }
+        else if(option == "Q" || option == "QUANTITY")
+        {
+            int32_t qty = INVALID_INT32;
+            std::string qtyStr = nextToken(tokens, position);
+            if(qtyStr.empty())
+            {
+                qty = promptForInt32("Change in quantity");
+            }
+            else
+            {
+                qty = toInt32(qtyStr);
+            }
+            if(qty != INVALID_INT32)
+            {
+                quantityChange = qty;
+                optionOk = true;
+            }
+            else
+            {
+                std::cerr << "Invalid quantity change." << std::endl;
+            }
+        }
+
+        if(!optionOk)
+        {
+            std::cout << "Unknown or invalid option " << option << std::endl;
+            if(!prompted)
+            {
+                std::cerr << "--Expecting PRICE <price>, or QUANTITY <change>, or  END" << std::endl;
+                return false;
+            }
+        }
+    }
+
+    book->replace(order, quantityChange, price);
+    std::cout << "Requested Modify" ;
+    if(quantityChange != liquibook::book::SIZE_UNCHANGED)
+    {
+        std::cout << " QUANTITY  += " << quantityChange;
+    }
+    if(price != liquibook::book::PRICE_UNCHANGED)
+    {
+        std::cout << " PRICE " << price;
+    }
+    std::cout << std::endl;
+    book->perform_callbacks();
     return true;
 }
 
 ///////////
 // DISPLAY
 bool
-Market::doDisplay(const std::vector<std::string> & tokens,size_t pos)
+Market::doDisplay(const std::vector<std::string> & tokens, size_t pos)
 {
+    bool verbose = false;
+    // see if first token could be an order id.
+    // todo: handle prompted imput!
+    std::string parameter = nextToken(tokens, pos);
+    if(parameter.empty())
+    {
+        parameter = promptForString("+ or #OrderId or -orderOffset or symbol or \"ALL\"");
+    }
+    else
+    {
+        --pos; // Don't consume this parameter yet.
+    }
+    if(parameter[0] == '+')
+    {
+        verbose = true;
+        if(parameter.length() > 1)
+        {
+            parameter = parameter.substr(1);
+        }
+        else
+        {
+            ++pos; // now we can consume the first parameter (whether or not it's there!)
+            parameter = nextToken(tokens, pos);
+            if(parameter.empty())
+            {
+                parameter = promptForString("#OrderId or -orderOffset or symbol or \"ALL\"");
+            }
+            else
+            {
+                --pos; // Don't consume this parameter yet.
+            }
+        }
+    }
+    if(parameter[0] == '#' || parameter[0] == '-' || isdigit(parameter[0]))
+    {
+        OrderPtr order;
+        OrderBookPtr book;
+        if(findExistingOrder(parameter, order, book))
+        {
+            std::cout << *order << std::endl;
+            return true;
+        }
+    }
+
+    // Not an order id.  Try for a symbol:
+    std::string symbol = parameter;
+    if(symbolIsDefined(symbol))
+    {
+        for(auto pOrder = orders_.begin(); pOrder != orders_.end(); ++pOrder)
+        {
+            const OrderPtr & order = pOrder->second;
+            if(order->symbol() == symbol)
+            {
+                std::cout << order->verbose(verbose) << std::endl;
+                order->verbose(false);
+            }
+        }
+        auto book = findBook(symbol);
+        if(!book)
+        {
+            std::cerr << "--No order book for symbol" << symbol << std::endl;
+        }
+        else
+        {
+            book->log(std::cout);
+        }
+        return true;
+    }
+    else if( symbol == "ALL")
+    {
+        for(auto pOrder = orders_.begin(); pOrder != orders_.end(); ++pOrder)
+        {
+            const OrderPtr & order = pOrder->second;
+            std::cout << order->verbose(verbose) << std::endl;
+            order->verbose(false);
+        }
+
+        for(auto pBook = books_.begin(); pBook != books_.end(); ++pBook)
+        {
+            std::cout << "Order book for " << pBook->first << std::endl;
+            pBook->second->log(std::cout);
+        }
+        return true;
+    }
+    else
+    {
+        std::cout << "--Unknown symbol: " << symbol << std::endl;
+    }
     return false;
 }
 
@@ -421,9 +620,9 @@ Market::symbolIsDefined(const std::string & symbol)
 }
 
 OrderBookPtr
-Market::add_book(const std::string & symbol)
+Market::addBook(const std::string & symbol)
 {
-    OrderBookPtr result = std::make_shared<OrderBook>();
+    OrderBookPtr result = std::make_shared<OrderBook>(symbol);
     result->set_order_listener(this);
     result->set_trade_listener(this);
     result->set_order_book_listener(this);
@@ -432,7 +631,7 @@ Market::add_book(const std::string & symbol)
 }
 
 OrderBookPtr
-Market::find_book(const std::string & symbol)
+Market::findBook(const std::string & symbol)
 {
     OrderBookPtr result;
     auto entry = books_.find(symbol);
@@ -443,11 +642,11 @@ Market::find_book(const std::string & symbol)
     return result;
 }
 
-bool Market::findExistingOrder(const std::vector<std::string> & tokens,size_t position,OrderPtr & order,OrderBookPtr & book)
+bool Market::findExistingOrder(const std::vector<std::string> & tokens, size_t & position, OrderPtr & order, OrderBookPtr & book)
 {
     ////////////////
     // Order ID
-    std::string orderId = nextToken(tokens,position);
+    std::string orderId = nextToken(tokens, position);
     trim(orderId);
     if(orderId.empty())
     {
@@ -480,7 +679,7 @@ bool Market::findExistingOrder(const std::vector<std::string> & tokens,size_t po
     return findExistingOrder(orderId, order, book);
 }
 
-bool Market::findExistingOrder(const std::string & orderId, OrderPtr & order,OrderBookPtr & book)
+bool Market::findExistingOrder(const std::string & orderId, OrderPtr & order, OrderBookPtr & book)
 {
     auto orderPosition = orders_.find(orderId);
     if(orderPosition == orders_.end())
@@ -491,7 +690,7 @@ bool Market::findExistingOrder(const std::string & orderId, OrderPtr & order,Ord
 
     order = orderPosition->second;
     std::string symbol = order->symbol();
-    book = find_book(symbol);
+    book = findBook(symbol);
     if(!book)
     {
         std::cerr << "--No order book for symbol" << symbol << std::endl;
@@ -507,25 +706,29 @@ void
 Market::on_accept(const OrderPtr& order)
 {
 //todo
-    std::cout << "\tAccepted: " << *order << std::endl;
+    order->onAccepted();
+    std::cout << "\tAccepted: " <<*order<< std::endl;
 }
 
 void 
-Market::on_reject(const OrderPtr& order,const char* reason)
+Market::on_reject(const OrderPtr& order, const char* reason)
 {
     //todo
-    std::cout << "\tRejected: " << *order << std::endl;
+    order->onRejected(reason);
+    std::cout << "\tRejected: " <<*order<< ' ' << reason << std::endl;
 
 }
 
 void 
-Market::on_fill(const OrderPtr& order,
-    const OrderPtr& matched_order,
-    liquibook::book::Quantity fill_qty,
+Market::on_fill(const OrderPtr& order, 
+    const OrderPtr& matched_order, 
+    liquibook::book::Quantity fill_qty, 
     liquibook::book::Cost fill_cost)
 {
+    order->onFilled(fill_qty, fill_cost);
+    matched_order->onFilled(fill_qty, fill_cost);
     std::cout << (order->is_buy() ? "\tBought: " : "\tSold: ") 
-        << fill_qty << " Shares for " << fill_cost << ' ' << *order << std::endl;
+        << fill_qty << " Shares for " << fill_cost << ' ' <<*order<< std::endl;
     std::cout << (matched_order->is_buy() ? "\tBought: " : "\tSold: ") 
         << fill_qty << " Shares for " << fill_cost << ' ' << *matched_order << std::endl;
 
@@ -535,28 +738,41 @@ Market::on_fill(const OrderPtr& order,
 void 
 Market::on_cancel(const OrderPtr& order)
 {
-    std::cout << "\tCanceled: " << *order << std::endl;
+    order->onCancelled();
+    std::cout << "\tCanceled: " << *order<< std::endl;
     //todo
 }
 
-void Market::on_cancel_reject(const OrderPtr& order,const char* reason)
+void Market::on_cancel_reject(const OrderPtr& order, const char* reason)
 {
-    std::cout << "\tCancel Reject: " << *order << std::endl;
+    order->onCancelRejected(reason);
+    std::cout << "\tCancel Reject: " <<*order<< ' ' << reason << std::endl;
     //todo
 }
 
-void Market::on_replace(const OrderPtr& order,
-    const int32_t& size_delta,
+void Market::on_replace(const OrderPtr& order, 
+    const int32_t& size_delta, 
     liquibook::book::Price new_price)
 {
-    std::cout << "\tReplace: " << *order << std::endl;
+    order->onReplaced(size_delta, new_price);
+    std::cout << "\tModify " ;
+    if(size_delta != liquibook::book::SIZE_UNCHANGED)
+    {
+        std::cout << " QUANTITY  += " << size_delta;
+    }
+    if(new_price != liquibook::book::PRICE_UNCHANGED)
+    {
+        std::cout << " PRICE " << new_price;
+    }
+    std::cout <<*order<< std::endl;
     //todo
 }
 
 void 
-Market::on_replace_reject(const OrderPtr& order,const char* reason)
+Market::on_replace_reject(const OrderPtr& order, const char* reason)
 {
-    std::cout << "\tReplace Reject: " << *order << std::endl;
+    order->onReplaceRejected(reason);
+    std::cout << "\tReplace Reject: " <<*order<< ' ' << reason << std::endl;
     //todo
 }
 
@@ -564,11 +780,11 @@ Market::on_replace_reject(const OrderPtr& order,const char* reason)
 // Implement TradeListener interface
 
 void 
-Market::on_trade(const OrderBook* book,
-    liquibook::book::Quantity qty,
+Market::on_trade(const OrderBook* book, 
+    liquibook::book::Quantity qty, 
     liquibook::book::Cost cost)
 {
-    std::cout << "\tTrade: " << qty <<  " UNKNOWN SECURITY total  " << cost  << std::endl;
+    std::cout << "\tTrade: " << qty <<  ' ' << book->symbol() << " Cost "  << cost  << std::endl;
 
     //todo
 }
@@ -579,7 +795,7 @@ Market::on_trade(const OrderBook* book,
 void 
 Market::on_order_book_change(const OrderBook* book)
 {
-    std::cout << "\tChange: " << " UNKNOWN SECURITY" << std::endl;
+    std::cout << "\tChange: " << ' ' << book->symbol() << std::endl;
 
     //todo
 }

@@ -39,14 +39,35 @@ using namespace orderentry;
 int main(int argc, const char * argv[])
 {
     bool done = false;
-
+    bool prompt = true;
     Market market;
     while( !done)
     {
-        std::cout << "Action[\n" << Market::prompt() << "\t(?)help\n\t(Quit)\n]: " << std::flush;
+        if(prompt)
+        {
+            std::cout << "Action[" << Market::prompt() 
+            << "\t(#)    comment\n"
+            << "\t(?)    help\n"
+            << "\t(Quit) ]\n";
+            prompt = false;
+        }
+        std::cout << "> " << std::flush;
         std::string input;
         std::getline(std::cin, input);
         std::transform(input.begin(), input.end(), input.begin(), toupper);
+        // if input ends in a ';' be sure there's a space before it to simplify parsing.
+        if(input.length() > 1)
+        {
+            if(input.back() == ';')
+            {
+                input.pop_back();
+                if(input.back() == ' ')
+                {
+                    input.pop_back();
+                }
+                input.append(" ;");
+            }
+        }
         std::vector< std::string> words;
         split(input," \t\v\n\r", words);
         if(!words.empty())
@@ -56,14 +77,16 @@ int main(int argc, const char * argv[])
             {
                 done = true;
             }
+            else if(command[0] == '#')
+            {
+                // nothing
+            }
             else if(command == "?" || command == "HELP")
             {
                 market.help();
+                bool prompt = true;
             }
-            else if(market.apply(words))
-            {
-            }
-            else
+            else if(!market.apply(words))
             {
                 std::cerr << "Cannot process command";
                 for(auto word = words.begin(); word != words.end(); ++ word)
@@ -71,6 +94,7 @@ int main(int argc, const char * argv[])
                     std::cerr << ' ' << *word;
                 }
                 std::cerr << std::endl;
+                bool prompt = true;
             }
         }
     }
