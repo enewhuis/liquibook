@@ -88,7 +88,14 @@ public:
   typedef std::list<typename Asks::iterator> DeferredAskCrosses;
 
   /// @brief construct
-  OrderBook();
+  OrderBook(const std::string & symbol = "unknown");
+
+  /// @brief Set symbol for orders in this book.
+  void set_symbol(const std::string & symbol);
+
+  /// @ Get the symbol for orders in this book
+  /// @return the symbol.
+  const std::string & symbol() const;
 
   /// @brief set the order listener
   void set_order_listener(TypedOrderListener* listener);
@@ -189,6 +196,7 @@ protected:
                        const Price& current_price,
                        bool inbound_is_buy);
 private:
+  std::string symbol_;
   Bids bids_;
   Asks asks_;
   DeferredBidCrosses deferred_bid_crosses_;
@@ -288,13 +296,28 @@ OrderTracker<OrderPtr>::immediate_or_cancel() const
 }
 
 template <class OrderPtr>
-OrderBook<OrderPtr>::OrderBook()
-: order_listener_(NULL),
+OrderBook<OrderPtr>::OrderBook(const std::string & symbol)
+: symbol_(symbol),
+  order_listener_(NULL),
   trade_listener_(NULL),
   order_book_listener_(NULL),
   trans_id_(0)
 {
   callbacks_.reserve(16);
+}
+
+template <class OrderPtr>
+void 
+OrderBook<OrderPtr>::set_symbol(const std::string & symbol)
+{
+    symbol_ = symbol;
+}
+
+template <class OrderPtr>
+const std::string &
+OrderBook<OrderPtr>::symbol() const
+{
+    return symbol_;
 }
 
 template <class OrderPtr>
