@@ -37,7 +37,7 @@ Order::order_id() const
 bool 
 Order::is_limit() const
 {
-    return price() == 0;
+    return price() != 0;
 }
 
 bool 

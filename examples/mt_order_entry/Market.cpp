@@ -7,6 +7,7 @@
 #include <functional> 
 #include <cctype>
 #include <locale>
+
 namespace {
     const uint32_t INVALID_UINT32 = UINT32_MAX;
     const int32_t INVALID_INT32 = INT32_MAX;
@@ -140,8 +141,65 @@ namespace {
         return s;
     }
 
-}
+    ///////////////////////
+    // depth display helper
+    void displayDepthLevel(const liquibook::book::DepthLevel & level)
+    {
+        std::cout << "\tPrice "  <<  level.price();
+        std::cout << " Count: " << level.order_count();
+        std::cout << " Quantity: " << level.aggregate_qty();
+        if(level.is_excess())
+        {
+            std::cout << " EXCESS";
+        }
+        std::cout << " Change id#: " << level.last_change();
+        std::cout << std::endl;
+    }
 
+    void publishDepth(const orderentry::BookDepth & depth)
+    {
+        liquibook::book::ChangeId published = depth.last_published_change();
+        bool needTitle = true;
+        // Iterate awkwardly
+        auto pos = depth.bids();
+        auto back = depth.last_bid_level();
+        bool more = true;
+        while(more)
+        {
+            if(pos->aggregate_qty() !=0 && pos->last_change() > published)
+            {
+                if(needTitle)
+                {
+                    std::cout << "\n\tBIDS:\n";
+                    needTitle = false;
+                }
+                displayDepthLevel(*pos);
+            }
+            ++pos;
+            more = pos != back;
+        }
+
+        needTitle = true;
+        pos = depth.asks();
+        back = depth.last_ask_level();
+        more = true;
+        while(more)
+        {
+            if(pos->aggregate_qty() !=0 && pos->last_change() > published)
+            {
+                if(needTitle)
+                {
+                    std::cout << "\n\tASKS:\n";
+                    needTitle = false;
+                }
+                displayDepthLevel(*pos);
+            }
+            ++pos;
+            more = pos != back;
+        }
+    }
+
+}
 
 namespace orderentry
 {
@@ -260,12 +318,13 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
     }
     if(!symbolIsDefined(symbol))
     {
-        if(symbol[0] == '+')
+        if(symbol[0] == '+' || symbol[0] == '!')
         {
+            bool useDepth = symbol[0] == '!';
             symbol = symbol.substr(1);
             if(!symbolIsDefined(symbol))
             {
-                addBook(symbol);
+                addBook(symbol, useDepth);
             }
         }
         else
@@ -275,7 +334,8 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
                 std::cerr << "--Expecting valid symbol" << std::endl;
                 return false;
             }
-            addBook(symbol);
+            bool useDepth = promptForYesNo("Use Depth Book?");
+            addBook(symbol, useDepth);
         }
     }
 
@@ -398,8 +458,6 @@ Market::doCancel(const std::vector<std::string> & tokens, size_t position)
     book->perform_callbacks();
     return true;
 }
-
-
 
 ///////////
 // MODIFY
@@ -620,9 +678,22 @@ Market::symbolIsDefined(const std::string & symbol)
 }
 
 OrderBookPtr
-Market::addBook(const std::string & symbol)
+Market::addBook(const std::string & symbol, bool useDepthBook)
 {
-    OrderBookPtr result = std::make_shared<OrderBook>(symbol);
+    OrderBookPtr result;
+    if(useDepthBook)
+    {
+        std::cout << "Create new depth order book for " << symbol << std::endl;
+        DepthOrderBookPtr depthBook = std::make_shared<DepthOrderBook>(symbol);
+        depthBook->set_bbo_listener(this);
+        depthBook->set_depth_listener(this);
+        result = depthBook;
+    }
+    else
+    {
+        std::cout << "Create new order book for " << symbol << std::endl;
+        result = std::make_shared<OrderBook>(symbol);
+    }
     result->set_order_listener(this);
     result->set_trade_listener(this);
     result->set_order_book_listener(this);
@@ -795,10 +866,39 @@ Market::on_trade(const OrderBook* book,
 void 
 Market::on_order_book_change(const OrderBook* book)
 {
-    std::cout << "\tChange: " << ' ' << book->symbol() << std::endl;
+    std::cout << "\tBook Change: " << ' ' << book->symbol() << std::endl;
 
     //todo
 }
+
+
+
+/////////////////////////////////////////
+// Implement BboListener interface
+void 
+Market::on_bbo_change(const DepthOrderBook * book, const BookDepth * depth)
+{
+    std::cout << "\tBBO Change: " << ' ' << book->symbol() 
+        << (depth->changed() ? " Changed" : " Unchanged")
+        << " Change Id: " << depth->last_change()
+        << " Published: " << depth->last_published_change()
+        << std::endl;
+
+}
+
+/////////////////////////////////////////
+// Implement DepthListener interface
+void 
+Market::on_depth_change(const DepthOrderBook * book, const BookDepth * depth)
+{
+    std::cout << "\tDepth Change: " << ' ' << book->symbol();
+    std::cout << (depth->changed() ? " Changed" : " Unchanged")
+        << " Change Id: " << depth->last_change()
+        << " Published: " << depth->last_published_change()
+        << std::endl;
+    publishDepth(*depth);
+}
+
 
 
 }  // namespace orderentry
