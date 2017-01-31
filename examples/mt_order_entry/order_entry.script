@@ -1,0 +1,9 @@
+# Copyright (c) 2017 Object Computing, Inc.
+# All rights reserved.
+# See the file license.txt for licensing information.
+## A simple test script to use with mt_order_entry.
+## To use it: make this file's name the first argument on the command line, or
+## type "FILE filename" at the interactive prompt.
+BUY 100 !IBM 50;
+SELL 100 IBM 50;
+D + ALL

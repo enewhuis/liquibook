@@ -4,8 +4,7 @@
 #pragma once
 
 #include "OrderFwd.h"
-// todo fix include path
-#include "../../src/book/types.h"
+#include <book/types.h>
 
 #include <string>
 #include <vector>

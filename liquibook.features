@@ -1,4 +1,7 @@
+// Copyright (c) 2013-2017 Object Computing, Inc.
+// All rights reserved.
+// See the file license.txt for licensing information.
 // This file defines MPC features for the liquibook project
 boost=1
-examples=0
+examples=1
 QuickFAST=0

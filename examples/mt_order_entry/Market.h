@@ -3,29 +3,23 @@
 // See the file license.txt for licensing information.
 #pragma once
 
-// TODO: Include path?
-//#include "../../src/book/order_book.h"
-#include "../../src/book/depth_order_book.h"
+#include <book/depth_order_book.h>
 
 #include "Order.h"
 
 #include <string>
 #include <vector>
 #include <iostream>
-#include <cstdint>
 #include <algorithm>
 #include <map>
 #include <memory>
 
 namespace orderentry
 {
-
 typedef liquibook::book::OrderBook<OrderPtr> OrderBook;
 typedef std::shared_ptr<OrderBook> OrderBookPtr;
-
 typedef liquibook::book::DepthOrderBook<OrderPtr> DepthOrderBook;
 typedef std::shared_ptr<DepthOrderBook> DepthOrderBookPtr;
-
 typedef liquibook::book::Depth<> BookDepth;
 
 class Market 
@@ -38,7 +32,7 @@ class Market
     typedef std::map<std::string, OrderPtr> OrderMap;
     typedef std::map<std::string, OrderBookPtr> SymbolToBookMap;
 public:
-    Market();
+    Market(std::ostream * logFile = &std::cout);
     ~Market();
 
     /// @brief What to display to user when requesting input
@@ -128,8 +122,15 @@ private:
     OrderBookPtr addBook(const std::string & symbol, bool useDepthBook);
     bool findExistingOrder(const std::vector<std::string> & tokens, size_t & position, OrderPtr & order, OrderBookPtr & book);
     bool findExistingOrder(const std::string & orderId, OrderPtr & order, OrderBookPtr & book);
+
+    std::ostream & out() 
+    {
+        return *logFile_;
+    }
 private:
     static uint32_t orderIdSeed_;
+
+    std::ostream * logFile_;
 
     OrderMap orders_;
     SymbolToBookMap books_;

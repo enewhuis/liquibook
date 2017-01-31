@@ -2,160 +2,29 @@
 // All rights reserved.
 // See the file license.txt for licensing information.
 #include "Market.h"
+#include "Util.h"
 
 #include <functional> 
 #include <cctype>
 #include <locale>
 
 namespace {
-    const uint32_t INVALID_UINT32 = UINT32_MAX;
-    const int32_t INVALID_INT32 = INT32_MAX;
-
-    ////////////////////////////////////
-    // Command parsing helpers
-
-    std::string nextToken(const std::vector<std::string> & tokens, size_t & pos)
-    {
-        if(pos < tokens.size())
-        {
-            return tokens[pos++];
-        }
-        return "";
-    }
-
-    uint32_t toUint32(const std::string & input)
-    {
-        char * end;
-        uint32_t value = strtoul(input.c_str(), &end, 10);
-        if(*end != '\0')
-        {
-            value = INVALID_UINT32;
-        }
-        return value;
-    }
-
-    uint32_t toInt32(const std::string & input)
-    {
-        char * end;
-        uint32_t value = strtol(input.c_str(), &end, 10);
-        if(*end != '\0')
-        {
-            value = INVALID_INT32;
-        }
-        return value;
-    }
-
-
-    liquibook::book::Price stringToPrice(const std::string & str)
-    {
-        if(str == "MARKET" || str == "MKT")
-        {
-            return 0;
-        } else
-        {
-            return toUint32(str);
-        }
-    }
-
-    std::string promptForString(const std::string & prompt)
-    {
-        std::cout << "\n" << prompt << ": " << std::flush;
-        std::string input;
-        std::getline(std::cin, input);
-        std::transform(input.begin(), input.end(), input.begin(), toupper);
-        return input;
-    }
-
-    liquibook::book::Price promptForPrice(const std::string & prompt)
-    {
-        std::string str = promptForString(prompt);
-        return stringToPrice(str);
-    }
-
-    uint32_t promptForUint32(const std::string & prompt)
-    {
-        std::cout << "\n" << prompt << ": " << std::flush;
-        std::string input;
-        std::getline(std::cin, input);
-        return toUint32(input);
-    }
-
-    int32_t promptForInt32(const std::string & prompt)
-    {
-        std::cout << "\n" << prompt << ": " << std::flush;
-        std::string input;
-        std::getline(std::cin, input);
-        return toInt32(input);
-    }
-
-    bool promptForYesNo(const std::string & prompt)
-    {
-        while(true)
-        {
-            std::string input = promptForString(prompt);
-            if(input == "Y" || input == "YES" || input == "T" || input == "TRUE")
-            {
-                return true;
-            }
-            if(input == "N" || input == "NO" || input == "F" || input == "FALSE")
-            {
-                return false;
-            }
-        }
-    }
-
-    // trim from start (in place)
-    static inline void ltrim(std::string &s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), 
-            std::not1(std::ptr_fun<int, int>(std::isspace))));
-    }
-
-    // trim from end (in place)
-    static inline void rtrim(std::string &s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(), 
-            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-    }
-
-    // trim from both ends (in place)
-    static inline void trim(std::string &s) {
-        ltrim(s);
-        rtrim(s);
-    }
-
-    // trim from start (copying)
-    static inline std::string ltrimmed(std::string s) {
-        ltrim(s);
-        return s;
-    }
-
-    // trim from end (copying)
-    static inline std::string rtrimmed(std::string s) {
-        rtrim(s);
-        return s;
-    }
-
-    // trim from both ends (copying)
-    static inline std::string trimmed(std::string s) {
-        trim(s);
-        return s;
-    }
-
     ///////////////////////
     // depth display helper
-    void displayDepthLevel(const liquibook::book::DepthLevel & level)
+    void displayDepthLevel(std::ostream & out, const liquibook::book::DepthLevel & level)
     {
-        std::cout << "\tPrice "  <<  level.price();
-        std::cout << " Count: " << level.order_count();
-        std::cout << " Quantity: " << level.aggregate_qty();
+        out << "\tPrice "  <<  level.price();
+        out << " Count: " << level.order_count();
+        out << " Quantity: " << level.aggregate_qty();
         if(level.is_excess())
         {
-            std::cout << " EXCESS";
+            out << " EXCESS";
         }
-        std::cout << " Change id#: " << level.last_change();
-        std::cout << std::endl;
+        out << " Change id#: " << level.last_change();
+        out << std::endl;
     }
 
-    void publishDepth(const orderentry::BookDepth & depth)
+    void publishDepth(std::ostream & out, const orderentry::BookDepth & depth)
     {
         liquibook::book::ChangeId published = depth.last_published_change();
         bool needTitle = true;
@@ -169,10 +38,10 @@ namespace {
             {
                 if(needTitle)
                 {
-                    std::cout << "\n\tBIDS:\n";
+                    out << "\n\tBIDS:\n";
                     needTitle = false;
                 }
-                displayDepthLevel(*pos);
+                displayDepthLevel(out, *pos);
             }
             ++pos;
             more = pos != back;
@@ -188,16 +57,15 @@ namespace {
             {
                 if(needTitle)
                 {
-                    std::cout << "\n\tASKS:\n";
+                    out << "\n\tASKS:\n";
                     needTitle = false;
                 }
-                displayDepthLevel(*pos);
+                displayDepthLevel(out, *pos);
             }
             ++pos;
             more = pos != back;
         }
     }
-
 }
 
 namespace orderentry
@@ -205,7 +73,8 @@ namespace orderentry
 
 uint32_t Market::orderIdSeed_ = 0;
 
-Market::Market()
+Market::Market(std::ostream * out)
+: logFile_(out)
 {
 }
 
@@ -304,7 +173,7 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
     // sanity check
     if(quantity == 0 || quantity > 1000000000)
     {
-        std::cerr << "--Expecting quantity" << std::endl;
+        out() << "--Expecting quantity" << std::endl;
         return false;
     }
 
@@ -330,7 +199,7 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
         {
             if(!promptForYesNo("Is " + symbol +  " a new symbol?"))
             {
-                std::cerr << "--Expecting valid symbol" << std::endl;
+                out() << "--Expecting valid symbol" << std::endl;
                 return false;
             }
             bool useDepth = promptForYesNo("Use Depth Book?");
@@ -352,7 +221,7 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
     }
     if(price > 10000000)
     {
-        std::cerr << "--Expecting price or MARKET" << std::endl;
+        out() << "--Expecting price or MARKET" << std::endl;
         return false;
     }
 
@@ -404,10 +273,10 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
         }
         if(!optionOk)
         {
-            std::cout << "Unknown option " << option << std::endl;
+            out() << "Unknown option " << option << std::endl;
             if(!prompted)
             {
-                std::cerr << "--Expecting AON IOC STOP or END" << std::endl;
+                out() << "--Expecting AON IOC STOP or END" << std::endl;
                 return false;
             }
         }
@@ -428,12 +297,12 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
     auto book = findBook(symbol);
     if(!book)
     {
-        std::cerr << "--No order book for symbol" << symbol << std::endl;
+        out() << "--No order book for symbol" << symbol << std::endl;
         return false;
     }
 
     order->onSubmitted();
-    std::cout << "ADDING order:  " << *order << std::endl;
+    out() << "ADDING order:  " << *order << std::endl;
 
     orders_[orderId] = order;
     book->add(order, conditions);
@@ -452,7 +321,7 @@ Market::doCancel(const std::vector<std::string> & tokens, size_t position)
     {
         return false;
     }
-    std::cout << "Requesting Cancel: " << *order << std::endl;
+    out() << "Requesting Cancel: " << *order << std::endl;
     book->cancel(order);
     book->perform_callbacks();
     return true;
@@ -514,7 +383,7 @@ Market::doModify(const std::vector<std::string> & tokens, size_t position)
             }
             else
             {
-                std::cerr << "Invalid price" << std::endl;
+                out() << "Invalid price" << std::endl;
             }
         }
         else if(option == "Q" || option == "QUANTITY")
@@ -536,32 +405,32 @@ Market::doModify(const std::vector<std::string> & tokens, size_t position)
             }
             else
             {
-                std::cerr << "Invalid quantity change." << std::endl;
+                out() << "Invalid quantity change." << std::endl;
             }
         }
 
         if(!optionOk)
         {
-            std::cout << "Unknown or invalid option " << option << std::endl;
+            out() << "Unknown or invalid option " << option << std::endl;
             if(!prompted)
             {
-                std::cerr << "--Expecting PRICE <price>, or QUANTITY <change>, or  END" << std::endl;
+                out() << "--Expecting PRICE <price>, or QUANTITY <change>, or  END" << std::endl;
                 return false;
             }
         }
     }
 
     book->replace(order, quantityChange, price);
-    std::cout << "Requested Modify" ;
+    out() << "Requested Modify" ;
     if(quantityChange != liquibook::book::SIZE_UNCHANGED)
     {
-        std::cout << " QUANTITY  += " << quantityChange;
+        out() << " QUANTITY  += " << quantityChange;
     }
     if(price != liquibook::book::PRICE_UNCHANGED)
     {
-        std::cout << " PRICE " << price;
+        out() << " PRICE " << price;
     }
-    std::cout << std::endl;
+    out() << std::endl;
     book->perform_callbacks();
     return true;
 }
@@ -610,7 +479,7 @@ Market::doDisplay(const std::vector<std::string> & tokens, size_t pos)
         OrderBookPtr book;
         if(findExistingOrder(parameter, order, book))
         {
-            std::cout << *order << std::endl;
+            out() << *order << std::endl;
             return true;
         }
     }
@@ -624,18 +493,18 @@ Market::doDisplay(const std::vector<std::string> & tokens, size_t pos)
             const OrderPtr & order = pOrder->second;
             if(order->symbol() == symbol)
             {
-                std::cout << order->verbose(verbose) << std::endl;
+                out() << order->verbose(verbose) << std::endl;
                 order->verbose(false);
             }
         }
         auto book = findBook(symbol);
         if(!book)
         {
-            std::cerr << "--No order book for symbol" << symbol << std::endl;
+            out() << "--No order book for symbol" << symbol << std::endl;
         }
         else
         {
-            book->log(std::cout);
+            book->log(out());
         }
         return true;
     }
@@ -644,27 +513,23 @@ Market::doDisplay(const std::vector<std::string> & tokens, size_t pos)
         for(auto pOrder = orders_.begin(); pOrder != orders_.end(); ++pOrder)
         {
             const OrderPtr & order = pOrder->second;
-            std::cout << order->verbose(verbose) << std::endl;
+            out() << order->verbose(verbose) << std::endl;
             order->verbose(false);
         }
 
         for(auto pBook = books_.begin(); pBook != books_.end(); ++pBook)
         {
-            std::cout << "Order book for " << pBook->first << std::endl;
-            pBook->second->log(std::cout);
+            out() << "Order book for " << pBook->first << std::endl;
+            pBook->second->log(out());
         }
         return true;
     }
     else
     {
-        std::cout << "--Unknown symbol: " << symbol << std::endl;
+        out() << "--Unknown symbol: " << symbol << std::endl;
     }
     return false;
 }
-
-
-////////////////////////////
-// Command parsing helpers
 
 /////////////////////////////
 // Order book interactions
@@ -682,7 +547,7 @@ Market::addBook(const std::string & symbol, bool useDepthBook)
     OrderBookPtr result;
     if(useDepthBook)
     {
-        std::cout << "Create new depth order book for " << symbol << std::endl;
+        out() << "Create new depth order book for " << symbol << std::endl;
         DepthOrderBookPtr depthBook = std::make_shared<DepthOrderBook>(symbol);
         depthBook->set_bbo_listener(this);
         depthBook->set_depth_listener(this);
@@ -690,7 +555,7 @@ Market::addBook(const std::string & symbol, bool useDepthBook)
     }
     else
     {
-        std::cout << "Create new order book for " << symbol << std::endl;
+        out() << "Create new order book for " << symbol << std::endl;
         result = std::make_shared<OrderBook>(symbol);
     }
     result->set_order_listener(this);
@@ -730,7 +595,7 @@ bool Market::findExistingOrder(const std::vector<std::string> & tokens, size_t &
         trim(orderId);
         if(orderId.empty())
         {
-            std::cerr << "--Expecting #orderID" << std::endl;
+            out() << "--Expecting #orderID" << std::endl;
             return false;
         }
     }
@@ -740,7 +605,7 @@ bool Market::findExistingOrder(const std::vector<std::string> & tokens, size_t &
         int32_t orderOffset = toInt32(orderId);
         if(orderOffset == INVALID_INT32)
         {
-            std::cerr << "--Expecting orderID or offset" << std::endl;
+            out() << "--Expecting orderID or offset" << std::endl;
             return false;
         }
         uint32_t orderNumber = orderIdSeed_  + 1 + orderOffset;
@@ -754,7 +619,7 @@ bool Market::findExistingOrder(const std::string & orderId, OrderPtr & order, Or
     auto orderPosition = orders_.find(orderId);
     if(orderPosition == orders_.end())
     {
-        std::cerr << "--Can't find OrderID #" << orderId << std::endl;
+        out() << "--Can't find OrderID #" << orderId << std::endl;
         return false;
     }
 
@@ -763,7 +628,7 @@ bool Market::findExistingOrder(const std::string & orderId, OrderPtr & order, Or
     book = findBook(symbol);
     if(!book)
     {
-        std::cerr << "--No order book for symbol" << symbol << std::endl;
+        out() << "--No order book for symbol" << symbol << std::endl;
         return false;
     }
     return true;
@@ -775,17 +640,15 @@ bool Market::findExistingOrder(const std::string & orderId, OrderPtr & order, Or
 void 
 Market::on_accept(const OrderPtr& order)
 {
-//todo
     order->onAccepted();
-    std::cout << "\tAccepted: " <<*order<< std::endl;
+    out() << "\tAccepted: " <<*order<< std::endl;
 }
 
 void 
 Market::on_reject(const OrderPtr& order, const char* reason)
 {
-    //todo
     order->onRejected(reason);
-    std::cout << "\tRejected: " <<*order<< ' ' << reason << std::endl;
+    out() << "\tRejected: " <<*order<< ' ' << reason << std::endl;
 
 }
 
@@ -797,27 +660,23 @@ Market::on_fill(const OrderPtr& order,
 {
     order->onFilled(fill_qty, fill_cost);
     matched_order->onFilled(fill_qty, fill_cost);
-    std::cout << (order->is_buy() ? "\tBought: " : "\tSold: ") 
+    out() << (order->is_buy() ? "\tBought: " : "\tSold: ") 
         << fill_qty << " Shares for " << fill_cost << ' ' <<*order<< std::endl;
-    std::cout << (matched_order->is_buy() ? "\tBought: " : "\tSold: ") 
+    out() << (matched_order->is_buy() ? "\tBought: " : "\tSold: ") 
         << fill_qty << " Shares for " << fill_cost << ' ' << *matched_order << std::endl;
-
-    //todo
 }
 
 void 
 Market::on_cancel(const OrderPtr& order)
 {
     order->onCancelled();
-    std::cout << "\tCanceled: " << *order<< std::endl;
-    //todo
+    out() << "\tCanceled: " << *order<< std::endl;
 }
 
 void Market::on_cancel_reject(const OrderPtr& order, const char* reason)
 {
     order->onCancelRejected(reason);
-    std::cout << "\tCancel Reject: " <<*order<< ' ' << reason << std::endl;
-    //todo
+    out() << "\tCancel Reject: " <<*order<< ' ' << reason << std::endl;
 }
 
 void Market::on_replace(const OrderPtr& order, 
@@ -825,25 +684,23 @@ void Market::on_replace(const OrderPtr& order,
     liquibook::book::Price new_price)
 {
     order->onReplaced(size_delta, new_price);
-    std::cout << "\tModify " ;
+    out() << "\tModify " ;
     if(size_delta != liquibook::book::SIZE_UNCHANGED)
     {
-        std::cout << " QUANTITY  += " << size_delta;
+        out() << " QUANTITY  += " << size_delta;
     }
     if(new_price != liquibook::book::PRICE_UNCHANGED)
     {
-        std::cout << " PRICE " << new_price;
+        out() << " PRICE " << new_price;
     }
-    std::cout <<*order<< std::endl;
-    //todo
+    out() <<*order<< std::endl;
 }
 
 void 
 Market::on_replace_reject(const OrderPtr& order, const char* reason)
 {
     order->onReplaceRejected(reason);
-    std::cout << "\tReplace Reject: " <<*order<< ' ' << reason << std::endl;
-    //todo
+    out() << "\tReplace Reject: " <<*order<< ' ' << reason << std::endl;
 }
 
 ////////////////////////////////////
@@ -854,9 +711,7 @@ Market::on_trade(const OrderBook* book,
     liquibook::book::Quantity qty, 
     liquibook::book::Cost cost)
 {
-    std::cout << "\tTrade: " << qty <<  ' ' << book->symbol() << " Cost "  << cost  << std::endl;
-
-    //todo
+    out() << "\tTrade: " << qty <<  ' ' << book->symbol() << " Cost "  << cost  << std::endl;
 }
 
 /////////////////////////////////////////
@@ -865,9 +720,7 @@ Market::on_trade(const OrderBook* book,
 void 
 Market::on_order_book_change(const OrderBook* book)
 {
-    std::cout << "\tBook Change: " << ' ' << book->symbol() << std::endl;
-
-    //todo
+    out() << "\tBook Change: " << ' ' << book->symbol() << std::endl;
 }
 
 
@@ -877,7 +730,7 @@ Market::on_order_book_change(const OrderBook* book)
 void 
 Market::on_bbo_change(const DepthOrderBook * book, const BookDepth * depth)
 {
-    std::cout << "\tBBO Change: " << ' ' << book->symbol() 
+    out() << "\tBBO Change: " << ' ' << book->symbol() 
         << (depth->changed() ? " Changed" : " Unchanged")
         << " Change Id: " << depth->last_change()
         << " Published: " << depth->last_published_change()
@@ -890,14 +743,12 @@ Market::on_bbo_change(const DepthOrderBook * book, const BookDepth * depth)
 void 
 Market::on_depth_change(const DepthOrderBook * book, const BookDepth * depth)
 {
-    std::cout << "\tDepth Change: " << ' ' << book->symbol();
-    std::cout << (depth->changed() ? " Changed" : " Unchanged")
+    out() << "\tDepth Change: " << ' ' << book->symbol();
+    out() << (depth->changed() ? " Changed" : " Unchanged")
         << " Change Id: " << depth->last_change()
         << " Published: " << depth->last_published_change();
-    publishDepth(*depth);
-    std::cout << std::endl;
+    publishDepth(out(), *depth);
+    out() << std::endl;
 }
-
-
 
 }  // namespace orderentry
