@@ -1,7 +1,6 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-
 #include "Market.h"
 
 #include <functional> 
@@ -894,9 +893,9 @@ Market::on_depth_change(const DepthOrderBook * book, const BookDepth * depth)
     std::cout << "\tDepth Change: " << ' ' << book->symbol();
     std::cout << (depth->changed() ? " Changed" : " Unchanged")
         << " Change Id: " << depth->last_change()
-        << " Published: " << depth->last_published_change()
-        << std::endl;
+        << " Published: " << depth->last_published_change();
     publishDepth(*depth);
+    std::cout << std::endl;
 }
 
 

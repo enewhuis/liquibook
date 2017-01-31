@@ -1,7 +1,6 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-
 #pragma once
 
 // TODO: Include path?
