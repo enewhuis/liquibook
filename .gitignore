@@ -28,7 +28,8 @@ Makefile*
 #visual studio work files
 *vcproj*
 *vcxproj*
-*Debug*
+Debug
+Release
 *.pdb
 *.ilk
 .vs/
