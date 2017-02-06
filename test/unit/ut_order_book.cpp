@@ -137,13 +137,23 @@ TEST(TestAddCompleteBid)
   ASSERT_EQ(1, order_book.bids().size());
   ASSERT_EQ(1, order_book.asks().size());
 }
+namespace
+{
+  bool isBuy = true;
+  bool isSell = false;
+  bool expectMatch = true;
+  bool expectNoMatch = false;
+  bool expectComplete = true;
+  bool expectNoComplete = false;
+
+}
 
 TEST(TestAddCompleteAsk)
 {
   SimpleOrderBook order_book;
-  SimpleOrder ask0(false, 1251, 100);
-  SimpleOrder ask1(false, 1250, 100);
-  SimpleOrder bid0(true,  1250, 100);
+  SimpleOrder ask0(isSell, 1251, 100);
+  SimpleOrder ask1(isSell, 1250, 100);
+  SimpleOrder bid0(isBuy,  1250, 100);
 
   // No match
   ASSERT_TRUE(add_and_verify(order_book, &bid0, false));
@@ -159,11 +169,11 @@ TEST(TestAddCompleteAsk)
   ASSERT_TRUE(dc.verify_ask(1251, 1, 100));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  { // ASSERT_NO_THROW(
     SimpleFillCheck fc1(&ask1, 100, 125000);
     SimpleFillCheck fc2(&bid0, 100, 125000);
     ASSERT_TRUE(add_and_verify(order_book, &ask1, true, true));
-  ); }
+  /*);*/ }
 
   // Verify depth
   dc.reset();

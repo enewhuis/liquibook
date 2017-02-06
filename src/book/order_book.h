@@ -84,6 +84,18 @@ public:
                        int32_t size_delta = SIZE_UNCHANGED,
                        Price new_price = PRICE_UNCHANGED);
 
+  /// @brief Set the current market price
+  /// Intended to be used during initialization to establish the market
+  /// price before this order book has generated any exceptions.
+  ///
+  /// If price is zero (or never set) no market-to-market trades can happen.
+  /// @param price is the current market price for this security.
+  void set_market_price(Price price);
+
+  /// @brief Get current market price.
+  /// The market price is normally the price at which the last trade happened.
+  Price market_price()const;
+
   /// @brief access the bids container
   const Bids& bids() const { return bids_; };
 
@@ -124,7 +136,8 @@ protected:
   /// @brief perform fill on two orders
   /// @param inbound_tracker the new (or changed) order tracker
   /// @param current_tracker the current order tracker
-  void cross_orders(Tracker& inbound_tracker, 
+  /// @return true if the trade was successful.
+  bool cross_orders(Tracker& inbound_tracker, 
                     Tracker& current_tracker);
 
   /// @brief perform validation on the order, and create reject callbacks if not
@@ -156,6 +169,9 @@ protected:
                        const Price& current_price,
                        bool inbound_is_buy);
 private:
+    Price sort_price(const OrderPtr& order);
+    bool add_order(Tracker& order_tracker, Price order_price);
+private:
   std::string symbol_;
   Bids bids_;
   Asks asks_;
@@ -166,9 +182,8 @@ private:
   TypedTradeListener* trade_listener_;
   TypedOrderBookListener* order_book_listener_;
   TransId trans_id_;
+  Price marketPrice_;
 
-  Price sort_price(const OrderPtr& order);
-  bool add_order(Tracker& order_tracker, Price order_price);
 };
 
 template <class OrderPtr>
@@ -177,7 +192,8 @@ OrderBook<OrderPtr>::OrderBook(const std::string & symbol)
   order_listener_(nullptr),
   trade_listener_(nullptr),
   order_book_listener_(nullptr),
-  trans_id_(0)
+  trans_id_(0),
+  marketPrice_(MARKET_ORDER_PRICE)
 {
   callbacks_.reserve(16);
 }
@@ -195,6 +211,23 @@ OrderBook<OrderPtr>::symbol() const
 {
     return symbol_;
 }
+
+template <class OrderPtr>
+void
+OrderBook<OrderPtr>:: set_market_price(Price price)
+{
+  marketPrice_ = price;
+}
+
+/// @brief Get current market price.
+/// The market price is normally the price at which the last trade happened.
+template <class OrderPtr>
+Price
+OrderBook<OrderPtr>::market_price() const
+{
+  return marketPrice_;
+}
+
 
 template <class OrderPtr>
 void
@@ -380,22 +413,26 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
                                  Bids& bids)
 {
   bool matched = false;
-  typename Bids::iterator bid;
+  bool is_buy = false;
   Quantity matched_qty = 0;
   Quantity inbound_qty = inbound.open_qty();
 
-  for (bid = bids.begin(); bid != bids.end(); ) {
+  typename Bids::iterator pos;
+  for (pos = bids.begin(); pos != bids.end(); ) {
+    auto bid = pos++;
+    Price book_price = bid->first;
+    Tracker & counter_order = bid->second;
     // If the inbound order matches the current order
     if (matches(inbound, 
                 inbound_price, 
                 inbound.open_qty() - matched_qty, 
-                bid->second, 
-                bid->first, 
-                false)) {
+                counter_order, 
+                book_price, 
+                is_buy)) {
       // If the inbound order is an all or none order
       if (inbound.all_or_none()) {
         // Track how much of the inbound order has been matched
-        matched_qty += bid->second.open_qty();
+        matched_qty += counter_order.open_qty();
         // If we have matched enough quantity to fill the inbound order
         if (matched_qty >= inbound_qty) {
           matched =  true;
@@ -405,17 +442,17 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
           for (dbc = deferred_bid_crosses_.begin(); 
                dbc != deferred_bid_crosses_.end(); ++dbc) {
             // Adjust tracking values for cross
-            cross_orders(inbound, (*dbc)->second);
-
-            // If the existing order was filled, remove it
-            if ((*dbc)->second.filled()) {
-              bids.erase(*dbc);
+            if(cross_orders(inbound, (*dbc)->second))
+            {
+              // If the existing order was filled, remove it
+              if ((*dbc)->second.filled()) {
+                bids.erase(*dbc);
+              }
             }
           }
         // Else we have to defer crossing this order
         } else {
           deferred_bid_crosses_.push_back(bid);
-          ++bid;
         }
       } else {
         matched =  true;
@@ -423,13 +460,13 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
 
       if (matched) {
         // Adjust tracking values for cross
-        cross_orders(inbound, bid->second);
+        matched = cross_orders(inbound,counter_order);
+      }
 
+      if (matched) {
         // If the existing order was filled, remove it
-        if (bid->second.filled()) {
-          bids.erase(bid++);
-        } else {
-          ++bid;
+        if (counter_order.filled()) {
+          bids.erase(bid);
         }
 
         // if the inbound order is filled, no more matches are possible
@@ -438,10 +475,8 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
         }
       }
     // Didn't match, exit loop if this was because of price
-    } else if (bid->first < inbound_price) {
+    } else if (book_price < inbound_price) {
       break;
-    } else {
-      ++bid;
     }
   }
 
@@ -455,22 +490,26 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
                                  Asks& asks)
 {
   bool matched = false;
-  typename Asks::iterator ask;
+  bool isBuy = true;
   Quantity matched_qty = 0;
   Quantity inbound_qty = inbound.open_qty();
 
-  for (ask = asks.begin(); ask != asks.end(); ) {
+  typename Asks::iterator pos;
+  for (pos = asks.begin(); pos != asks.end(); ) {
+    auto ask = pos++;
+    Price book_price = ask->first;
+    Tracker & counter_order = ask->second;
     // If the inbound order matches the current order
     if (matches(inbound, 
                 inbound_price, 
                 inbound.open_qty() - matched_qty, 
-                ask->second, 
-                ask->first, 
-                true)) {
+                counter_order, 
+               book_price, 
+              isBuy)) {
       // If the inbound order is an all or none order
       if (inbound.all_or_none()) {
         // Track how much of the inbound order has been matched
-        matched_qty += ask->second.open_qty();
+        matched_qty += counter_order.open_qty();
         // If we have matched enough quantity to fill the inbound order
         if (matched_qty >= inbound_qty) {
           matched =  true;
@@ -480,17 +519,16 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
           for (dac = deferred_ask_crosses_.begin(); 
                dac != deferred_ask_crosses_.end(); ++dac) {
             // Adjust tracking values for cross
-            cross_orders(inbound, (*dac)->second);
-
-            // If the existing order was filled, remove it
-            if ((*dac)->second.filled()) {
-              asks.erase(*dac);
+            if(cross_orders(inbound, (*dac)->second)){
+              // If the existing order was filled, remove it
+              if ((*dac)->second.filled()) {
+                asks.erase(*dac);
+              }
             }
           }
         // Else we have to defer crossing this order
         } else {
           deferred_ask_crosses_.push_back(ask);
-          ++ask;
         }
       } else {
         matched =  true;
@@ -498,15 +536,15 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
 
       if (matched) {
         // Adjust tracking values for cross
-        cross_orders(inbound, ask->second);
+        matched = cross_orders(inbound, counter_order);
+      }
 
+      if(matched) {
         // If the existing order was filled, remove it
-        if (ask->second.filled()) {
-          asks.erase(ask++);
-        } else {
-          ++ask;
+        if (counter_order.filled()) {
+          asks.erase(ask);
         }
-
+        
         // if the inbound order is filled, no more matches are possible
         if (inbound.filled()) {
           break;
@@ -515,15 +553,13 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
     // Didn't match, exit loop if this was because of price
     } else if (ask->first > inbound_price) {
       break;
-    } else {
-      ++ask;
     }
   }
   return matched;
 }
 
 template <class OrderPtr>
-inline void
+bool
 OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker, 
                                   Tracker& current_tracker)
 {
@@ -534,8 +570,18 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
   if (MARKET_ORDER_PRICE == cross_price) {
     cross_price = inbound_tracker.ptr()->price();
   }
+  if(MARKET_ORDER_PRICE == cross_price)
+  {
+    cross_price = marketPrice_;
+  }
+  if(MARKET_ORDER_PRICE == cross_price)
+  {
+    // No price available for this order
+    return false;    
+  }
   inbound_tracker.fill(fill_qty);
   current_tracker.fill(fill_qty);
+  marketPrice_ = cross_price;
 
   typename TypedCallback::FillFlags fill_flags = 
                               TypedCallback::ff_neither_filled;
@@ -554,6 +600,7 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
                                            cross_price,
                                            fill_flags,
                                            trans_id_));
+  return true;
 }
 
 template <class OrderPtr>
@@ -775,14 +822,12 @@ OrderBook<OrderPtr>::matches(
   // Check for price mismatch
   if (inbound_is_buy) {
     // If the inbound buy is not as high as the existing sell
-    if (inbound_price < current_price) {
+    if (inbound_price < current_price && current_price != MARKET_ORDER_PRICE) {
       return false;
     }
-  } else {
+  } else if (inbound_price > current_price && inbound_price != MARKET_ORDER_PRICE) {
     // Else if the inbound sell is not as low as the existing buy
-    if (inbound_price > current_price) {
-      return false;
-    }
+    return false;
   }
 
   if (current_order.all_or_none()) {

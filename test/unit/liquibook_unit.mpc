@@ -12,6 +12,14 @@ project (ut_order_book_shared_ptr) : liquibook_test, liquibook_book, liquibook_i
   }
 }
 
+project (ut_market_price) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_market_price.cpp
+  }
+}
+
+
 project (ut_bbo_order_book) : liquibook_test, liquibook_book, liquibook_impl {
   exename = *
   Source_Files {

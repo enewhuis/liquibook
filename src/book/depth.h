@@ -17,6 +17,9 @@ namespace liquibook { namespace book {
 /// @brief container of limit order data aggregated by price.  Designed so that
 ///    the depth levels themselves are easily copyable with a single memcpy
 ///    when used with a separate callback thread.
+///
+/// TODO: Fix the bid and ask methods to behave like a normal iterator (i.e. begin(), back(), and end()
+
 template <int SIZE=5> 
 class Depth {
 public:
