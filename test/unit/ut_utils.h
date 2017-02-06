@@ -1,12 +1,13 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 -- 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef ut_utils_h
-#define ut_utils_h
+#pragma once
 
+#include "depth_check.h"
 #include "book/order_book.h"
 #include "impl/simple_order_book.h"
 #include "impl/simple_order.h"
+
 
 using namespace liquibook::book;
 
@@ -95,20 +96,7 @@ bool verify_depth(const DepthLevel& level,
                   uint32_t count,
                   const Quantity& qty)
 {
-  bool matched = true;
-  if (level.price() != price) {
-    std::cout << "Price " << level.price() << std::endl;
-    matched = false;
-  }
-  if (level.order_count() != count) {
-    std::cout << "Count " << level.order_count() << std::endl;
-    matched = false;
-  }
-  if (level.aggregate_qty() != qty) {
-    std::cout << "Quantity " << level.aggregate_qty() << std::endl;
-    matched = false;
-  }
-  return matched;
+  return DepthCheck::verify_depth(level, price, count, qty);
 }
 
 template <class OrderPtr>
@@ -175,36 +163,5 @@ public:
   }
 };
 
-class DepthCheck {
-public:
-  DepthCheck(const SimpleDepth& depth) 
-  : depth_(depth)
-  {
-    reset();
-  }
-
-  bool verify_bid(const Price& price, int count, const Quantity& qty)
-  {
-    return verify_depth(*next_bid_++, price, count, qty);
-  }
-
-  bool verify_ask(const Price& price, int count, const Quantity& qty)
-  {
-    return verify_depth(*next_ask_++, price, count, qty);
-  }
-
-  void reset()
-  {
-    next_bid_ = depth_.bids();
-    next_ask_ = depth_.asks();
-  }
-
-private:
-  const SimpleDepth& depth_;
-  const DepthLevel* next_bid_;
-  const DepthLevel* next_ask_;
-};
 
 } // namespace
-
-#endif
