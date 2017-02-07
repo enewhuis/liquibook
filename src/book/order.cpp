@@ -31,10 +31,4 @@ Order::immediate_or_cancel() const
   return false;
 }
 
-OrderConditions
-Order::conditions() const
-{
-  return OrderCondition::oc_no_conditions;
-}
-
 } }

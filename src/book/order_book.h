@@ -111,7 +111,7 @@ public:
   /// @brief access stop bid orders
   const TrackerMap & stopBids() const { return stopBids_;}
 
-  /// @brief access stop buy orders
+  /// @brief access stop ask orders
   const TrackerMap & stopAsks() const { return stopAsks_;}
 
   /// @brief move callbacks to another thread's container
@@ -381,14 +381,14 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
         // NOTE - this may need he actual open qty???
         callbacks_.push_back(TypedCallback::cancel(order, 0, trans_id_));
       }
-      callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
     }
-  }
-  // If adding this order triggered any stops
-  // handle those stops now
-  while(!pendingOrders_.empty())
-  {
-    submit_pending_orders();
+    // If adding this order triggered any stops
+    // handle those stops now
+    while(!pendingOrders_.empty())
+    {
+      submit_pending_orders();
+    }
+    callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
   }
   return matched;
 }

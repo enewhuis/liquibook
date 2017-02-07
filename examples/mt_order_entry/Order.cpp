@@ -50,21 +50,15 @@ Order::is_buy() const
 }
 
 bool 
-Order::is_aon() const
+Order::all_or_none() const
 {
     return aon_;
 }
 
 bool 
-Order::is_ioc() const
+Order::immediate_or_cancel() const
 {
     return ioc_;
-}
-
-bool 
-Order::is_stop() const
-{
-    return stop_price() != 0;
 }
 
 std::string 
@@ -302,13 +296,13 @@ std::ostream & operator << (std::ostream & out, const Order & order)
         out << " $" << order.price();
     }
 
-    if(order.is_stop())
+    if(order.stop_price() != 0)
     {
        out << " STOP " << order.stop_price();
     }
 
-    out  << (order.is_aon() ? " AON" : "")
-        << (order.is_ioc() ? " IOC" : "");
+    out  << (order.all_or_none() ? " AON" : "")
+        << (order.immediate_or_cancel() ? " IOC" : "");
 
     auto onMarket = order.quantityOnMarket();
     if(onMarket != 0)

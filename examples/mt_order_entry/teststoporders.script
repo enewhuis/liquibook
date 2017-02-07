@@ -1,0 +1,29 @@
+# Script to test stop orders
+
+# set market price to 56
+buy 100 +ibm mkt;
+sell 100 ibm 56;
+
+# enter seed orders that won't trade with each other
+buy 100 ibm 53;
+sell 100 ibm 58;
+
+# add stop orders off market
+buy 100 ibm mkt stop 57;
+sell 100 ibm mkt stop 54;
+
+# use large AOC orders to set a new market price to 57
+# without trading with existing orders
+# This will trigger the buy stop market order (#5)
+# which will match (and trade with) the sell 58 limit order #4
+buy 1000 ibm 57 aon;
+sell 1000 ibm 57 aon;
+
+# do the same thing on the other side to 
+# hit the stop price of 54 for order #6
+sell 1000 ibm 54 aon;
+buy 1000 ibm 54 aon;
+
+# and display the orders, all of which should be filled.
+d ibm
+quit

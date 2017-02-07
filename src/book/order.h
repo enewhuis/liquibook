@@ -29,9 +29,6 @@ public:
   /// @brief get the quantity of this order
   virtual Quantity order_qty() const = 0;
 
-  /// @brief get order conditions as a bit mask
-  virtual OrderConditions conditions() const;
-
   /// @brief if no trades should happen until the order
   /// can be filled completely.
   /// Note: one or more trades may be used to fill the order.

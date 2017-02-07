@@ -54,8 +54,10 @@ public:
         bool aon,
         bool ioc);
 
-    ///////////;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    // Implement the liquibook::book::order concept.
+    //////////////////////////
+    // Implement the 
+    // liquibook::book::order
+    // concept.
 
     /// @brief is this a limit order?
     bool is_limit() const;
@@ -63,26 +65,28 @@ public:
     /// @brief is this order a buy?
     bool is_buy() const;
 
-    /// @brief is this all-or-none
-    bool is_aon() const;
-
-    /// @brief is this immediate-or-cancel
-    bool is_ioc() const;
-
-    bool is_stop() const;
-
-    std::string symbol() const;
-
-    std::string order_id() const;
-
     /// @brief get the price of this order, or 0 if a market order
     liquibook::book::Price price() const;
+
+    /// @brief get the stop price (if any) for this order.
+    /// @returns the stop price or zero if not a stop order
+    liquibook::book::Price stop_price() const;
 
     /// @brief get the quantity of this order
     liquibook::book::Quantity order_qty() const;
 
-    /// @brief get the stop price of this order, or 0 if it is not a stop order
-    liquibook::book::Price stop_price() const;
+    /// @brief if no trades should happen until the order
+    /// can be filled completely.
+    /// Note: one or more trades may be used to fill the order.
+    virtual bool all_or_none() const;
+
+    /// @brief After generating as many trades as possible against
+    /// orders already on the market, cancel any remaining quantity.
+    virtual bool immediate_or_cancel() const;
+
+    std::string symbol() const;
+
+    std::string order_id() const;
 
     uint32_t quantityFilled() const;
 
