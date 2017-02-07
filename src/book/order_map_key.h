@@ -21,8 +21,17 @@ public:
 
   bool operator <(const OrderMapKey & rhs) const
   {
-    return buySide_ ? (rhs.price_ < price_) :  (price_ < rhs.price_);
+    return *this < rhs.price_;
   }
+
+  bool operator <(Price rhs) const
+  {
+    // Sorted in order of most likely to trade
+    // Buying: Highest prices first. 
+    // Selling: lowest prices first
+    return buySide_ ? (price_ < rhs) : (rhs < price_);
+  }
+
 
   bool isMarket() const
   {

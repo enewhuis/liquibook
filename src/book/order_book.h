@@ -269,8 +269,8 @@ OrderBook<OrderPtr>::add_stop_order(Tracker & tracker)
   bool isBuy = tracker.ptr()->is_buy();
   OrderMapKey key(isBuy, tracker.ptr()->stop_price());
   OrderMapKey market(isBuy, marketPrice_);
-  bool isStop = market < key;
-  if(isStop)
+  bool isStopped = market < key;
+  if(isStopped)
   {
     if(isBuy)
     {
@@ -281,7 +281,7 @@ OrderBook<OrderPtr>::add_stop_order(Tracker & tracker)
       stopAsks_.emplace(key, std::move(tracker));
     }
   }
-  return isStop;
+  return isStopped;
 }
 
 
@@ -290,7 +290,8 @@ void
 OrderBook<OrderPtr>::check_stop_orders(bool side, Price price, TrackerMap & stops)
 {
   OrderMapKey until(side, price);
-  for(auto pos = stops.begin(); pos != stops.end(); ++pos)
+  auto pos = stops.begin(); 
+  while(pos != stops.end())
   {
     auto here = pos++;
     if(until < here->first)
@@ -365,7 +366,7 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
     callbacks_.push_back(TypedCallback::accept(order, trans_id_));
     TypedCallback& accept_cb = callbacks_.back();
     Tracker inbound(order, conditions);
-    if(inbound.stop_order() && add_stop_order(inbound))
+    if(inbound.ptr()->stop_price() != 0 && add_stop_order(inbound))
     {
       // The order has been added to stops
     }
@@ -535,8 +536,8 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
   Quantity matched_qty = 0;
   Quantity inbound_qty = inbound.open_qty();
 
-  typename Bids::iterator pos;
-  for (pos = bids.begin(); pos != bids.end(); ) {
+  typename Bids::iterator pos = bids.begin(); 
+  while(pos != bids.end()) {
     auto bid = pos++;
     Price book_price = bid->first;
     Tracker & counter_order = bid->second;
@@ -612,8 +613,8 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
   Quantity matched_qty = 0;
   Quantity inbound_qty = inbound.open_qty();
 
-  typename Asks::iterator pos;
-  for (pos = asks.begin(); pos != asks.end(); ) {
+  typename Asks::iterator pos = asks.begin(); 
+  while(pos != asks.end()) {
     auto ask = pos++;
     Price book_price = ask->first;
     Tracker & counter_order = ask->second;

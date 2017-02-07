@@ -9,13 +9,18 @@ namespace liquibook { namespace impl {
 
 uint32_t SimpleOrder::last_order_id_(0);
 
-SimpleOrder::SimpleOrder(bool is_buy,
-                         book::Price price,
-                         book::Quantity qty)
+SimpleOrder::SimpleOrder(
+  bool is_buy,
+  book::Price price,
+  book::Quantity qty,
+  book::Price stop_price,
+  book::OrderConditions conditions)
 : state_(os_new),
   is_buy_(is_buy),
-  price_(price),
   order_qty_(qty),
+  price_(price),
+  stop_price_(stop_price),
+  conditions_(conditions),
   filled_qty_(0),
   filled_cost_(0),
   order_id_(++last_order_id_)
@@ -40,6 +45,29 @@ SimpleOrder::price() const
   return price_;
 }
 
+book::Price
+SimpleOrder::stop_price() const
+{
+  return stop_price_;
+}
+
+book::OrderConditions
+SimpleOrder::conditions() const
+{
+  return conditions_;
+}
+
+bool
+SimpleOrder::all_or_none() const
+{
+  return (conditions_ & book::OrderCondition::oc_all_or_none) != 0;
+}
+
+bool
+SimpleOrder::immediate_or_cancel() const
+{
+  return (conditions_ & book::OrderCondition::oc_immediate_or_cancel) != 0;
+}
 book::Quantity
 SimpleOrder::order_qty() const
 {

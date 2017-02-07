@@ -43,12 +43,6 @@ public:
   /// @ brief is this order marked immediate or cancel?
   bool immediate_or_cancel() const;
 
-  /// @ brief is this a stop order?
-  bool stop_order() const;
-
-  /// @ brief Price at which stop order is triggered.
-  Price stop_order_price() const;
-
 private:
   OrderPtr order_;
   Quantity open_qty_;
@@ -64,6 +58,9 @@ OrderTracker<OrderPtr>::OrderTracker(
   open_qty_(order->order_qty()),
   conditions_(conditions)
 {
+#if defined(LIQUIBOOK_ORDER_KNOWS_CONDITIONS)
+  conditions_ |= order->conditions();
+#endif
 }
 
 template <class OrderPtr>
@@ -127,7 +124,6 @@ template <class OrderPtr>
 bool
 OrderTracker<OrderPtr>::all_or_none() const
 {
-  // TODO: Consider making this a property of the order rather than keeping external flags.
   return bool(conditions_ & oc_all_or_none);
 }
 
@@ -135,24 +131,7 @@ template <class OrderPtr>
 bool
 OrderTracker<OrderPtr>::immediate_or_cancel() const
 {
-    // TODO: Consider making this a property of the order rather than keeping external flags.
     return bool((conditions_ & oc_immediate_or_cancel) != 0);
 }
-
-template <class OrderPtr>
-bool
-OrderTracker<OrderPtr>::stop_order() const
-{
-  return stop_order_price() != 0;
-}
-
-template <class OrderPtr>
-Price 
-OrderTracker<OrderPtr>::stop_order_price() const
-{
-  return order_->stop_price();
-}
-
-
 
 } }

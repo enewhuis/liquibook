@@ -17,4 +17,24 @@ Order::stop_price() const
   return 0;
 }
 
+bool
+Order::all_or_none() const
+{
+  // default to normal
+  return false;
+}
+
+bool
+Order::immediate_or_cancel() const
+{
+  // default to normal
+  return false;
+}
+
+OrderConditions
+Order::conditions() const
+{
+  return OrderCondition::oc_no_conditions;
+}
+
 } }

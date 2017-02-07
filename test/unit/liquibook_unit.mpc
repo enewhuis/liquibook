@@ -19,6 +19,12 @@ project (ut_market_price) : liquibook_test, liquibook_book, liquibook_impl {
   }
 }
 
+project (ut_stop_orders) : liquibook_test, liquibook_book, liquibook_impl {
+  exename = *
+  Source_Files {
+    ut_stop_orders.cpp
+  }
+}
 
 project (ut_bbo_order_book) : liquibook_test, liquibook_book, liquibook_impl {
   exename = *
