@@ -5,8 +5,16 @@
 
 namespace liquibook { namespace book {
 bool
-Order::is_limit() const {
+Order::is_limit() const 
+{
   return (price() > 0);
+}
+
+Price
+Order::stop_price() const
+{
+  // default to not a stop order
+  return 0;
 }
 
 } }

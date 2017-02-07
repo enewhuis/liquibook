@@ -10,6 +10,7 @@
 #include "order_book_listener.h"
 #include "depth_level.h"
 #include "trade_listener.h"
+#include "order_map_key.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -42,8 +43,13 @@ public:
   typedef std::vector<TypedCallback > Callbacks;
   typedef std::greater<Price> BidComparison;
   typedef std::less<Price> AskComparison;
-  typedef std::multimap<Price, Tracker, BidComparison >  Bids;
-  typedef std::multimap<Price, Tracker, AskComparison >     Asks;
+  typedef std::multimap<Price, Tracker, BidComparison > Bids;
+  typedef std::multimap<Price, Tracker, AskComparison > Asks;
+  typedef std::multimap<OrderMapKey, Tracker> TrackerMap; // todo: use this for asks and buys
+  typedef std::vector<Tracker> TrackerVec;
+
+
+  // TODO: GET RID OF THIS!?
   typedef std::list<typename Bids::iterator> DeferredBidCrosses;
   typedef std::list<typename Asks::iterator> DeferredAskCrosses;
 
@@ -101,6 +107,12 @@ public:
 
   /// @brief access the asks container
   const Asks& asks() const { return asks_; };
+
+  /// @brief access stop bid orders
+  const TrackerMap & stopBids() const { return stopBids_;}
+
+  /// @brief access stop buy orders
+  const TrackerMap & stopAsks() const { return stopAsks_;}
 
   /// @brief move callbacks to another thread's container
   void move_callbacks(Callbacks& target);
@@ -168,15 +180,33 @@ protected:
                        const Tracker& current_order,
                        const Price& current_price,
                        bool inbound_is_buy);
+
+  /// @brief add incoming stop order to stops colletion unless it's already
+  /// on the market.
+  /// @return true if added to stops, false if it should go directly to the order book.
+  bool add_stop_order(Tracker & tracker);
+
+  /// @brief See if any stop orders should go on the market.
+  void check_stop_orders(bool side, Price price, TrackerMap & stops);
+
+  /// @brief accept pending (formerly stop) orders.
+  void submit_pending_orders();
+
 private:
     Price sort_price(const OrderPtr& order);
+    bool submit_order(Tracker & inbound);
     bool add_order(Tracker& order_tracker, Price order_price);
 private:
   std::string symbol_;
   Bids bids_;
   Asks asks_;
-  DeferredBidCrosses deferred_bid_crosses_;
-  DeferredAskCrosses deferred_ask_crosses_;
+  DeferredBidCrosses deferred_bid_crosses_; // TODO go away
+  DeferredAskCrosses deferred_ask_crosses_; // TODO go away
+
+  TrackerMap stopBids_;
+  TrackerMap stopAsks_;
+  TrackerVec pendingOrders_;
+
   Callbacks callbacks_;
   TypedOrderListener* order_listener_;
   TypedTradeListener* trade_listener_;
@@ -216,7 +246,73 @@ template <class OrderPtr>
 void
 OrderBook<OrderPtr>:: set_market_price(Price price)
 {
+  Price oldMarketPrice = marketPrice_;
   marketPrice_ = price;
+  if(price > oldMarketPrice || oldMarketPrice == MARKET_ORDER_PRICE)
+  {
+    // price has gone up: check stop bids
+    bool buySide = true;
+    check_stop_orders(buySide, price, stopBids_);
+  }
+  else if(price < oldMarketPrice || oldMarketPrice == MARKET_ORDER_PRICE)
+  {
+    // price has gone down: check stop asks
+    bool buySide = false;
+    check_stop_orders(buySide, price, stopAsks_);
+  }
+}
+
+template <class OrderPtr>
+bool
+OrderBook<OrderPtr>::add_stop_order(Tracker & tracker)
+{
+  bool isBuy = tracker.ptr()->is_buy();
+  OrderMapKey key(isBuy, tracker.ptr()->stop_price());
+  OrderMapKey market(isBuy, marketPrice_);
+  bool isStop = market < key;
+  if(isStop)
+  {
+    if(isBuy)
+    {
+      stopBids_.emplace(key, std::move(tracker));
+    }
+    else
+    {
+      stopAsks_.emplace(key, std::move(tracker));
+    }
+  }
+  return isStop;
+}
+
+
+template <class OrderPtr>
+void
+OrderBook<OrderPtr>::check_stop_orders(bool side, Price price, TrackerMap & stops)
+{
+  OrderMapKey until(side, price);
+  for(auto pos = stops.begin(); pos != stops.end(); ++pos)
+  {
+    auto here = pos++;
+    if(until < here->first)
+    {
+      break;
+    }
+    pendingOrders_.push_back(std::move(here->second));
+    stops.erase(here);
+  }
+}
+
+template <class OrderPtr>
+void
+OrderBook<OrderPtr>::submit_pending_orders()
+{
+  TrackerVec pending;
+  pending.swap(pendingOrders_);
+  for(auto pos = pending.begin(); pos != pending.end(); ++pos)
+  {
+    Tracker & tracker = *pos;
+    submit_order(tracker);
+  }
 }
 
 /// @brief Get current market price.
@@ -251,7 +347,7 @@ OrderBook<OrderPtr>::set_order_book_listener(TypedOrderBookListener* listener)
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
 {
   // Increment transacion ID
@@ -260,30 +356,52 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
   bool matched = false;
 
   // If the order is invalid, exit
-  if (!is_valid(order, conditions)) {
+  if (!is_valid(order, conditions)) 
+  {
     // reject created by is_valid
-  } else {
+  } 
+  else 
+  {
     callbacks_.push_back(TypedCallback::accept(order, trans_id_));
     TypedCallback& accept_cb = callbacks_.back();
-    Price order_price = sort_price(order);
     Tracker inbound(order, conditions);
-    matched = add_order(inbound, order_price);
-    if (matched) {
-      // Note the filled qty in the callback
+    if(inbound.stop_order() && add_stop_order(inbound))
+    {
+      // The order has been added to stops
+    }
+    else
+    {
+      matched = submit_order(inbound);
+      // Note the filled qty in the accept callback
       accept_cb.accept_match_qty = inbound.filled_qty();
+      // Cancel any unfilled IOC order
+      if (inbound.immediate_or_cancel() && !inbound.filled()) 
+      {
+        // NOTE - this may need he actual open qty???
+        callbacks_.push_back(TypedCallback::cancel(order, 0, trans_id_));
+      }
+      callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
     }
-    // Cancel any unfilled IOC order
-    if (inbound.immediate_or_cancel() && !inbound.filled()) {
-      // NOTE - this may need he actual open qty???
-      callbacks_.push_back(TypedCallback::cancel(order, 0, trans_id_));
-    }
-    callbacks_.push_back(TypedCallback::book_update(this, trans_id_));
+  }
+  // If adding this order triggered any stops
+  // handle those stops now
+  while(!pendingOrders_.empty())
+  {
+    submit_pending_orders();
   }
   return matched;
 }
 
 template <class OrderPtr>
-inline void
+bool
+OrderBook<OrderPtr>::submit_order(Tracker & inbound)
+{
+  Price order_price = sort_price(inbound.ptr());
+  return add_order(inbound, order_price);
+}
+
+template <class OrderPtr>
+void
 OrderBook<OrderPtr>::cancel(const OrderPtr& order)
 {
   // Increment transacion ID
@@ -323,7 +441,7 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::replace(
   const OrderPtr& order, 
   int32_t size_delta,
@@ -407,7 +525,7 @@ OrderBook<OrderPtr>::replace(
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::match_order(Tracker& inbound, 
                                  const Price& inbound_price, 
                                  Bids& bids)
@@ -484,7 +602,7 @@ OrderBook<OrderPtr>::match_order(Tracker& inbound,
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::match_order(Tracker& inbound, 
                                  const Price& inbound_price, 
                                  Asks& asks)
@@ -581,7 +699,7 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
   }
   inbound_tracker.fill(fill_qty);
   current_tracker.fill(fill_qty);
-  marketPrice_ = cross_price;
+  set_market_price(cross_price);
 
   typename TypedCallback::FillFlags fill_flags = 
                               TypedCallback::ff_neither_filled;
@@ -604,7 +722,7 @@ OrderBook<OrderPtr>::cross_orders(Tracker& inbound_tracker,
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderBook<OrderPtr>::move_callbacks(Callbacks& target)
 {
   // optimize for common case
@@ -620,7 +738,7 @@ OrderBook<OrderPtr>::move_callbacks(Callbacks& target)
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderBook<OrderPtr>::perform_callbacks()
 {
   typename Callbacks::iterator cb;
@@ -631,7 +749,7 @@ OrderBook<OrderPtr>::perform_callbacks()
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
 {
   // If this is an order callback and I know of an order listener
@@ -681,7 +799,7 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
 }
 
 template <class OrderPtr>
-inline std::ostream &
+std::ostream &
 OrderBook<OrderPtr>::log(std::ostream & out) const
 {
   for(typename Asks::const_reverse_iterator ask = asks_.rbegin(); ask != asks_.rend(); ++ask) {
@@ -697,7 +815,7 @@ OrderBook<OrderPtr>::log(std::ostream & out) const
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::is_valid(const OrderPtr& order, OrderConditions )
 {
   if (order->order_qty() == 0) {
@@ -709,7 +827,7 @@ OrderBook<OrderPtr>::is_valid(const OrderPtr& order, OrderConditions )
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::is_valid_replace(
   const Tracker& order,
   int32_t size_delta,
@@ -729,7 +847,7 @@ OrderBook<OrderPtr>::is_valid_replace(
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderBook<OrderPtr>::find_bid(
   const OrderPtr& order,
   typename Bids::iterator& result)
@@ -749,7 +867,7 @@ OrderBook<OrderPtr>::find_bid(
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderBook<OrderPtr>::find_ask(
   const OrderPtr& order,
   typename Asks::iterator& result)
@@ -769,7 +887,7 @@ OrderBook<OrderPtr>::find_ask(
 } 
 
 template <class OrderPtr>
-inline Price
+Price
 OrderBook<OrderPtr>::sort_price(const OrderPtr& order)
 {
   Price result_price = order->price();
@@ -781,7 +899,7 @@ OrderBook<OrderPtr>::sort_price(const OrderPtr& order)
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::add_order(Tracker& inbound, Price order_price)
 {
   bool matched = false;
@@ -810,7 +928,7 @@ OrderBook<OrderPtr>::add_order(Tracker& inbound, Price order_price)
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderBook<OrderPtr>::matches(
   const Tracker& /*inbound_order*/,
   const Price& inbound_price, 

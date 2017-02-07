@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
 #pragma once
@@ -43,6 +43,12 @@ public:
   /// @ brief is this order marked immediate or cancel?
   bool immediate_or_cancel() const;
 
+  /// @ brief is this a stop order?
+  bool stop_order() const;
+
+  /// @ brief Price at which stop order is triggered.
+  Price stop_order_price() const;
+
 private:
   OrderPtr order_;
   Quantity open_qty_;
@@ -61,7 +67,7 @@ OrderTracker<OrderPtr>::OrderTracker(
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderTracker<OrderPtr>::change_qty(int32_t delta)
 {
   if ((delta < 0 && 
@@ -73,7 +79,7 @@ OrderTracker<OrderPtr>::change_qty(int32_t delta)
 }
 
 template <class OrderPtr>
-inline void
+void
 OrderTracker<OrderPtr>::fill(Quantity qty) 
 {
   if (qty > open_qty_) {
@@ -83,42 +89,42 @@ OrderTracker<OrderPtr>::fill(Quantity qty)
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderTracker<OrderPtr>::filled() const
 {
   return open_qty_ == 0;
 }
 
 template <class OrderPtr>
-inline Quantity
+Quantity
 OrderTracker<OrderPtr>::filled_qty() const
 {
   return order_->order_qty() - open_qty();
 }
 
 template <class OrderPtr>
-inline Quantity
+Quantity
 OrderTracker<OrderPtr>::open_qty() const
 {
   return open_qty_;
 }
 
 template <class OrderPtr>
-inline const OrderPtr&
+const OrderPtr&
 OrderTracker<OrderPtr>::ptr() const
 {
   return order_;
 }
 
 template <class OrderPtr>
-inline OrderPtr&
+OrderPtr&
 OrderTracker<OrderPtr>::ptr()
 {
   return order_;
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderTracker<OrderPtr>::all_or_none() const
 {
   // TODO: Consider making this a property of the order rather than keeping external flags.
@@ -126,11 +132,27 @@ OrderTracker<OrderPtr>::all_or_none() const
 }
 
 template <class OrderPtr>
-inline bool
+bool
 OrderTracker<OrderPtr>::immediate_or_cancel() const
 {
     // TODO: Consider making this a property of the order rather than keeping external flags.
     return bool((conditions_ & oc_immediate_or_cancel) != 0);
 }
+
+template <class OrderPtr>
+bool
+OrderTracker<OrderPtr>::stop_order() const
+{
+  return stop_order_price() != 0;
+}
+
+template <class OrderPtr>
+Price 
+OrderTracker<OrderPtr>::stop_order_price() const
+{
+  return order_->stop_price();
+}
+
+
 
 } }

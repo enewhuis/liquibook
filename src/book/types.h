@@ -19,7 +19,9 @@ namespace liquibook { namespace book {
   enum OrderCondition {
     oc_no_conditions = 0,
     oc_all_or_none = 1,
-    oc_immediate_or_cancel = oc_all_or_none << 1 
+    oc_immediate_or_cancel = oc_all_or_none << 1,
+    oc_fill_or_kill = oc_all_or_none | oc_immediate_or_cancel,
+    oc_stop = oc_immediate_or_cancel << 1
   };
 
   // Constants used in liquibook

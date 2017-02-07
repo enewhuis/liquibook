@@ -22,6 +22,10 @@ public:
   /// @brief get the price of this order, or 0 if a market order
   virtual Price price() const = 0;
 
+  /// @brief get the stop price (if any) for this order.
+  /// @returns the stop price or zero if not a stop order
+  virtual Price stop_price() const;
+
   /// @brief get the quantity of this order
   virtual Quantity order_qty() const = 0;
 };
