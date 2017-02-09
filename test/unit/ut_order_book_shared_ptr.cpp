@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
 #include "assertiv/assertiv.h"
@@ -7,7 +7,7 @@
 #include "book/order_book.h"
 #include "impl/simple_order.h"
 #include "impl/simple_order_book.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace liquibook {
 
@@ -17,7 +17,7 @@ using book::OrderTracker;
 using impl::SimpleOrder;
 
 
-typedef boost::shared_ptr<SimpleOrder> SimpleOrderPtr;
+typedef std::shared_ptr<SimpleOrder> SimpleOrderPtr;
 class SharedPtrOrderBook : public OrderBook<SimpleOrderPtr>
 {
   virtual void perform_callback(OrderBook<SimpleOrderPtr>::TypedCallback& cb)

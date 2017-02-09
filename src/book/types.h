@@ -27,8 +27,8 @@ namespace liquibook { namespace book {
   // Constants used in liquibook
   extern const Price INVALID_LEVEL_PRICE;
   extern const Price MARKET_ORDER_PRICE;
-  extern const Price MARKET_ORDER_BID_SORT_PRICE;
-  extern const Price MARKET_ORDER_ASK_SORT_PRICE;
+  extern const Price MARKET_ORDER_BID_SORT_PRICEx;
+  extern const Price MARKET_ORDER_ASK_SORT_PRICEx;
   extern const Price PRICE_UNCHANGED;
 
   extern const int32_t SIZE_UNCHANGED;

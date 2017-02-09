@@ -6,8 +6,8 @@
 namespace liquibook { namespace book {
   const Price INVALID_LEVEL_PRICE(0);
   const Price MARKET_ORDER_PRICE(0);
-  const Price MARKET_ORDER_BID_SORT_PRICE(UINT32_MAX);
-  const Price MARKET_ORDER_ASK_SORT_PRICE(0);
+  const Price MARKET_ORDER_BID_SORT_PRICEx(UINT32_MAX);
+  const Price MARKET_ORDER_ASK_SORT_PRICEx(0);
   const Price PRICE_UNCHANGED(0);
 
   const int32_t SIZE_UNCHANGED(0);

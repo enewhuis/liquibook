@@ -25,16 +25,15 @@ TEST(TestBidsMultimapSortCorrect)
   SimpleOrder order0(true, 1250, 100);
   SimpleOrder order1(true, 1255, 100);
   SimpleOrder order2(true, 1240, 100);
-  SimpleOrder order3(true,    0, 100);
+  SimpleOrder order3(true, MARKET_ORDER_PRICE, 100);
   SimpleOrder order4(true, 1245, 100);
 
   // Insert out of price order
-  bids.insert(std::make_pair(order0.price(), SimpleTracker(&order0)));
-  bids.insert(std::make_pair(order1.price(), SimpleTracker(&order1)));
-  bids.insert(std::make_pair(order2.price(), SimpleTracker(&order2)));
-  bids.insert(std::make_pair(MARKET_ORDER_BID_SORT_PRICE, 
-                             SimpleTracker(&order3)));
-  bids.insert(std::make_pair(order4.price(), SimpleTracker(&order4)));
+  bids.insert(std::make_pair(book::ComparablePrice(true, order0.price()), SimpleTracker(&order0)));
+  bids.insert(std::make_pair(book::ComparablePrice(true, order1.price()), SimpleTracker(&order1)));
+  bids.insert(std::make_pair(book::ComparablePrice(true, order2.price()), SimpleTracker(&order2)));
+  bids.insert(std::make_pair(book::ComparablePrice(true, order3.price()), SimpleTracker(&order3)));
+  bids.insert(std::make_pair(book::ComparablePrice(true, order4.price()), SimpleTracker(&order4)));
   
   // Should access in price order
   SimpleOrder* expected_order[] = {
@@ -45,17 +44,13 @@ TEST(TestBidsMultimapSortCorrect)
   int index = 0;
 
   for (bid = bids.begin(); bid != bids.end(); ++bid, ++index) {
-    if (expected_order[index]->price() == MARKET_ORDER_PRICE) {
-      ASSERT_EQ(MARKET_ORDER_BID_SORT_PRICE, bid->first);
-    } else {
-      ASSERT_EQ(expected_order[index]->price(), bid->first);
-    }
+    ASSERT_EQ(expected_order[index]->price(), bid->first);
     ASSERT_EQ(expected_order[index], bid->second.ptr());
   }
 
   // Should be able to search and find
-  ASSERT_TRUE((bids.upper_bound(1245))->second.ptr()->price() == 1240);
-  ASSERT_TRUE((bids.lower_bound(1245))->second.ptr()->price() == 1245);
+  ASSERT_TRUE((bids.upper_bound(book::ComparablePrice(true, 1245)))->second.ptr()->price() == 1240);
+  ASSERT_TRUE((bids.lower_bound(book::ComparablePrice(true, 1245)))->second.ptr()->price() == 1245);
 }
 
 TEST(TestAsksMultimapSortCorrect)
@@ -69,13 +64,13 @@ TEST(TestAsksMultimapSortCorrect)
   SimpleOrder order5(false, 3265, 200);
 
   // Insert out of price order
-  asks.insert(std::make_pair(order0.price(), SimpleTracker(&order0)));
-  asks.insert(std::make_pair(order1.price(), SimpleTracker(&order1)));
-  asks.insert(std::make_pair(order2.price(), SimpleTracker(&order2)));
-  asks.insert(std::make_pair(MARKET_ORDER_ASK_SORT_PRICE, 
+  asks.insert(std::make_pair(book::ComparablePrice(false, order0.price()), SimpleTracker(&order0)));
+  asks.insert(std::make_pair(book::ComparablePrice(false, order1.price()), SimpleTracker(&order1)));
+  asks.insert(std::make_pair(book::ComparablePrice(false, order2.price()), SimpleTracker(&order2)));
+  asks.insert(std::make_pair(book::ComparablePrice(false, MARKET_ORDER_PRICE), 
                              SimpleTracker(&order3)));
-  asks.insert(std::make_pair(order4.price(), SimpleTracker(&order4)));
-  asks.insert(std::make_pair(order5.price(), SimpleTracker(&order5)));
+  asks.insert(std::make_pair(book::ComparablePrice(false, order4.price()), SimpleTracker(&order4)));
+  asks.insert(std::make_pair(book::ComparablePrice(false, order5.price()), SimpleTracker(&order5)));
   
   // Should access in price order
   SimpleOrder* expected_order[] = {
@@ -86,16 +81,12 @@ TEST(TestAsksMultimapSortCorrect)
   int index = 0;
 
   for (ask = asks.begin(); ask != asks.end(); ++ask, ++index) {
-    if (expected_order[index]->price() == MARKET_ORDER_PRICE) {
-      ASSERT_EQ(MARKET_ORDER_ASK_SORT_PRICE, ask->first);
-    } else {
-      ASSERT_EQ(expected_order[index]->price(), ask->first);
-    }
+    ASSERT_EQ(expected_order[index]->price(), ask->first);
     ASSERT_EQ(expected_order[index], ask->second.ptr());
   }
 
-  ASSERT_TRUE((asks.upper_bound(3235))->second.ptr()->price() == 3245);
-  ASSERT_TRUE((asks.lower_bound(3235))->second.ptr()->price() == 3235);
+  ASSERT_TRUE((asks.upper_bound(book::ComparablePrice(false, 3235)))->second.ptr()->price() == 3245);
+  ASSERT_TRUE((asks.lower_bound(book::ComparablePrice(false, 3235)))->second.ptr()->price() == 3235);
 }
 
 TEST(TestAddCompleteBid)
@@ -682,11 +673,13 @@ TEST(TestAddMarketOrderAsk)
   ASSERT_TRUE(dc.verify_ask(1252, 1, 100));
 
   // Match - complete
-  { ASSERT_NO_THROW(
-    SimpleFillCheck fc1(&bid1, 100, 125100);
-    SimpleFillCheck fc2(&ask1, 100, 125100);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, true, true));
-  ); }
+  { 
+    //ASSERT_NO_THROW(
+      SimpleFillCheck fc1(&bid1, 100, 125100);
+      SimpleFillCheck fc2(&ask1, 100, 125100);
+      ASSERT_TRUE(add_and_verify(order_book, &ask1, true, true));
+   // ); 
+  }
 
   // Verify sizes
   ASSERT_EQ(1, order_book.bids().size());
@@ -1979,22 +1972,19 @@ TEST(TestReplaceSizeDecreaseTooMuch)
   ASSERT_TRUE(dc.verify_ask(1252, 2, 300));
 
   // Replace size - not enough left
-  order_book.replace(&ask0, -150, PRICE_UNCHANGED);
+  ASSERT_FALSE(order_book.replace(&ask0, -150, PRICE_UNCHANGED));
   order_book.perform_callbacks();
 
-  // Verify orders
-  ASSERT_EQ(100, ask0.open_qty());
-  ASSERT_EQ(300, ask0.order_qty());
-
-  // Verify open quantity unchanged
-  ASSERT_EQ(impl::os_accepted, ask0.state());
-  ASSERT_EQ(100, ask0.open_qty());
+  // Verify change
+  ASSERT_EQ(impl::os_cancelled, ask0.state());
+  ASSERT_EQ(200U, ask0.order_qty());
+  ASSERT_EQ(0U, ask0.open_qty());
 
   // Verify depth unchanged
   dc.reset();
   ASSERT_TRUE(dc.verify_bid(1251, 1, 100));
   ASSERT_TRUE(dc.verify_bid(1250, 1, 100));
-  ASSERT_TRUE(dc.verify_ask(1252, 2, 300));
+  ASSERT_TRUE(dc.verify_ask(1252, 1, 200));
 }
 
 TEST(TestReplaceSizeIncreaseDecrease)

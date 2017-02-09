@@ -349,7 +349,7 @@ Depth<SIZE>::needs_bid_restoration(Price& restoration_price)
   } else if (SIZE == 1) {
     // There is no earlier level to look at, restore using the first non-market
     // bid price
-    restoration_price = MARKET_ORDER_BID_SORT_PRICE;
+    restoration_price = MARKET_ORDER_BID_SORT_PRICEx;
     // Always restore on BBO only
     return true;
   }
@@ -370,7 +370,7 @@ Depth<SIZE>::needs_ask_restoration(Price& restoration_price)
   } else if (SIZE == 1) {
     // There is no earlier level to look at, restore the first non-market
     // ask price
-    restoration_price =  MARKET_ORDER_ASK_SORT_PRICE;
+    restoration_price =  MARKET_ORDER_ASK_SORT_PRICEx;
     // Always restore on BBO only
     return true;
   }

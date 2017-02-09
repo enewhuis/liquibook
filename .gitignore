@@ -2,6 +2,8 @@
 *.slo
 *.lo
 *.o
+*.obj
+*.iobj
 
 # Compiled Dynamic libraries
 *.so
@@ -31,6 +33,7 @@ Makefile*
 Debug
 Release
 *.pdb
+*.ipdb
 *.ilk
 .vs/
 *.VC.*
