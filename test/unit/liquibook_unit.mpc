@@ -5,7 +5,7 @@ project (ut_order_book) : liquibook_test, liquibook_book, liquibook_impl {
   }
 }
 
-project (ut_order_book_shared_ptr) : liquibook_test, liquibook_book, liquibook_impl, boost_base {
+project (ut_order_book_shared_ptr) : liquibook_test, liquibook_book, liquibook_impl {
   exename = *
   Source_Files {
     ut_order_book_shared_ptr.cpp

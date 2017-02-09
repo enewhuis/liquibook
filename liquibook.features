@@ -2,6 +2,9 @@
 // All rights reserved.
 // See the file license.txt for licensing information.
 // This file defines MPC features for the liquibook project
-boost=1
+
 examples=1
+// BOOST IS NEEDED BY THE PUBLISH/SUBSUBSCRIBE example
+boost=0
+// QUICKFAST IS NEEDED BY THE PUBLISH/SUBSUBSCRIBE example
 QuickFAST=0
