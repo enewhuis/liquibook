@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef trade_listener_h
-#define trade_listener_h
+#pragma once
 
 namespace liquibook { namespace book {
 
@@ -21,5 +20,3 @@ public:
 };
 
 } }
-
-#endif

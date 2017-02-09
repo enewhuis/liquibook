@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef callback_h
-#define callback_h
+#pragma once
 
 #include "order.h"
 #include "types.h"
@@ -256,5 +255,3 @@ Callback<OrderPtr>::book_update(const OrderBook<OrderPtr>* book,
 }
 
 } }
-
-#endif

@@ -1,8 +1,8 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef simpleorder_h
-#define simpleorder_h
+#pragma once
+
 #define LIQUIBOOK_ORDER_KNOWS_CONDITIONS
 #include "book/order.h"
 #include "book/types.h"
@@ -95,5 +95,3 @@ public:
 };
 
 } }
-
-#endif

@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef depth_order_book_h
-#define depth_order_book_h
+#pragma once
 
 #include "order_book.h"
 #include "depth.h"
@@ -178,5 +177,3 @@ DepthOrderBook<OrderPtr, SIZE>::depth() const
 }
 
 } }
-
-#endif

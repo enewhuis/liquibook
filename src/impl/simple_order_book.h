@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef simple_order_book_h
-#define simple_order_book_h
+#pragma once
 
 #include "simple_order.h"
 #include "book/depth_order_book.h"
@@ -62,5 +61,3 @@ SimpleOrderBook<SIZE>::perform_callback(SimpleCallback& cb)
   }
 }
 } }
-
-#endif
