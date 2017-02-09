@@ -1864,18 +1864,15 @@ TEST(TestReplaceSizeDecreaseTooMuch)
   order_book.replace(&ask0, -150, PRICE_UNCHANGED);
   order_book.perform_callbacks();
 
-  // Verify orders
-  ASSERT_EQ(100, ask0.open_qty());
-  ASSERT_EQ(300, ask0.order_qty());
-
-  // Verify open quantity unchanged
-  ASSERT_EQ(impl::os_accepted, ask0.state());
-  ASSERT_EQ(100, ask0.open_qty());
+  // Verify ask0 state
+  ASSERT_EQ(0, ask0.open_qty());
+  ASSERT_EQ(200, ask0.order_qty());
+  ASSERT_EQ(impl::os_cancelled, ask0.state());
 
   // Verify depth unchanged
   dc.reset();
   ASSERT_TRUE(dc.verify_bid(1251, 1, 100));
-  ASSERT_TRUE(dc.verify_ask(1252, 2, 300));
+  ASSERT_TRUE(dc.verify_ask(1252, 1, 200));
 }
 
 TEST(TestReplaceSizeIncreaseDecrease)
