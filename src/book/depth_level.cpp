@@ -2,7 +2,6 @@
 // All rights reserved.
 // See the file license.txt for licensing information.
 #include "depth_level.h"
-#include "types.h"
 #include <stdexcept>
 
 namespace liquibook { namespace book {

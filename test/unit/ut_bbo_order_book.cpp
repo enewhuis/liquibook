@@ -1,11 +1,12 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "assertiv/assertiv.h"
+#include "book/depth_constants.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
 #include "impl/simple_order.h"
 #include "impl/simple_order_book.h"
+#include "assertiv/assertiv.h"
 
 using namespace liquibook::book;
 
@@ -226,7 +227,7 @@ TEST(TestBidsMultimapSortCorrect)
 
   for (bid = bids.begin(); bid != bids.end(); ++bid, ++index) {
     if (expected_order[index]->price() == MARKET_ORDER_PRICE) {
-      ASSERT_EQ(MARKET_ORDER_BID_SORT_PRICEx, bid->first);
+      ASSERT_EQ(MARKET_ORDER_BID_SORT_PRICE, bid->first);
     } else {
       ASSERT_EQ(expected_order[index]->price(), bid->first);
     }
@@ -267,7 +268,7 @@ TEST(TestAsksMultimapSortCorrect)
 
   for (ask = asks.begin(); ask != asks.end(); ++ask, ++index) {
     if (expected_order[index]->price() == MARKET_ORDER_PRICE) {
-      ASSERT_EQ(MARKET_ORDER_ASK_SORT_PRICEx, ask->first);
+      ASSERT_EQ(MARKET_ORDER_ASK_SORT_PRICE, ask->first);
     } else {
       ASSERT_EQ(expected_order[index]->price(), ask->first);
     }

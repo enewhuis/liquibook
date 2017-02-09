@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef types_h
-#define types_h
+#pragma once
 
 #include <stdint.h>
 
@@ -24,15 +23,11 @@ namespace liquibook { namespace book {
     oc_stop = oc_immediate_or_cancel << 1
   };
 
-  // Constants used in liquibook
-  extern const Price INVALID_LEVEL_PRICE;
-  extern const Price MARKET_ORDER_PRICE;
-  extern const Price MARKET_ORDER_BID_SORT_PRICEx;
-  extern const Price MARKET_ORDER_ASK_SORT_PRICEx;
-  extern const Price PRICE_UNCHANGED;
-
-  extern const int32_t SIZE_UNCHANGED;
+  namespace {
+  // Constants used in liquibook API
+  const Price MARKET_ORDER_PRICE(0);
+  const Price PRICE_UNCHANGED(0);
+  const int32_t SIZE_UNCHANGED(0);
+  }
 
 } } // namespace
-
-#endif

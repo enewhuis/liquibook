@@ -4,7 +4,7 @@
 #ifndef depth_level_h
 #define depth_level_h
 
-#include "types.h"
+#include "depth_constants.h"
 
 namespace liquibook { namespace book {
 

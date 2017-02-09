@@ -1,11 +1,10 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef depth_h
-#define depth_h
+#pragma once
 
+#include "depth_constants.h"
 #include "depth_level.h"
-#include "types.h"
 #include <stdexcept>
 #include <map>
 #include <cmath>
@@ -13,7 +12,6 @@
 #include <functional>
 
 namespace liquibook { namespace book {
-
 /// @brief container of limit order data aggregated by price.  Designed so that
 ///    the depth levels themselves are easily copyable with a single memcpy
 ///    when used with a separate callback thread.
@@ -349,7 +347,7 @@ Depth<SIZE>::needs_bid_restoration(Price& restoration_price)
   } else if (SIZE == 1) {
     // There is no earlier level to look at, restore using the first non-market
     // bid price
-    restoration_price = MARKET_ORDER_BID_SORT_PRICEx;
+    restoration_price = MARKET_ORDER_BID_SORT_PRICE;
     // Always restore on BBO only
     return true;
   }
@@ -370,7 +368,7 @@ Depth<SIZE>::needs_ask_restoration(Price& restoration_price)
   } else if (SIZE == 1) {
     // There is no earlier level to look at, restore the first non-market
     // ask price
-    restoration_price =  MARKET_ORDER_ASK_SORT_PRICEx;
+    restoration_price =  MARKET_ORDER_ASK_SORT_PRICE;
     // Always restore on BBO only
     return true;
   }
@@ -575,5 +573,3 @@ Depth<SIZE>::published()
 }
 
 } }
-
-#endif
