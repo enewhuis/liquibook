@@ -43,19 +43,22 @@ public:
   /// @ brief is this order marked immediate or cancel?
   bool immediate_or_cancel() const;
 
+  Quantity reserve(int32_t reserved);
+
 private:
   OrderPtr order_;
   Quantity open_qty_;
+  int32_t reserved_;
   OrderConditions conditions_;
 };
 
 template <class OrderPtr>
-inline
 OrderTracker<OrderPtr>::OrderTracker(
   const OrderPtr& order,
   OrderConditions conditions)
 : order_(order),
   open_qty_(order->order_qty()),
+  reserved_(0),
   conditions_(conditions)
 {
 #if defined(LIQUIBOOK_ORDER_KNOWS_CONDITIONS)
@@ -68,6 +71,14 @@ OrderTracker<OrderPtr>::OrderTracker(
     conditions |= oc_immediate_or_cancel;
   }
 #endif
+}
+
+template <class OrderPtr>
+Quantity
+OrderTracker<OrderPtr>::reserve(int32_t reserved)
+{
+  reserved_ += reserved;
+  return open_qty_  - reserved_;
 }
 
 template <class OrderPtr>
@@ -106,11 +117,14 @@ OrderTracker<OrderPtr>::filled_qty() const
   return order_->order_qty() - open_qty();
 }
 
+// TODO: Rename this to be available and change the rest of the
+// system to use that, then provide a method to get to the open
+// quantity without considering reserved
 template <class OrderPtr>
 Quantity
 OrderTracker<OrderPtr>::open_qty() const
 {
-  return open_qty_;
+  return open_qty_ - reserved_;
 }
 
 template <class OrderPtr>

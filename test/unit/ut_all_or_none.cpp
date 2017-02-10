@@ -231,26 +231,30 @@ TEST(TestAonBidMatchMulti)
   // Verify depth
   DepthCheck dc(order_book.depth());
   ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 2, 800));
-  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty2));
+  ASSERT_TRUE(dc.verify_ask(prc1, 2, qty4 + qty4));
+  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty1 + qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
-    SimpleFillCheck fc1(&bid1, qty6, 750800);
-    SimpleFillCheck fc2(&ask0, qty4, prc1 * qty4);
-    SimpleFillCheck fc3(&ask2, qty1, prc2 * qty1);
-    SimpleFillCheck fc4(&ask3, qty1, prc2 * qty1);
+  { 
+  //ASSERT_NO_THROW(
+    SimpleFillCheck fc1(&bid1, qty6, prc1 * qty2 + prc1 * qty4);
+    SimpleFillCheck fc2(&ask0, qty2, prc1 * qty2);
+    SimpleFillCheck fc3(&ask1, qty4, prc1 * qty4);
+    SimpleFillCheck fc4(&ask2, 0, prc2 * 0);
+    SimpleFillCheck fc5(&ask3, 0, prc2 * 0);
     ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
-  ); }
+  //); 
+  }
 
   // Verify depth
   dc.reset();
   ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty4));
+  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty2));
+  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty1 + qty1));
 
   // Verify sizes
   ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  ASSERT_EQ(3, order_book.asks().size());
 }
 
 TEST(TestAonBidNoMatchMulti)
@@ -279,19 +283,21 @@ TEST(TestAonBidNoMatchMulti)
   ASSERT_TRUE(dc.verify_ask(prc2, 2, qty4 + qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
-    SimpleFillCheck fc1(&bid1, qtyNone, prcNone);
-    SimpleFillCheck fc2(&ask0, qtyNone, prcNone);
-    SimpleFillCheck fc3(&ask1, qtyNone, prcNone);
-    SimpleFillCheck fc4(&ask2, qtyNone, prcNone);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ); }
+  { 
+  //ASSERT_NO_THROW(
+    SimpleFillCheck fc0(&bid0, qtyNone, prcNone);
+    SimpleFillCheck fc1(&bid1, qty6, qty2 * prc1 + qty4 * prc2); // filled 600 @ 751000
+    SimpleFillCheck fc2(&ask0, qty2, qty2 * prc1); // filled 200 @ 250200
+    SimpleFillCheck fc3(&ask1, qtyNone, prcNone); // 0
+    SimpleFillCheck fc4(&ask2, qty4, qty4 * prc2); // filled 400 @ 500800
+    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
+  //); 
+  }
 
   // Verify depth
   dc.reset();
   ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty4 + qty1));
+  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty2));
 }
 
 TEST(TestAonBidMatchAon)
@@ -527,19 +533,6 @@ TEST(TestAonAskMatchMulti)
   SimpleOrder bid3(buySide, prc1, qty1);
   SimpleOrder bid0(buySide, prc0, qty7);
 
-  // Calculate expected results:
-  // Ask1 (600) should match 
-  //     all (100) of bid1 @ prc1
-  //     all (100) of bid2 @ prc1
-  //     all (100) of bid3 @ prc1
-  //     part (300) of bid0 @ prc0
-  uint32_t bid1FillAmount = prc1 * qty1;
-  uint32_t bid2FillAmount = prc1 * qty1;
-  uint32_t bid3FillAmount = prc1 * qty1;
-  Quantity bid0FillQuantity = qty6 - qty1 - qty1 - qty1;
-  uint32_t bid0FillAmount = prc0 * bid0FillQuantity;
-  uint32_t ask1FillAmount = bid1FillAmount + bid2FillAmount + bid3FillAmount + bid0FillAmount;
-
   // No match
   ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
   ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
@@ -558,14 +551,23 @@ TEST(TestAonAskMatchMulti)
   ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
-    SimpleFillCheck fc0(&bid1, qty1, bid1FillAmount);
-    SimpleFillCheck fc1(&bid2, qty1, bid2FillAmount);
-    SimpleFillCheck fc2(&bid3, qty1, bid3FillAmount);
-    SimpleFillCheck fc3(&bid0, bid0FillQuantity, bid0FillAmount);
-    SimpleFillCheck fc4(&ask1, qty6, ask1FillAmount);
+  { 
+  // ASSERT_NO_THROW(
+    
+    uint32_t b1Cost = prc1 * qty1;
+    SimpleFillCheck fc0(&bid1, qty1, b1Cost);
+    uint32_t b2Cost = prc1 * qty1;
+    SimpleFillCheck fc1(&bid2, qty1, b2Cost);
+    uint32_t b3Cost = prc1 * qty1;
+    SimpleFillCheck fc2(&bid3, qty1, b3Cost);
+    Quantity b0Fill = qty6 - qty1 - qty1 - qty1;
+    uint32_t b0Cost = b0Fill * prc1;
+    SimpleFillCheck fc3(&bid0, b0Fill, b0Cost);
+    uint32_t a1Cost = b0Cost + b1Cost +b2Cost + b3Cost;
+    SimpleFillCheck fc4(&ask1, qty6, a1Cost);
     ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
-  ); }
+  // ); 
+  }
 
   // Verify depth
   dc.reset();

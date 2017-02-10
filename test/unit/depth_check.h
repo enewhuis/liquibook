@@ -29,7 +29,7 @@ public:
   {
     bool matched = true;
     if (level.price() != price) {
-      std::cout << "Price " << level.price() << std::endl;
+      std::cout << "Price " << level.price() << " expecting " << price << std::endl;
       matched = false;
     }
     if (level.order_count() != count) {
