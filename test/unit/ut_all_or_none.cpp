@@ -26,7 +26,7 @@ const Price prc1 = 1251;
 const Price prc2 = 1252;
 const Price prc3 = 1253;
 const Price prcNone = 0;
-const Price prcMkt = 0;
+const Price MARKET_ORDER_PRICE = MARKET_ORDER_PRICE;
 
 const bool buySide = true;
 const bool sellSide = false;
@@ -214,7 +214,7 @@ TEST(TestAonBidMatchMulti)
   SimpleOrder ask2(sellSide, prc2, qty1);
   SimpleOrder ask1(sellSide, prc1, qty4); // AON no match
   SimpleOrder ask0(sellSide, prc1, qty4);
-  SimpleOrder bid1(buySide, prcMkt, qty6); // AON
+  SimpleOrder bid1(buySide, MARKET_ORDER_PRICE, qty6); // AON
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
@@ -263,7 +263,7 @@ TEST(TestAonBidNoMatchMulti)
   SimpleOrder ask2(sellSide, prc2, qty4); // AON no match
   SimpleOrder ask1(sellSide, prc2, qty1);
   SimpleOrder ask0(sellSide, prc1, qty4);
-  SimpleOrder bid1(buySide, prcMkt, qty6); // AON
+  SimpleOrder bid1(buySide, MARKET_ORDER_PRICE, qty6); // AON
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
@@ -561,7 +561,7 @@ TEST(TestAonAskMatchMulti)
     uint32_t b3Cost = prc1 * qty1;
     SimpleFillCheck fc2(&bid3, qty1, b3Cost);
     Quantity b0Fill = qty6 - qty1 - qty1 - qty1;
-    uint32_t b0Cost = b0Fill * prc1;
+    uint32_t b0Cost = b0Fill * prc0;
     SimpleFillCheck fc3(&bid0, b0Fill, b0Cost);
     uint32_t a1Cost = b0Cost + b1Cost +b2Cost + b3Cost;
     SimpleFillCheck fc4(&ask1, qty6, a1Cost);
@@ -792,25 +792,27 @@ TEST(TestAonAskNoMatchMulti)
   ASSERT_TRUE(dc.verify_bid(prc0, 1, qty4));
   ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
 
-  int todo_fix_this_test_then_make_it_pass;
-  // TODO: WHY DOES THIS NOT MATCH?
+  // This test was bogus -- testing a bug in the matching algorithm
+  // I fixed the bug and the test started to fail.
+  // So fixed the test to expect:
   // Ask1 (600 AON) should match bid0 (400 AON) + bid1(100) + bid 2(100 of 400)
+  //
+  // Now we need a new test of an AON that should NOT match!
 
   // No match
-  { ASSERT_NO_THROW(
-    SimpleFillCheck fc0(&bid0, qtyNone, prcNone);
-    SimpleFillCheck fc1(&bid1, qtyNone, prcNone);
-    SimpleFillCheck fc2(&bid2, qtyNone, prcNone);
-    SimpleFillCheck fc3(&ask1, qtyNone, prcNone);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
-  ); }
+  { 
+//  ASSERT_NO_THROW(
+    SimpleFillCheck fc0(&bid0, qty4, prc0 * qty4);
+    SimpleFillCheck fc1(&bid1, qty1, qty1 * prc1);
+    SimpleFillCheck fc2(&bid2, qty1, prc1 * qty1);
+    SimpleFillCheck fc3(&ask1, qty6, prc0 * qty4 + qty1 * prc1 + prc1 * qty1);
+    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+  //); 
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc1, 2, qty1 + qty4));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc0, 1, qty6));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty4 - qty1));
 
   // Verify sizes
   ASSERT_EQ(3, order_book.bids().size());
