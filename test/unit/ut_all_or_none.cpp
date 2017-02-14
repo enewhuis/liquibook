@@ -644,10 +644,6 @@ TEST(TestTwoAonBidOneAonAsk)
 
 TEST(TestOneAonBidTwoAsk)
 {
-#if 1 // TODO
-    int todo_Fix_TestOneAonBidTwoAsk;
-    std::cout << "***** WARNING TEST " << "TestOneAonBidTwoAsk" << " is disabled" << std::endl;
-#else
     SimpleOrderBook order_book;
 
     SimpleOrder bid1(buySide,prc1,qty3); // AON
@@ -657,36 +653,32 @@ TEST(TestOneAonBidTwoAsk)
     // Prime the order book: No Matches
     ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));//AON)); //noConditions
 
+    // Add an order that does NOT meet the AON condition
+    ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,noConditions));
     // Verify sizes
     ASSERT_EQ(1u,order_book.bids().size());
-    ASSERT_EQ(0u,order_book.asks().size());
+    ASSERT_EQ(1u,order_book.asks().size());
 
     // Verify depth
     DepthCheck dc(order_book.depth());
     ASSERT_TRUE(dc.verify_bid(prc1,1,qty3));
+    ASSERT_TRUE(dc.verify_ask(prc1,1,qty1));
 
     // Add matching order
     { ASSERT_NO_THROW(
         SimpleFillCheck fc1(&bid1,qty3,qty3 * prc1);
     SimpleFillCheck fc2(&ask1,qty1,qty1 * prc1);
     SimpleFillCheck fc3(&ask2,qty2,qty2 * prc1);
-    ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,noConditions));
     ASSERT_TRUE(add_and_verify(order_book,&ask2,expectMatch,expectComplete,noConditions));
     ); }
 
     // Verify sizes
     ASSERT_EQ(0,order_book.bids().size());
     ASSERT_EQ(0,order_book.asks().size());
-#endif
-
 }
 
 TEST(TestOneBidTwoAonAsk)
 {
-#if 1 // TODO
-    int todo_Fix_TestOneAskTwoAonBid;
-    std::cout << "***** WARNING TEST " << "TestOneAskTwoAonBid" << " is disabled" << std::endl;
-#else
     SimpleOrderBook order_book;
 
     SimpleOrder bid1(buySide,prc1,qty3); // noConditions
@@ -716,8 +708,6 @@ TEST(TestOneBidTwoAonAsk)
     // Verify sizes
     ASSERT_EQ(0,order_book.bids().size());
     ASSERT_EQ(0,order_book.asks().size());
-#endif
-
 }
 
 TEST(TestTwoAonBidTwoAonAsk)
@@ -726,45 +716,47 @@ TEST(TestTwoAonBidTwoAonAsk)
     int todo_FixTestAonsTwoBidTwoAsk;
     std::cout << "***** WARNING TEST " << "TestAonsTwoBidTwoAsk" << " is disabled" << std::endl;
 #else
-    SimpleOrderBook order_book;
+  // The current match algorithm tries to match one order from one side of the market to "N" orders
+  // from the other side.   This test won't pass because it requires two orders from each side.
+  // I'm leaving the test here as a challenge to future developers who want to improve the matching
+  // algorithm (good luck)
 
-    SimpleOrder ask1(sellSide,prc1,qty3); // AON
-    SimpleOrder ask2(sellSide,prc1,qty2); // AON
+  SimpleOrderBook order_book;
 
-    SimpleOrder bid1(buySide,prc1,qty1); // AON
-    SimpleOrder bid2(buySide,prc1,qty4); // AON
+  SimpleOrder ask1(sellSide,prc1,qty3); // AON
+  SimpleOrder ask2(sellSide,prc1,qty2); // AON
 
-                                         // Prime the order book: No Matches
-    ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
-    ASSERT_TRUE(add_and_verify(order_book,&bid2,expectNoMatch,expectNoComplete,AON));
-    ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,AON));
+  SimpleOrder bid1(buySide,prc1,qty1); // AON
+  SimpleOrder bid2(buySide,prc1,qty4); // AON
 
-    // Verify sizes
-    ASSERT_EQ(2u,order_book.bids().size());
-    ASSERT_EQ(1u,order_book.asks().size());
+                                        // Prime the order book: No Matches
+  ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
+  ASSERT_TRUE(add_and_verify(order_book,&bid2,expectNoMatch,expectNoComplete,AON));
+  ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,AON));
 
-    // Verify depth
-    DepthCheck dc(order_book.depth());
-    ASSERT_TRUE(dc.verify_bid(prc1,2,qty1 + qty4));
-    ASSERT_TRUE(dc.verify_ask(prc1,1,qty3));
+  // Verify sizes
+  ASSERT_EQ(2u,order_book.bids().size());
+  ASSERT_EQ(1u,order_book.asks().size());
 
-    // Add matching order
-    { ASSERT_NO_THROW(
-        SimpleFillCheck fc1(&bid1,qty1,qty3 * prc1);
-    SimpleFillCheck fc2(&bid2,qty4,qty3 * prc1);
-    SimpleFillCheck fc3(&ask1,qty3,qty1 * prc1);
-    SimpleFillCheck fc4(&ask2,qty2,qty2 * prc1);
-    ASSERT_TRUE(add_and_verify(order_book,&ask2,expectMatch,expectComplete,AON));
-    ); }
+  // Verify depth
+  DepthCheck dc(order_book.depth());
+  ASSERT_TRUE(dc.verify_bid(prc1,2,qty1 + qty4));
+  ASSERT_TRUE(dc.verify_ask(prc1,1,qty3));
 
-    // Verify sizes
-    ASSERT_EQ(0,order_book.bids().size());
-    ASSERT_EQ(0,order_book.asks().size());
+  // Add matching order
+  { ASSERT_NO_THROW(
+      SimpleFillCheck fc1(&bid1,qty1,qty3 * prc1);
+  SimpleFillCheck fc2(&bid2,qty4,qty3 * prc1);
+  SimpleFillCheck fc3(&ask1,qty3,qty1 * prc1);
+  SimpleFillCheck fc4(&ask2,qty2,qty2 * prc1);
+  ASSERT_TRUE(add_and_verify(order_book,&ask2,expectMatch,expectComplete,AON));
+  ); }
+
+  // Verify sizes
+  ASSERT_EQ(0,order_book.bids().size());
+  ASSERT_EQ(0,order_book.asks().size());
 #endif
-
 }
-
-
 
 TEST(TestAonAskNoMatchMulti)
 {
@@ -815,8 +807,8 @@ TEST(TestAonAskNoMatchMulti)
   ASSERT_TRUE(dc.verify_bid(prc1, 1, qty4 - qty1));
 
   // Verify sizes
-  ASSERT_EQ(3, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  ASSERT_EQ(1, order_book.bids().size());
+  ASSERT_EQ(1, order_book.asks().size());
 }
 
 TEST(TestAonAskMatchAon)

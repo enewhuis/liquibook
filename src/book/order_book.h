@@ -584,14 +584,20 @@ OrderBook<OrderPtr>::add_order(Tracker& inbound, Price order_price)
       // Insert into bids
       bids_.insert(std::make_pair(ComparablePrice(true, order_price), inbound));
       // and see if that satisfies any ask orders
-      check_deferred_aons(deferred_aons, asks_, bids_);
+      if(check_deferred_aons(deferred_aons, asks_, bids_))
+      {
+        matched = true;
+      }
     } 
     else 
     {
       // Else this is a sell order
       // Insert into asks
       asks_.insert(std::make_pair(ComparablePrice(false, order_price), inbound));
-      check_deferred_aons(deferred_aons, bids_, asks_);
+      if(check_deferred_aons(deferred_aons, bids_, asks_))
+      {
+        matched = true;
+      }
     }
   }
   return matched;
@@ -603,7 +609,7 @@ OrderBook<OrderPtr>::check_deferred_aons(DeferredMatches & aons,
   TrackerMap & deferredTrackers, 
   TrackerMap & marketTrackers)
 {
-  bool result = true;
+  bool result = false;
   DeferredMatches ignoredAons;
 
   for(auto pos = aons.begin(); pos != aons.end(); ++pos)
