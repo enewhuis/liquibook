@@ -3,7 +3,9 @@
 // See the file license.txt for licensing information.
 #pragma once
 
-#include <stdint.h>
+#include <cstdlib>
+#include <cstdint>
+#include <stdexcept>
 
 namespace liquibook { namespace book {
   // Types used in Liquibook

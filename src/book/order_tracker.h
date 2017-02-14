@@ -4,6 +4,7 @@
 #pragma once
 
 #include "types.h"
+#include "order.h"
 
 namespace liquibook { namespace book {
 

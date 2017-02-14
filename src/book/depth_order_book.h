@@ -8,8 +8,6 @@
 #include "bbo_listener.h"
 #include "depth_listener.h"
 
-//#include <iostream>
-
 namespace liquibook { namespace book {
 
 /// @brief Implementation of order book child class, that incorporates

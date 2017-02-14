@@ -18,7 +18,6 @@
 #include <list>
 #include <functional>
 #include <algorithm>
-#include <bitset>
 
 namespace liquibook { namespace book {
 
