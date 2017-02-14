@@ -467,8 +467,8 @@ OrderBook<OrderPtr>::add_stop_order(Tracker & tracker)
 {
   bool isBuy = tracker.ptr()->is_buy();
   ComparablePrice key(isBuy, tracker.ptr()->stop_price());
-  ComparablePrice market(isBuy, marketPrice_);
-  bool isStopped = market < key;
+  // if the market price is a better deal then the stop price, it's not time to panic
+  bool isStopped = key < marketPrice_;
   if(isStopped)
   {
     if(isBuy)
