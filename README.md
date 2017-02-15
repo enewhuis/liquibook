@@ -14,7 +14,15 @@ In addition to the order matching process itself, Liquibook can be configured
 to maintain an "order book" that records the number of open orders and total quantity
 represented by those orders at individual price levels.  
 
-   i.e. Symbol XYZ: open buy orders: $53.20 per share: 1203 orders for a total quantity of 150,398 shares.
+#### Example of an order book
+* Symbol XYZ: 
+  * Buy Side: 
+    * $53.20 per share: 1203 orders; 150,398 shares.
+    * $53.19 per share: 87 orders; 63,28 shares
+    * $52.00 per share 3 orders; 2,150 shares
+  * Sell Side
+    * $54.00 per share 507 orders; 120,700 shares
+    * etc...            
 
 ## Order properties supported by Liquibook.
 
@@ -65,7 +73,7 @@ The notifications generated include:
 ## Performance
 * Liquibook is written in C++ using modern, high-performance techniques.
   * Benchmark testing (with source included in this repository) show sustained rates of  
-__2.0 million__ to __2.5 million__ inserts per second.  See full [performance history](PERFORMANCE.md).
+__2.0 million__ to __2.5 million__ inserts per second. 
 
 ## Works with Your Design
 * Allows an application to use smart or regular pointers to orders.
