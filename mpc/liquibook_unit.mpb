@@ -1,4 +1,4 @@
-project : liquibook, liquibook_test {
+project : liquibook, liquibook_test, boost_unit_test_framework, boost_base {
   libs += gtest
   libs += gtest_main
   includes += $(GTEST_ROOT)/include

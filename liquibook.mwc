@@ -4,5 +4,9 @@ workspace(liquibook) {
   cmdline += -feature_file liquibook.features
   cmdline += -expand_vars
   cmdline += -use_env
+  
+  specific(make) {
+    cmdline += -value_template "configurations=Release Debug"
+  }  
 }
 

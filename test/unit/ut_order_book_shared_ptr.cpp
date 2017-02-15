@@ -1,7 +1,10 @@
 // Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "assertiv/assertiv.h"
+
+#define BOOST_TEST_NO_MAIN LiquibookTest
+#include <boost/test/unit_test.hpp>
+
 #include "ut_utils.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
@@ -47,7 +50,7 @@ class SharedPtrOrderBook : public OrderBook<SimpleOrderPtr>
 
 typedef FillCheck<SimpleOrderPtr> SharedFillCheck;
 
-TEST(TestSharedPointerBuild)
+BOOST_AUTO_TEST_CASE(TestSharedPointerBuild)
 {
   SharedPtrOrderBook order_book;
   SimpleOrderPtr ask1(new SimpleOrder(false, 1252, 100));
@@ -56,27 +59,27 @@ TEST(TestSharedPointerBuild)
   SimpleOrderPtr bid0(new SimpleOrder(true,  1250, 100));
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, bid0, false));
-  ASSERT_TRUE(add_and_verify(order_book, ask0, false));
-  ASSERT_TRUE(add_and_verify(order_book, ask1, false));
+  BOOST_CHECK(add_and_verify(order_book, bid0, false));
+  BOOST_CHECK(add_and_verify(order_book, ask0, false));
+  BOOST_CHECK(add_and_verify(order_book, ask1, false));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SharedFillCheck fc1(bid1, 100, 125100);
     SharedFillCheck fc2(ask0, 100, 125100);
-    ASSERT_TRUE(add_and_verify(order_book, bid1, true, true));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, bid1, true, true));
+  }
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestSharedCancelBid)
+BOOST_AUTO_TEST_CASE(TestSharedCancelBid)
 {
   SharedPtrOrderBook order_book;
   SimpleOrderPtr ask1(new SimpleOrder(false, 1252, 100));
@@ -84,20 +87,20 @@ TEST(TestSharedCancelBid)
   SimpleOrderPtr bid0(new SimpleOrder(true,  1250, 100));
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, bid0, false));
-  ASSERT_TRUE(add_and_verify(order_book, ask0, false));
-  ASSERT_TRUE(add_and_verify(order_book, ask1, false));
+  BOOST_CHECK(add_and_verify(order_book, bid0, false));
+  BOOST_CHECK(add_and_verify(order_book, ask0, false));
+  BOOST_CHECK(add_and_verify(order_book, ask1, false));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Cancel bid
-  ASSERT_TRUE(cancel_and_verify(order_book, bid0, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, bid0, impl::os_cancelled));
 
   // Verify sizes
-  ASSERT_EQ(0, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(0, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
 } // namespace

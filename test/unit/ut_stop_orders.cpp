@@ -1,7 +1,10 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "assertiv/assertiv.h"
+
+#define BOOST_TEST_NO_MAIN LiquibookTest
+#include <boost/test/unit_test.hpp>
+
 #include "ut_utils.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
@@ -41,47 +44,47 @@ typedef test::ChangedChecker<5> ChangedChecker;
 
 typedef FillCheck<SimpleOrder*> SimpleFillCheck;
 
-TEST(TestStopOrdersOffMarketNoTrade)
+BOOST_AUTO_TEST_CASE(TestStopOrdersOffMarketNoTrade)
 {
   SimpleOrderBook book;
   SimpleOrder order0(sideBuy, prc55, q100);
   SimpleOrder order1(sideSell, prcMkt, q100);
 
   // Enter order to generate a trade establishing market price
-  ASSERT_TRUE(add_and_verify(book, &order0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(book, &order1, expectMatch, expectComplete));
+  BOOST_CHECK(add_and_verify(book, &order0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order1, expectMatch, expectComplete));
 
-  ASSERT_EQ(prc55, book.market_price());
+  BOOST_CHECK_EQUAL(prc55, book.market_price());
 
   SimpleOrder order2(sideBuy, prcMkt, q100, prc56);
   SimpleOrder order3(sideSell, prcMkt, q100, prc54);
-  ASSERT_TRUE(add_and_verify(book, &order2, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(book, &order3, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order3, expectNoMatch));
   
   // Orders were accepted, but not traded
-  ASSERT_EQ(impl::os_accepted, order2.state());
-  ASSERT_EQ(impl::os_accepted, order3.state());
+  BOOST_CHECK_EQUAL(impl::os_accepted, order2.state());
+  BOOST_CHECK_EQUAL(impl::os_accepted, order3.state());
 }
 
-TEST(TestStopMarketOrdersOnMarketTradeImmediately)
+BOOST_AUTO_TEST_CASE(TestStopMarketOrdersOnMarketTradeImmediately)
 {
   SimpleOrderBook book;
   SimpleOrder order0(sideBuy, prc55, q100);
   SimpleOrder order1(sideSell, prcMkt, q100);
 
   // Enter order to generate a trade establishing market price
-  ASSERT_TRUE(add_and_verify(book, &order0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(book, &order1, expectMatch, expectComplete));
+  BOOST_CHECK(add_and_verify(book, &order0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order1, expectMatch, expectComplete));
 
-  ASSERT_EQ(prc55, book.market_price());
+  BOOST_CHECK_EQUAL(prc55, book.market_price());
 
   SimpleOrder order2(sideBuy, prcMkt, q100, prc55);
   SimpleOrder order3(sideSell, prcMkt, q100, prc55);
-  ASSERT_TRUE(add_and_verify(book, &order2, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(book, &order3, expectMatch, expectComplete));
+  BOOST_CHECK(add_and_verify(book, &order2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order3, expectMatch, expectComplete));
 }
 
-TEST(TestStopMarketOrdersTradeWhenStopPriceReached)
+BOOST_AUTO_TEST_CASE(TestStopMarketOrdersTradeWhenStopPriceReached)
 {
   SimpleOrderBook book;
   SimpleOrder order0(sideBuy, prc53, q100);
@@ -89,14 +92,14 @@ TEST(TestStopMarketOrdersTradeWhenStopPriceReached)
   book.set_market_price(prc55);
 
   // Enter seed orders and be sure they don't trade with each other.
-  ASSERT_TRUE(add_and_verify(book, &order0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(book, &order1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order1, expectNoMatch));
 
   // enter stop orders.  Be sure they don't trade yet
   SimpleOrder order2(sideBuy, prcMkt, q100, prc56);
   SimpleOrder order3(sideSell, prcMkt, q100, prc54);
-  ASSERT_TRUE(add_and_verify(book, &order2, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(book, &order3, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &order3, expectNoMatch));
 
   SimpleOrder order4(sideBuy, prc56, q1000, 0, book::oc_all_or_none);
   SimpleOrder order5(sideSell, prc56, q1000, 0, book::oc_all_or_none);
@@ -107,10 +110,10 @@ TEST(TestStopMarketOrdersTradeWhenStopPriceReached)
     SimpleFillCheck fc1(&order1, q100, q100 * prc57);
     SimpleFillCheck fc2(&order2, q100, q100 * prc57);
     // Trade at 56 which should trigger order2 which should trade with order 1 at order 1's price
-    ASSERT_TRUE(add_and_verify(book, &order4, expectNoMatch, expectNoComplete, book::oc_all_or_none));
-    ASSERT_TRUE(add_and_verify(book, &order5, expectMatch, expectComplete, book::oc_all_or_none));
+    BOOST_CHECK(add_and_verify(book, &order4, expectNoMatch, expectNoComplete, book::oc_all_or_none));
+    BOOST_CHECK(add_and_verify(book, &order5, expectMatch, expectComplete, book::oc_all_or_none));
   }
-  ASSERT_EQ(prc57, book.market_price());
+  BOOST_CHECK_EQUAL(prc57, book.market_price());
 
   SimpleOrder order6(sideBuy, prc54, q1000, 0, book::oc_all_or_none);
   SimpleOrder order7(sideSell, prc54, q1000, 0, book::oc_all_or_none);
@@ -120,9 +123,9 @@ TEST(TestStopMarketOrdersTradeWhenStopPriceReached)
     SimpleFillCheck fc0(&order0, q100, q100 * prc53);
     SimpleFillCheck fc3(&order3, q100, q100 * prc53);
     // Trade at 54 which should trigger order3 which should trade with order 0 at order 0's price
-    ASSERT_TRUE(add_and_verify(book, &order6, expectNoMatch, expectNoComplete, book::oc_all_or_none));
-    ASSERT_TRUE(add_and_verify(book, &order7, expectMatch, expectComplete, book::oc_all_or_none));
+    BOOST_CHECK(add_and_verify(book, &order6, expectNoMatch, expectNoComplete, book::oc_all_or_none));
+    BOOST_CHECK(add_and_verify(book, &order7, expectMatch, expectComplete, book::oc_all_or_none));
   }
-  ASSERT_EQ(prc53, book.market_price());
+  BOOST_CHECK_EQUAL(prc53, book.market_price());
 }
 } // namespace

@@ -1,7 +1,10 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "assertiv/assertiv.h"
+
+#define BOOST_TEST_NO_MAIN LiquibookTest
+#include <boost/test/unit_test.hpp>
+
 #include "ut_utils.h"
 
 namespace liquibook {
@@ -38,7 +41,7 @@ const bool expectNoComplete = false;
 }
 
 
-TEST(TestRegBidMatchAon)
+BOOST_AUTO_TEST_CASE(TestRegBidMatchAon)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask2(sellSide, prc2, qty1);
@@ -48,40 +51,40 @@ TEST(TestRegBidMatchAon)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(1UL, order_book.bids().size());
-  ASSERT_EQ(3UL, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1UL, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3UL, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 2, qty1 + qty2));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 2, qty1 + qty2));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&bid1, qty1, prc1 * qty1);
     SimpleFillCheck fc2(&ask1, qty1, prc1 * qty1);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectMatch, expectComplete));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
-TEST(TestRegBidMatchMulti)
+BOOST_AUTO_TEST_CASE(TestRegBidMatchMulti)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask2(sellSide, prc1, qty7);
@@ -91,40 +94,40 @@ TEST(TestRegBidMatchMulti)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch, expectNoComplete));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch, expectNoComplete));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(3, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 3, qty7 + qty1 + qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 3, qty7 + qty1 + qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc0(&bid1, qty4, prc1 * qty4);
     SimpleFillCheck fc1(&ask0, qty1, prc1 * qty1);
     SimpleFillCheck fc2(&ask1, qty1, prc1 * qty1);
     SimpleFillCheck fc3(&ask2, qty2, prc1 * qty2);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectMatch, expectComplete));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty4 + qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty4 + qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestAonBidNoMatch)
+BOOST_AUTO_TEST_CASE(TestAonBidNoMatch)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask1(sellSide, prc2, qty1); // no match, price
@@ -133,40 +136,40 @@ TEST(TestAonBidNoMatch)
   SimpleOrder bid0(buySide, prc0, qty1); // no match, price
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&bid1, qtyNone, prcNone);
     SimpleFillCheck fc2(&ask0, qtyNone, prcNone);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty3));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty3));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
-TEST(TestAonBidMatchReg)
+BOOST_AUTO_TEST_CASE(TestAonBidMatchReg)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask1(sellSide, prc2, qty1);
@@ -175,39 +178,39 @@ TEST(TestAonBidMatchReg)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&bid1, qty3, prc1 * qty3);
     SimpleFillCheck fc2(&ask0, qty3, prc1 * qty3);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
-TEST(TestAonBidMatchMulti)
+BOOST_AUTO_TEST_CASE(TestAonBidMatchMulti)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask3(sellSide, prc2, qty1);
@@ -218,21 +221,21 @@ TEST(TestAonBidMatchMulti)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask3, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask3, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(4, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(4, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 2, qty4 + qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty1 + qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 2, qty4 + qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 2, qty1 + qty1));
 
   // Match - complete
   { 
@@ -242,22 +245,22 @@ TEST(TestAonBidMatchMulti)
     SimpleFillCheck fc3(&ask1, qty4, prc1 * qty4);
     SimpleFillCheck fc4(&ask2, 0, prc2 * 0);
     SimpleFillCheck fc5(&ask3, 0, prc2 * 0);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
   //); 
   }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty1 + qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_ask(prc2, 2, qty1 + qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(3, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3, order_book.asks().size());
 }
 
-TEST(TestAonBidNoMatchMulti)
+BOOST_AUTO_TEST_CASE(TestAonBidNoMatchMulti)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask2(sellSide, prc2, qty4); // AON no match
@@ -267,20 +270,20 @@ TEST(TestAonBidNoMatchMulti)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch, expectNoComplete, AON));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(3, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 2, qty4 + qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 2, qty4 + qty1));
 
   // Match - complete
   { 
@@ -290,17 +293,17 @@ TEST(TestAonBidNoMatchMulti)
     SimpleFillCheck fc2(&ask0, qty2, qty2 * prc1); // filled 200 @ 250200
     SimpleFillCheck fc3(&ask1, qtyNone, prcNone); // 0
     SimpleFillCheck fc4(&ask2, qty4, qty4 * prc2); // filled 400 @ 500800
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
   //); 
   }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty2));
 }
 
-TEST(TestAonBidMatchAon)
+BOOST_AUTO_TEST_CASE(TestAonBidMatchAon)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask1(sellSide, prc2, qty1);
@@ -309,38 +312,38 @@ TEST(TestAonBidMatchAon)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty3));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty3));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&bid1, qty3, prc1 * qty3);
     SimpleFillCheck fc2(&ask0, qty3, prc1 * qty3);
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectMatch, expectComplete, AON));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestRegAskMatchAon)
+BOOST_AUTO_TEST_CASE(TestRegAskMatchAon)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1);
@@ -350,40 +353,40 @@ TEST(TestRegAskMatchAon)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &bid2, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &bid2, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(3, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(3, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 2, qty3));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 2, qty3));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&bid2, qty1, prc1 * qty1);
     SimpleFillCheck fc2(&ask1, qty1, prc1 * qty1);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestRegAskMatchMulti)
+BOOST_AUTO_TEST_CASE(TestRegAskMatchMulti)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1);
@@ -403,41 +406,41 @@ TEST(TestRegAskMatchMulti)
   uint32_t ask1FillAmount = bid1FillAmount + bid2FillAmount + bid0FillAmount;
   
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &bid2, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &bid2, expectNoMatch, expectNoComplete, AON));
 
   // Verify sizes
-  ASSERT_EQ(3, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(3, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 2, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty7));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 2, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc0(&bid1, qty1, prc1 * qty1);
     SimpleFillCheck fc1(&bid2, qty1, prc1 * qty1);
     SimpleFillCheck fc2(&bid0, qty2, prc0 * qty2);
     SimpleFillCheck fc3(&ask1, qty4, ask1FillAmount);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, bid0RemainQty));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, bid0RemainQty));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestAonAskNoMatch)
+BOOST_AUTO_TEST_CASE(TestAonAskNoMatch)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1);
@@ -447,43 +450,43 @@ TEST(TestAonAskNoMatch)
   SimpleOrder bid0(buySide, prc0, qty7);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid2, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(3, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(3, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 2, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty7));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 2, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc0(&bid1, qtyNone, prcNone);
     SimpleFillCheck fc1(&bid2, qtyNone, prcNone);
     SimpleFillCheck fc2(&bid0, qtyNone, prcNone);
     SimpleFillCheck fc3(&ask1, qtyNone, prcNone);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch, expectNoComplete, AON));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc1, 2, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty7));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 2, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(3, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(3, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
-TEST(TestAonAskMatchReg)
+BOOST_AUTO_TEST_CASE(TestAonAskMatchReg)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1);
@@ -492,38 +495,38 @@ TEST(TestAonAskMatchReg)
   SimpleOrder bid0(buySide, prc0, qty7);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty7));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc0(&bid1, qty1, prc1 * qty1);
     SimpleFillCheck fc3(&ask1, qty1, prc1 * qty1);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty7));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestAonAskMatchMulti)
+BOOST_AUTO_TEST_CASE(TestAonAskMatchMulti)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1); // no match due to price
@@ -534,21 +537,21 @@ TEST(TestAonAskMatchMulti)
   SimpleOrder bid0(buySide, prc0, qty7);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &bid2, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid3, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &bid2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid3, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(4, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(4, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 3, qty3));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty7));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 3, qty3));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Match - complete
   { 
@@ -565,51 +568,51 @@ TEST(TestAonAskMatchMulti)
     SimpleFillCheck fc3(&bid0, b0Fill, b0Cost);
     uint32_t a1Cost = b0Cost + b1Cost +b2Cost + b3Cost;
     SimpleFillCheck fc4(&ask1, qty6, a1Cost);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
   // ); 
   }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 ///////////////////
 
-TEST(TestOneAonBidOneAonAsk)
+BOOST_AUTO_TEST_CASE(TestOneAonBidOneAonAsk)
 {
     SimpleOrderBook order_book;
     SimpleOrder bid1(buySide,prc1,qty1); // AON
     SimpleOrder ask1(sellSide,prc1,qty1); // AON
 
     // Prime the order book: No Matches
-    ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
+    BOOST_CHECK(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
 
     // Verify sizes
-    ASSERT_EQ(1u,order_book.bids().size());
-    ASSERT_EQ(0u,order_book.asks().size());
+    BOOST_CHECK_EQUAL(1u,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0u,order_book.asks().size());
 
     // Verify depth
     DepthCheck dc(order_book.depth());
-    ASSERT_TRUE(dc.verify_bid(prc1 , 1, qty1));
+    BOOST_CHECK(dc.verify_bid(prc1 , 1, qty1));
 
     // Add matching order
-    { ASSERT_NO_THROW(
+    {
         SimpleFillCheck fc1(&bid1,qty1, qty1 * prc1);
         SimpleFillCheck fc3(&ask1,qty1, qty1 * prc1);
-        ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
-    ); }
+        BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+    }
 
     // Verify sizes
-    ASSERT_EQ(0,order_book.bids().size());
-    ASSERT_EQ(0,order_book.asks().size());
+    BOOST_CHECK_EQUAL(0,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0,order_book.asks().size());
 }
 
-TEST(TestTwoAonBidOneAonAsk)
+BOOST_AUTO_TEST_CASE(TestTwoAonBidOneAonAsk)
 {
     SimpleOrderBook order_book;
     SimpleOrder bid1(buySide,prc1,qty1); // AON
@@ -617,32 +620,32 @@ TEST(TestTwoAonBidOneAonAsk)
     SimpleOrder ask1(sellSide,prc1,qty3); // AON
 
     // Prime the order book: No Matches
-    ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete,AON));//AON)); //noConditions
-    ASSERT_TRUE(add_and_verify(order_book, &bid2,expectNoMatch,expectNoComplete,AON));
+    BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete,AON));//AON)); //noConditions
+    BOOST_CHECK(add_and_verify(order_book, &bid2,expectNoMatch,expectNoComplete,AON));
 
     // Verify sizes
-    ASSERT_EQ(2u,order_book.bids().size());
-    ASSERT_EQ(0u,order_book.asks().size());
+    BOOST_CHECK_EQUAL(2u,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0u,order_book.asks().size());
 
     // Verify depth
     DepthCheck dc(order_book.depth());
-    ASSERT_TRUE(dc.verify_bid(prc1, 2, qty1 + qty2));
+    BOOST_CHECK(dc.verify_bid(prc1, 2, qty1 + qty2));
 
     // Add matching order
-    { ASSERT_NO_THROW(
+    {
         SimpleFillCheck fc1(&bid1, qty1, qty1 * prc1);
         SimpleFillCheck fc2(&bid2, qty2, qty2 * prc1);
         SimpleFillCheck fc3(&ask1, qty3, qty3 * prc1);
-        ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
-    ); }
+        BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+    }
 
     // Verify sizes
-    ASSERT_EQ(0,order_book.bids().size());
-    ASSERT_EQ(0,order_book.asks().size());
+    BOOST_CHECK_EQUAL(0,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0,order_book.asks().size());
 
 }
 
-TEST(TestOneAonBidTwoAsk)
+BOOST_AUTO_TEST_CASE(TestOneAonBidTwoAsk)
 {
     SimpleOrderBook order_book;
 
@@ -651,33 +654,33 @@ TEST(TestOneAonBidTwoAsk)
     SimpleOrder ask2(sellSide,prc1,qty2); // No Conditions
 
     // Prime the order book: No Matches
-    ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));//AON)); //noConditions
+    BOOST_CHECK(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));//AON)); //noConditions
 
     // Add an order that does NOT meet the AON condition
-    ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,noConditions));
+    BOOST_CHECK(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,noConditions));
     // Verify sizes
-    ASSERT_EQ(1u,order_book.bids().size());
-    ASSERT_EQ(1u,order_book.asks().size());
+    BOOST_CHECK_EQUAL(1u,order_book.bids().size());
+    BOOST_CHECK_EQUAL(1u,order_book.asks().size());
 
     // Verify depth
     DepthCheck dc(order_book.depth());
-    ASSERT_TRUE(dc.verify_bid(prc1,1,qty3));
-    ASSERT_TRUE(dc.verify_ask(prc1,1,qty1));
+    BOOST_CHECK(dc.verify_bid(prc1,1,qty3));
+    BOOST_CHECK(dc.verify_ask(prc1,1,qty1));
 
     // Add matching order
-    { ASSERT_NO_THROW(
+    {
         SimpleFillCheck fc1(&bid1,qty3,qty3 * prc1);
     SimpleFillCheck fc2(&ask1,qty1,qty1 * prc1);
     SimpleFillCheck fc3(&ask2,qty2,qty2 * prc1);
-    ASSERT_TRUE(add_and_verify(order_book,&ask2,expectMatch,expectComplete,noConditions));
-    ); }
+    BOOST_CHECK(add_and_verify(order_book,&ask2,expectMatch,expectComplete,noConditions));
+    }
 
     // Verify sizes
-    ASSERT_EQ(0,order_book.bids().size());
-    ASSERT_EQ(0,order_book.asks().size());
+    BOOST_CHECK_EQUAL(0,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0,order_book.asks().size());
 }
 
-TEST(TestOneBidTwoAonAsk)
+BOOST_AUTO_TEST_CASE(TestOneBidTwoAonAsk)
 {
     SimpleOrderBook order_book;
 
@@ -686,31 +689,31 @@ TEST(TestOneBidTwoAonAsk)
     SimpleOrder ask2(sellSide,prc1,qty2); // AON
 
     // Prime the order book: No Matches
-    ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
+    BOOST_CHECK(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
 
     // Verify sizes
-    ASSERT_EQ(1u,order_book.bids().size());
-    ASSERT_EQ(0u,order_book.asks().size());
+    BOOST_CHECK_EQUAL(1u,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0u,order_book.asks().size());
 
     // Verify depth
     DepthCheck dc(order_book.depth());
-    ASSERT_TRUE(dc.verify_bid(prc1,1,qty3));
+    BOOST_CHECK(dc.verify_bid(prc1,1,qty3));
 
     // Add matching order
-    { ASSERT_NO_THROW(
+    {
         SimpleFillCheck fc1(&bid1,qty3,qty3 * prc1);
         SimpleFillCheck fc2(&ask1,qty1,qty1 * prc1);
         SimpleFillCheck fc3(&ask2,qty2,qty2 * prc1);
-        ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,noConditions));
-        ASSERT_TRUE(add_and_verify(order_book,&ask2,expectMatch,expectComplete,noConditions));
-    ); }
+        BOOST_CHECK(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,noConditions));
+        BOOST_CHECK(add_and_verify(order_book,&ask2,expectMatch,expectComplete,noConditions));
+    }
 
     // Verify sizes
-    ASSERT_EQ(0,order_book.bids().size());
-    ASSERT_EQ(0,order_book.asks().size());
+    BOOST_CHECK_EQUAL(0,order_book.bids().size());
+    BOOST_CHECK_EQUAL(0,order_book.asks().size());
 }
 
-TEST(TestTwoAonBidTwoAonAsk)
+BOOST_AUTO_TEST_CASE(TestTwoAonBidTwoAonAsk)
 {
 #if 1
     int todo_FixTestAonsTwoBidTwoAsk;
@@ -730,35 +733,35 @@ TEST(TestTwoAonBidTwoAonAsk)
   SimpleOrder bid2(buySide,prc1,qty4); // AON
 
                                         // Prime the order book: No Matches
-  ASSERT_TRUE(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
-  ASSERT_TRUE(add_and_verify(order_book,&bid2,expectNoMatch,expectNoComplete,AON));
-  ASSERT_TRUE(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,AON));
+  BOOST_CHECK(add_and_verify(order_book,&bid1,expectNoMatch,expectNoComplete,AON));
+  BOOST_CHECK(add_and_verify(order_book,&bid2,expectNoMatch,expectNoComplete,AON));
+  BOOST_CHECK(add_and_verify(order_book,&ask1,expectNoMatch,expectNoComplete,AON));
 
   // Verify sizes
-  ASSERT_EQ(2u,order_book.bids().size());
-  ASSERT_EQ(1u,order_book.asks().size());
+  BOOST_CHECK_EQUAL(2u,order_book.bids().size());
+  BOOST_CHECK_EQUAL(1u,order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1,2,qty1 + qty4));
-  ASSERT_TRUE(dc.verify_ask(prc1,1,qty3));
+  BOOST_CHECK(dc.verify_bid(prc1,2,qty1 + qty4));
+  BOOST_CHECK(dc.verify_ask(prc1,1,qty3));
 
   // Add matching order
-  { ASSERT_NO_THROW(
+  {
       SimpleFillCheck fc1(&bid1,qty1,qty3 * prc1);
   SimpleFillCheck fc2(&bid2,qty4,qty3 * prc1);
   SimpleFillCheck fc3(&ask1,qty3,qty1 * prc1);
   SimpleFillCheck fc4(&ask2,qty2,qty2 * prc1);
-  ASSERT_TRUE(add_and_verify(order_book,&ask2,expectMatch,expectComplete,AON));
-  ); }
+  BOOST_CHECK(add_and_verify(order_book,&ask2,expectMatch,expectComplete,AON));
+  }
 
   // Verify sizes
-  ASSERT_EQ(0,order_book.bids().size());
-  ASSERT_EQ(0,order_book.asks().size());
+  BOOST_CHECK_EQUAL(0,order_book.bids().size());
+  BOOST_CHECK_EQUAL(0,order_book.asks().size());
 #endif
 }
 
-TEST(TestAonAskNoMatchMulti)
+BOOST_AUTO_TEST_CASE(TestAonAskNoMatchMulti)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1); // no match (price)
@@ -769,20 +772,20 @@ TEST(TestAonAskNoMatchMulti)
   SimpleOrder bid2(buySide, prc1, qty4);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch, expectNoComplete,AON));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete,AON));//AON)); //noConditions
-  ASSERT_TRUE(add_and_verify(order_book, &bid2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch, expectNoComplete,AON));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete,AON));//AON)); //noConditions
+  BOOST_CHECK(add_and_verify(order_book, &bid2, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(3, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(3, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 2, qty1 + qty4));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty4));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 2, qty1 + qty4));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
 
   // This test was bogus -- testing a bug in the matching algorithm
   // I fixed the bug and the test started to fail.
@@ -798,20 +801,20 @@ TEST(TestAonAskNoMatchMulti)
     SimpleFillCheck fc1(&bid1, qty1, qty1 * prc1);
     SimpleFillCheck fc2(&bid2, qty1, prc1 * qty1);
     SimpleFillCheck fc3(&ask1, qty6, prc0 * qty4 + qty1 * prc1 + prc1 * qty1);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
   //); 
   }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty4 - qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty4 - qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestAonAskMatchAon)
+BOOST_AUTO_TEST_CASE(TestAonAskMatchAon)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask0(sellSide, prc2, qty1);
@@ -820,38 +823,38 @@ TEST(TestAonAskMatchAon)
   SimpleOrder bid0(buySide, prc0, qty4);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty4));
 
   // Match complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&bid1, qty2, prc1 * qty2);
     SimpleFillCheck fc3(&ask1, qty2, prc1 * qty2);
-    ASSERT_TRUE(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
-  ); }
+    BOOST_CHECK(add_and_verify(order_book, &ask1, expectMatch, expectComplete, AON));
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty4));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty4));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestReplaceAonBidSmallerMatch)
+BOOST_AUTO_TEST_CASE(TestReplaceAonBidSmallerMatch)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask2(sellSide, prc3, qty1);
@@ -861,43 +864,43 @@ TEST(TestReplaceAonBidSmallerMatch)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(3, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc3, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc3, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc2(&ask0, qty1, prc1 * qty1);
-    ASSERT_TRUE(replace_and_verify(
+    BOOST_CHECK(replace_and_verify(
         order_book, &bid1, -(int32_t)qty1, PRICE_UNCHANGED, impl::os_complete, qty1));
-  ); }
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc3, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc3, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
-TEST(TestReplaceAonBidPriceMatch)
+BOOST_AUTO_TEST_CASE(TestReplaceAonBidPriceMatch)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask2(sellSide, prc3, qty1);
@@ -907,43 +910,43 @@ TEST(TestReplaceAonBidPriceMatch)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(3, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc3, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc3, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc1(&ask0, qty1, prc1 * qty1);
     SimpleFillCheck fc2(&ask1, qty1, prc2 * qty1);
-    ASSERT_TRUE(replace_and_verify(
+    BOOST_CHECK(replace_and_verify(
         order_book, &bid1, qtyNone, prc2, impl::os_complete, qty2));
-  ); }
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc3, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc3, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(1, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(1, order_book.asks().size());
 }
 
-TEST(TestReplaceBidLargerMatchAon)
+BOOST_AUTO_TEST_CASE(TestReplaceBidLargerMatchAon)
 {
   SimpleOrderBook order_book;
   SimpleOrder ask2(sellSide, prc3, qty1);
@@ -953,40 +956,40 @@ TEST(TestReplaceBidLargerMatchAon)
   SimpleOrder bid0(buySide, prc0, qty1);
 
   // No match
-  ASSERT_TRUE(add_and_verify(order_book, &bid0, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &bid1, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
-  ASSERT_TRUE(add_and_verify(order_book, &ask1, expectNoMatch));
-  ASSERT_TRUE(add_and_verify(order_book, &ask2, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid0, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &bid1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask0, expectNoMatch, expectNoComplete, AON));
+  BOOST_CHECK(add_and_verify(order_book, &ask1, expectNoMatch));
+  BOOST_CHECK(add_and_verify(order_book, &ask2, expectNoMatch));
 
   // Verify sizes
-  ASSERT_EQ(2, order_book.bids().size());
-  ASSERT_EQ(3, order_book.asks().size());
+  BOOST_CHECK_EQUAL(2, order_book.bids().size());
+  BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
   DepthCheck dc(order_book.depth());
-  ASSERT_TRUE(dc.verify_bid(prc1, 1, qty1));
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc1, 1, qty2));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc3, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc1, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc1, 1, qty2));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc3, 1, qty1));
 
   // Match - complete
-  { ASSERT_NO_THROW(
+  {
     SimpleFillCheck fc2(&ask0, qty2, qty2 * prc1);
-    ASSERT_TRUE(replace_and_verify(
+    BOOST_CHECK(replace_and_verify(
         order_book, &bid1, qty1, PRICE_UNCHANGED, impl::os_complete, qty2));
-  ); }
+  }
 
   // Verify depth
   dc.reset();
-  ASSERT_TRUE(dc.verify_bid(prc0, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc2, 1, qty1));
-  ASSERT_TRUE(dc.verify_ask(prc3, 1, qty1));
+  BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
+  BOOST_CHECK(dc.verify_ask(prc3, 1, qty1));
 
   // Verify sizes
-  ASSERT_EQ(1, order_book.bids().size());
-  ASSERT_EQ(2, order_book.asks().size());
+  BOOST_CHECK_EQUAL(1, order_book.bids().size());
+  BOOST_CHECK_EQUAL(2, order_book.asks().size());
 }
 
 } // Namespace

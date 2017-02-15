@@ -7,7 +7,7 @@ project {
     Debug::runtime_library = 3
     Release::runtime_library = 2
   }
-  specific(vc10,vc11,vc12,vc13,vc14) {
+  specific(vc10,vc11,vc12,vc13,vc14,vc15) {
     Debug::runtime_library = MultiThreadedDebugDLL
     Release::runtime_library = MultiThreadedDLL
   }
