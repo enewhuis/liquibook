@@ -22,7 +22,7 @@ This prompting will happen even if the input is being read from a file, so the r
 in from a script file should be complete and should be terminated with a semicolon.
    
 ####For example:
-
+<pre>
    > BUY 100 GOOG 850 AON;
        ADDING order:  [#2 BUY 100 GOOG $850 AON Last Event:{Submitted BUY 100 GOOG @850}]
    > BUY              (incomplete request)
@@ -31,14 +31,14 @@ in from a script file should be complete and should be terminated with a semicol
    Limit Price or MKT: 800
    AON, or IOC, or STOP, or END: ;
        ADDING order:  [#3 BUY 100 GOOG $800 Last Event:{Submitted BUY 100 GOOG @800}]  
-       
+</pre>       
 ## Requests
 
 Most requests can be spelled out or abbreviated to their first character.  
 Parameters accepted by each request will be explained later in this document.
 Requests are not case sensitive.  Even though they are shown here in all CAPS
 a BUY request may be entered as BUY, buy, b, or even Buy.
-
+<pre>
 * BUY or B      : Enter a new order to buy a security.
 * SELL or S     : Enter a new order to sell a security.
 * CANCEL or C   : Request that an existing order be canceled.
@@ -47,6 +47,7 @@ a BUY request may be entered as BUY, buy, b, or even Buy.
 * FILE or F     : Open or close a script file.
 * ?             : Display help for requests
 * QUIT          : Exit the program.
+</pre>
    
 ## Symbols
 
@@ -77,7 +78,7 @@ order book is created.
 type of book to create.
 
 For example:
-
+<pre>
     > buy 100 ibm 50;
     New Symbol IBM.
     Add [S]imple book, or [D]epth book, or 'N' to cancel request.
@@ -104,6 +105,7 @@ For example:
     [SDN}: n
     Request ignored
     Cannot process command BUY 50 R 99 ;
+</pre>
 
 Since console  prompting does not play well with scripting, it is important that symbols used in scripts
 have the appropriate prefix the first time they appear.
