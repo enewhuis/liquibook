@@ -197,12 +197,21 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
         }
         else
         {
-            if(!promptForYesNo("Is " + symbol +  " a new symbol?"))
+            std::string bookType;
+            while(bookType != "S" 
+              && bookType != "D" 
+              && bookType != "N")
             {
-                out() << "--Expecting valid symbol" << std::endl;
+              bookType = promptForString(
+              "New Symbol " + symbol +  
+              ". \nAdd [S]imple book, or [D]epth book, or 'N' to cancel request.\n[SDN}");
+            }
+            if(bookType == "N")
+            {
+                out() << "Request ignored" << std::endl;
                 return false;
             }
-            bool useDepth = promptForYesNo("Use Depth Book?");
+            bool useDepth = bookType == "D";
             addBook(symbol, useDepth);
         }
     }

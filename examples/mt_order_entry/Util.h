@@ -58,7 +58,7 @@ liquibook::book::Price stringToPrice(const std::string & input);
 /// @brief Display a prompt and ask the console user for a string.
 /// @param prompt What to display
 /// @returns what the user typed.
-std::string promptForString(const std::string & prompt);
+std::string promptForString(const std::string & prompt, bool uppercase = true);
 
 /// @brief Display a prompt and ask the console user for a price.
 /// @param prompt What to display

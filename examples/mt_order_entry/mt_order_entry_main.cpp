@@ -150,9 +150,10 @@ int main(int argc, const char * argv[])
             else if(command == "?" || command == "HELP")
             {
                 market.help();
-                *log << "\t(F)ile  Open or Close a command input file\n"
+                *log << "(F)ile  Open or Close a command input file\n"
                     << "\tArguments\n"
                     << "\t\t<FileName>  Required if no file is open. Must not appear if file is open.\n";
+                *log << "QUIT  Exit from this program.\n";
                 bool prompt = true;
             }
             else if(!market.apply(words))

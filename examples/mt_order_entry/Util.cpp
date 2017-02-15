@@ -52,12 +52,15 @@ liquibook::book::Price stringToPrice(const std::string & str)
     }
 }
 
-std::string promptForString(const std::string & prompt)
+std::string promptForString(const std::string & prompt, bool uppercase)
 {
     std::cout << "\n" << prompt << ": " << std::flush;
     std::string input;
     std::getline(std::cin, input);
-    std::transform(input.begin(), input.end(), input.begin(), toupper);
+    if(uppercase)
+    {
+      std::transform(input.begin(), input.end(), input.begin(), toupper);
+    }
     return input;
 }
 
