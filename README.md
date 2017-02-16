@@ -95,28 +95,31 @@ The examples are:
   * Allows orders and other requests to be read from the console or submitted by a script (text file)
   * Submits these to Liquibook.
   * Displays the notifications received from Liquibook to the console or to a log file.
+  * [Detailed instructions are in the README_ORDER_ENTRY.md file.] ( README_ORDER_ENTRY.md)
 
 Build Dependencies
 ------------------
 
-* [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds
-* [Assertiv](https://github.com/iamtheschmitzer/assertiv) for unit testing (see note below0
-* BOOST (optional) for shared pointer unit testing only
-* [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example depth feed publisher/subscriber
+* [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds.
+* [BOOST](http://www.boost.org/) (optional) for unit testing.
+* [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example depth feed publisher/subscriber.
 
 ## Submodule Note
-
-Assertiv is included as a submodule.  After cloning liquibook, you must:
-
-<pre>
-> cd liquibook
-> git submodule init
-> git submodule update
-</pre>
+The Assertive test framework was used in previous versions, but it is no longer needed.  
+If you have imported this submodule to support previous versions, you may delete the liquibook/test/unit/assertiv directory.
 
 ## Linux Build Notes
 
+If you want to run the Liquibook unit tests (highly recommended!) you should install and/or build boost test before trying to build Liquibook.  Boost test is used in the multifile-test mode so the boost test library must be available.
+
+Please follow the instructions on the [boost web site](http://www.boost.org/) for building/installing the library in your environment.
+Avoid a common mistake: Be sure you actually install the libraries rather than leaving them in the staging area.
+
+If you prefer not to install boost you can edit the liquibook.features file to change the appropriate line to say `boost=0`  This will disable building the unit tests.
+
 Make sure the $BOOST_ROOT, $QUICKFAST_ROOT (set to liquibook/noQuickFAST if you don't want to use QuickFAST) and $MPC_ROOT environment variables are set, then open a shell
+
+If you don't have readlink, set the $LIQUIBOOK_ROOT environment variable the directory containing liquibook before running env.sh
 
 <pre>
 $ cd liquibook
@@ -126,9 +129,8 @@ $ make depend
 $ make all
 </pre>
 
-If you don't have readlink, set the $LIQUIBOOK_ROOT environment variable before running env.sh
-
 ## Windows Build Notes
+
 Use the following commands to set up the build environment and create Visual Studio project and solution files.
 Note if you are using MinGW or other linux-on-Windows techniques, follow the Linux instructions; however, OCI does not normally test this.
 
@@ -136,24 +138,16 @@ Note if you are using MinGW or other linux-on-Windows techniques, follow the Lin
 > cd liquibook
 > copy winenv.bat w.bat #optional if you want to keep the original
                         # note that single character batch file names are ignored in .getignore so the customized
-                        # file will not be checked into the git repository.
+                        # file will not be checked into the git repository (a good thing.)
 > edit w.bat            # edit is your choice of text editor
                         # follow the instructions in the file itself.
 > w.bat                 # sets and verifies environment variables
 > mpc.bat               # generate the visual studio solution and project files.
 </pre>
 
-Then in the same window, start Visual Studio from the command line, opening liquibook.sln
-<pre>
-> liquibook.sln
-</pre>
-If Windows does not recognize the *.sln file extension as belonging to VisualStudio,
-you may need to provide the path to Visual Studio.
-
-This example is the Visual Studio 2010 Express Edition:
-<pre>
-> "%VS100COMNTOOLS%\..\IDE\VCExpress.exe" liquibook.sln
-</pre>
+Then:
+* Start Visual Studio from the command line by typing liquibook.sln or 
+* Start Visual Studio from the Windows menu and use the menu File|Open|Project or Solution to load liquibook.sln.
 
 ## For any platform
 
