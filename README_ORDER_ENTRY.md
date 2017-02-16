@@ -225,7 +225,7 @@ Parameters:
 
 The traling semicolon (or the word END) is required for a MODIFY request.
 
-Zero or more trades may be triggered by entering a SELL order.
+Zero or more trades may be triggered by entering a MODIFY request.
 
 The request may be rejected if the order has already been filled, or if no changes are requested.
 
