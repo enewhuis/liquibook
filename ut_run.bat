@@ -1,9 +1,1 @@
-bin\test\ut_all_or_none.exe
-bin\test\ut_bbo_order_book.exe
-bin\test\ut_depth.exe
-bin\test\ut_immediate_or_cancel.exe
-bin\test\ut_listeners.exe
-bin\test\ut_market_price.exe
-bin\test\ut_order_book.exe
-bin\test\ut_order_book_shared_ptr.exe
-bin\test\ut_stop_orders.exe
+bin\test\liquibook_unit_test.exe
