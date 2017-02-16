@@ -1,3 +1,0 @@
-[submodule "test/unit/assertiv"]
-	path = test/unit/assertiv
-	url = https://github.com/iamtheschmitzer/assertiv.git
