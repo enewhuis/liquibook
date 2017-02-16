@@ -1,3 +1,3 @@
-project : liquibook, liquibook_exe, liquibook_book, liquibook_impl, boost_unit_test_framework, boost_base {
+project : liquibook, liquibook_exe, liquibook_book, liquibook_impl{
   exeout = $(LIQUIBOOK_ROOT)/bin/test
 }
