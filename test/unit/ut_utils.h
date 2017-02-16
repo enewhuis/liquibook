@@ -91,14 +91,6 @@ bool replace_and_verify(OrderBook& order_book,
   return correct;
 }
 
-bool verify_depth(const DepthLevel& level,
-                  const Price& price,
-                  uint32_t count,
-                  const Quantity& qty)
-{
-  return DepthCheck::verify_depth(level, price, count, qty);
-}
-
 template <class OrderPtr>
 class FillCheck {
 public:

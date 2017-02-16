@@ -11,10 +11,10 @@ using namespace liquibook::book;
 
 namespace liquibook {
 
-typedef impl::SimpleOrderBook<5> SimpleOrderBook;
-typedef impl::SimpleOrderBook<5>::DepthTracker SimpleDepth;
-
+template<typename SimpleOrderBook>
 class DepthCheck {
+  typedef typename SimpleOrderBook::DepthTracker SimpleDepth;
+
 public:
   DepthCheck(const SimpleDepth& depth) 
   : depth_(depth)
@@ -40,9 +40,12 @@ public:
       std::cout << "Level: " << level.price() << " Quantity " << level.aggregate_qty() << " expecting " << qty << std::endl;
       matched = false;
     }
+    if (level.is_excess()) {
+      std::cout << "Marked as excess" << std::endl;
+      matched = false;
+    }
     return matched;
   }
-
 
   bool verify_bid(const Price& price, int count, const Quantity& qty)
   {

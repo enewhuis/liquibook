@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(TestRegBidMatchAon)
   BOOST_CHECK_EQUAL(3UL, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 2, qty1 + qty2));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(TestRegBidMatchMulti)
   BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 3, qty7 + qty1 + qty1));
 
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(TestAonBidNoMatch)
   BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(TestAonBidMatchReg)
   BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty4));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(TestAonBidMatchMulti)
   BOOST_CHECK_EQUAL(4, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 2, qty4 + qty4));
   BOOST_CHECK(dc.verify_ask(prc2, 2, qty1 + qty1));
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(TestAonBidNoMatchMulti)
   BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty4));
   BOOST_CHECK(dc.verify_ask(prc2, 2, qty4 + qty1));
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE(TestAonBidMatchAon)
   BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty3));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE(TestRegAskMatchAon)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 2, qty3));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE(TestRegAskMatchMulti)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 2, qty2));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -460,7 +460,7 @@ BOOST_AUTO_TEST_CASE(TestAonAskNoMatch)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 2, qty2));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE(TestAonAskMatchReg)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 1, qty1));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE(TestAonAskMatchMulti)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 3, qty3));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty7));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE(TestOneAonBidOneAonAsk)
     BOOST_CHECK_EQUAL(0u,order_book.asks().size());
 
     // Verify depth
-    DepthCheck dc(order_book.depth());
+    DepthCheck<SimpleOrderBook> dc(order_book.depth());
     BOOST_CHECK(dc.verify_bid(prc1 , 1, qty1));
 
     // Add matching order
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE(TestTwoAonBidOneAonAsk)
     BOOST_CHECK_EQUAL(0u,order_book.asks().size());
 
     // Verify depth
-    DepthCheck dc(order_book.depth());
+    DepthCheck<SimpleOrderBook> dc(order_book.depth());
     BOOST_CHECK(dc.verify_bid(prc1, 2, qty1 + qty2));
 
     // Add matching order
@@ -663,7 +663,7 @@ BOOST_AUTO_TEST_CASE(TestOneAonBidTwoAsk)
     BOOST_CHECK_EQUAL(1u,order_book.asks().size());
 
     // Verify depth
-    DepthCheck dc(order_book.depth());
+    DepthCheck<SimpleOrderBook> dc(order_book.depth());
     BOOST_CHECK(dc.verify_bid(prc1,1,qty3));
     BOOST_CHECK(dc.verify_ask(prc1,1,qty1));
 
@@ -696,7 +696,7 @@ BOOST_AUTO_TEST_CASE(TestOneBidTwoAonAsk)
     BOOST_CHECK_EQUAL(0u,order_book.asks().size());
 
     // Verify depth
-    DepthCheck dc(order_book.depth());
+    DepthCheck<SimpleOrderBook> dc(order_book.depth());
     BOOST_CHECK(dc.verify_bid(prc1,1,qty3));
 
     // Add matching order
@@ -742,7 +742,7 @@ BOOST_AUTO_TEST_CASE(TestTwoAonBidTwoAonAsk)
   BOOST_CHECK_EQUAL(1u,order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1,2,qty1 + qty4));
   BOOST_CHECK(dc.verify_ask(prc1,1,qty3));
 
@@ -782,7 +782,7 @@ BOOST_AUTO_TEST_CASE(TestAonAskNoMatchMulti)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 2, qty1 + qty4));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty4));
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
@@ -832,7 +832,7 @@ BOOST_AUTO_TEST_CASE(TestAonAskMatchAon)
   BOOST_CHECK_EQUAL(1, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_ask(prc2, 1, qty1));
   BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty4));
@@ -875,7 +875,7 @@ BOOST_AUTO_TEST_CASE(TestReplaceAonBidSmallerMatch)
   BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
@@ -921,7 +921,7 @@ BOOST_AUTO_TEST_CASE(TestReplaceAonBidPriceMatch)
   BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 1, qty2));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty1));
@@ -967,7 +967,7 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidLargerMatchAon)
   BOOST_CHECK_EQUAL(3, order_book.asks().size());
 
   // Verify depth
-  DepthCheck dc(order_book.depth());
+  DepthCheck<SimpleOrderBook> dc(order_book.depth());
   BOOST_CHECK(dc.verify_bid(prc1, 1, qty1));
   BOOST_CHECK(dc.verify_bid(prc0, 1, qty1));
   BOOST_CHECK(dc.verify_ask(prc1, 1, qty2));
