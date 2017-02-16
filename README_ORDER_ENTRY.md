@@ -253,7 +253,7 @@ Commands will be read from the script file until:
 
 If the script file was originally opened by a FILE command entered from the console, and the script exits because of-
 a FILE command or end-of-file, then control returs to the console.
-If the script file was opened from the command line (see below), or the QUIT command appears in the script file, then the program exits.
+If the script file was opened from the command line (see the **The Command Line** section), or the QUIT command appears in the script file, then the program exits.
 
 ### HELP or ?
 Display help for requests
