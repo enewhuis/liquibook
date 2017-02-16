@@ -13,7 +13,7 @@ Parameter:
 * script_file_name  
   The name of a script file.
   * The script file contains a series of requests -- one per line.  See below for the syntax of these requests.
-  * If you don't want a script file, but you want to specify a log file, use '-' for the script file name.  The commands will be read from the console.
+  * If you don't want a script file, but you want to specify a log file, use a single hyphen (-) for the script file name.  The commands will be read from the console.
 * log_file_name  
   The name of a file to which output should be written.  
   * Prompts (if any) will still be written to the console.
@@ -51,7 +51,7 @@ in from a script file should be complete and should be terminated with a semicol
 
 Most requests can be spelled out or abbreviated to their first character.  
 Parameters accepted by each request will be explained later in this document.
-Requests are not case sensitive.  Even though they are shown here in all CAPS
+Requests are not case sensitive.  Even though they are shown here in ALL CAPS
 a BUY request may be entered as BUY, buy, b, or even Buy.
 <pre>
 * BUY or B      : Enter a new order to buy a security.
@@ -138,6 +138,8 @@ Because Liquibook uses integers the prices must be expressed in terms of the "at
 if prices are in US Dollars, then the atomic currency unit is often a penny, so fifteen dollars would be expressed to
 Liquibook as 1500.
 
+In most cases where a price is needed, the word MARKET (or the abbreviation MKT) is accepted indicating that no limit price is specified for this order, and a trade can be generated at the price specified for the counter order, or at the current market price for the security if both sides of the trade specify MARKET price.
+
 ## Order Identity
 
 Liquibook uses the memory address of the applications order object as an identifier for the order. [This may be changed in the future because it
@@ -166,7 +168,7 @@ Parameters:
 * *quantity* is number of shares (or other tradable units) to buy.
 * *symbol* is an arbitrary character string.
   * See the **Symbol** section above for information about this string.
-* *price* is the price the trader is willing to pay for each tradable unit of the security.
+* *price* is the highest price the trader is willing to pay for each tradable unit of the security, or MARKET to accept any trade.
   * See the **Price** section above for details about expressing prices.
 * AON  This optional parameter sets the All-Or-None condition for this order.
 * IOC  This optional parameter sets the Immediate-Or-Cancel condition for this order.
@@ -185,7 +187,7 @@ Parameters:
 * *quantity* is number of shares (or other tradable units) to be sold.
 * *symbol* is an arbitrary character string.
   * See the **Symbol** section above for information about this string.
-* *price* is the price the trader is willing to acce[t for each tradable unit of the security.  
+* *price* is the lowest price the trader is willing to accept for each tradable unit of the security, or MARKET to accept any trade.
   * See the **Price** section above for details about expressing prices.
 * AON  This optional parameter sets the All-Or-None condition for this order.
 * IOC  This optional parameter sets the Immediate-Or-Cancel condition for this order.
@@ -220,7 +222,7 @@ Parameters:
   * Prices may be increased or decreased.
   * PRICE is optional.  If it is not specified the existing price will be unchanged.
 * QUANTITY new_initial_quantity
-  * Not this is NOT the new quantity to be open (that's a moving target).  Nor is it a delta to quantity (although that's how Liquibook expresses it internally.)
+  * Note this is NOT the new quantity to be open (that's a moving target).  Nor is it a delta to quantity (although that's how Liquibook expresses it internally.)
   * QUANTITY is optional.  If it is not specified the existing quantity will be unchanged.
 
 The traling semicolon (or the word END) is required for a MODIFY request.
@@ -233,10 +235,11 @@ The request may be rejected if the order has already been filled, or if no chang
 Display information about existing orders
 
 Parameters:
-* * this optional first parameter requests a more verbose display.
+* * this optional first parameter (a single asterisk(*)) requests a more verbose display.
 * order_id or symbol or ALL.
   * One of these must appear.
-  * See the **Order Identity** section above for a description of the ways in which order ID cam be expressed.
+  * See the **Order Identity** section above for a description of the ways in which order ID can be expressed.
+  * A symbol will display all orders related to a specific symbol.
   * The literal word ALL will display information about all known symbols.
 
 ### FILE or F
