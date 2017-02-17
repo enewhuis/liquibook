@@ -26,9 +26,9 @@ represented by those orders at individual price levels.
 
 ## Order properties supported by Liquibook.
 
-The orders managed by Liquibook can include the following properties:
+Liquibook is aware of the following order properties.
 
-* Buy or Sell
+* Side: Buy or Sell
 * Quantity
 * Symbol to represent the asset to be traded
   * Liquibook imposes no restrictions on the symbol.  It is treated as a simple character string.
@@ -39,7 +39,11 @@ The orders managed by Liquibook can include the following properties:
 * All or None flag to specify that the entire order should be filled or no trades should happen.
 * Immediate or Cancel flag to specify that after all trades that can be made against existing orders on the market have been made, the remainder of the order should be canceled.
   * Note combining All or None and Immediate or Cancel produces an order commonly described as Fill or Kill.
-  
+
+The only required propoerties are side, quantity and price.  Default values are available for the other properties.
+
+The application can define addtional properties on the order object as necessary.  These properties will have no impact on the behavior of Liquibook.
+ 
 ## Operations on Orders
 
 In addition to submitting orders, traders may also submit requests to cancel or modify existing orders.  (Modify is also know as cancel/replace)
@@ -148,8 +152,8 @@ Open a shell and type:
 
 <pre>
 $ cd liquibook
-$ . env.sh
-$ mwc.pl -type make liquibook.mwc
+$ . ./env.sh
+$ $MPC_ROOT/mwc.pl -type make liquibook.mwc
 $ make depend
 $ make all
 </pre>
@@ -159,7 +163,7 @@ $ make all
 * The Liquibook example programs will be in $LIQUIBOOK_ROOT/bin
 * The Liquibook test programs will be in $LIQUIBOOK_ROOT/bin/test
 
-## Building Liquibook on with Visual Studio
+## Building Liquibook with Visual Studio
 
 Use the following commands to set up the build environment and create Visual Studio project and solution files.
 Note if you are using MinGW or other linux-on-Windows techniques, follow the Linux instructions; however, OCI does not normally test this.
