@@ -69,8 +69,8 @@ The notifications generated include:
   * Security changed
     * Triggered by any event that effects a security
       * Does not include rejected requests.
-  * Notification of changes in the order book (if enabled)
-    * Order book changed
+  * Notification of changes in the depth book (if enabled)
+    * Depth book changed
     * Best Bid or Best Offer (BBO) changed.
 
 
