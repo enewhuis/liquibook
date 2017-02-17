@@ -97,29 +97,54 @@ The examples are:
   * Displays the notifications received from Liquibook to the console or to a log file.
   * [Detailed instructions are in the README_ORDER_ENTRY.md file.] ( README_ORDER_ENTRY.md)
 
-Build Dependencies
-------------------
+## Dependencies
+Liquibook has no runtime dependencies.  It will run in any environment that can run C++ programs.
 
+To build Liquibook from source you need to create makefiles (for linux, et al.) or Project and Solution files for Windows Visual Studio.
+Liquibook uses MPC to create these platform-dependent files from a common build definition:
 * [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds.
+
+If you wish to build the unit tests for Liquibook (strongly recommend) you will also need the boost test library:
 * [BOOST](http://www.boost.org/) (optional) for unit testing.
+
+One of the example programs (publish and subscribe to market data) uses QuickFAST to encode and decode market data messages.  If you wish to run this example you need QuickFAST:
 * [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example depth feed publisher/subscriber.
 
 ## Submodule Note
 The Assertive test framework was used in previous versions, but it is no longer needed.  
 If you have imported this submodule to support previous versions, you may delete the liquibook/test/unit/assertiv directory.
 
-## Linux Build Notes
+## Getting ready to build
 
-If you want to run the Liquibook unit tests (highly recommended!) you should install and/or build boost test before trying to build Liquibook.  Boost test is used in the multifile-test mode so the boost test library must be available.
+### Boost Test
+If you want to run the Liquibook unit tests (highly recommended!) you should install and/or build boost test before trying to build Liquibook.  Boost test is used in the multifile-test mode rather than simple header-only mode so the compiled boost test library must be available.
 
 Please follow the instructions on the [boost web site](http://www.boost.org/) for building/installing the library in your environment.
-Avoid a common mistake: Be sure you actually install the libraries rather than leaving them in the staging area.
+When you are done you should export the $BOOST_ROOT environment varialble.  
+
+Because of the many boost build options, please check to be sure that the include files and library files are in the expected locations.
+MPC expects to find:
+*  Include files in $BOOST_ROOT/include/boost
+*  Library files in $BOOST_ROOT/lib
+
 
 If you prefer not to install boost you can edit the liquibook.features file to change the appropriate line to say `boost=0`  This will disable building the unit tests.
 
-Make sure the $BOOST_ROOT, $QUICKFAST_ROOT (set to liquibook/noQuickFAST if you don't want to use QuickFAST) and $MPC_ROOT environment variables are set, then open a shell
+### QuickFAST
+The publish and subscribe example program uses QuickFAST.  If you want to run this example program, please see the [QuickFAST web site] (https://github.com/objectcomputing/quickfast" to download and build this library.
 
+Set the environment variable $QUICKFAST_ROOT to point to the location where you installed and build QuickFAST.
+
+Before running MPC you should also edit the file liquibook.features to set the value QuickFAST=1
+
+If you do not plan to run this example program, set the environment variable QUICKFAST_ROOT to liquibook/noQuickFAST.
+
+## Building Liquibook on Linux
+
+The env.sh script uses the readlink program which is present on most Linix/Unix systems. 
 If you don't have readlink, set the $LIQUIBOOK_ROOT environment variable the directory containing liquibook before running env.sh
+
+Open a shell and type:
 
 <pre>
 $ cd liquibook
@@ -129,7 +154,12 @@ $ make depend
 $ make all
 </pre>
 
-## Windows Build Notes
+### Output from build
+* The Liquibook libraries will be in $LIQUIBOOK_ROOT/lib
+* The Liquibook example programs will be in $LIQUIBOOK_ROOT/bin
+* The Liquibook test programs will be in $LIQUIBOOK_ROOT/bin/test
+
+## Building Liquibook on with Visual Studio
 
 Use the following commands to set up the build environment and create Visual Studio project and solution files.
 Note if you are using MinGW or other linux-on-Windows techniques, follow the Linux instructions; however, OCI does not normally test this.
