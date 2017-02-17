@@ -1,3 +1,7 @@
 project (liquibook_unit_test) : liquibook_test, boost_unit_test_framework, boost_base{
    exename = *
+   
+   specific(make) {
+      macros += BOOST_TEST_DYN_LINK
+   }
 }

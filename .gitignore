@@ -17,12 +17,15 @@
 *.lib
 lib/
 
-# Compiled executables (Windows)
+# Compiled executables
 *.exe
+/bin
+/Output
 
 Makefile*
 .depend*
 *.sln
+make
 
 # Artifacts
 *.swp
