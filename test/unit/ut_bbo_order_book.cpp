@@ -8,8 +8,8 @@
 #include "book/depth_constants.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
-#include "impl/simple_order.h"
-#include "impl/simple_order_book.h"
+#include "simple/simple_order.h"
+#include "simple/simple_order_book.h"
 #include "depth_check.h"
 #include "ut_utils.h"
 
@@ -20,7 +20,7 @@ namespace liquibook {
 using book::DepthLevel;
 using book::OrderBook;
 using book::OrderTracker;
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 
 typedef OrderTracker<SimpleOrder*> SimpleTracker;
 typedef test::ChangedChecker<5> ChangedChecker;
@@ -928,7 +928,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelBid)
   BOOST_CHECK(dc.verify_ask(1251, 1, 100));
 
   // Cancel bid
-  BOOST_CHECK(cancel_and_verify(order_book, &bid0, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid0, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -965,7 +965,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelAskAndMatch)
   BOOST_CHECK(dc.verify_ask(1251, 1, 100));
 
   // Cancel bid
-  BOOST_CHECK(cancel_and_verify(order_book, &ask0, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &ask0, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -985,7 +985,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelAskAndMatch)
   BOOST_CHECK(dc.verify_ask(   0, 0,   0));
 
   // Cancel bid
-  BOOST_CHECK(cancel_and_verify(order_book, &bid0, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid0, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1034,7 +1034,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelBidFail)
   BOOST_CHECK(dc.verify_bid(   0, 0,   0));
 
   // Cancel a filled order
-  BOOST_CHECK(cancel_and_verify(order_book, &bid0, impl::os_complete));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid0, simple::os_complete));
 
   // Verify depth
   dc.reset();
@@ -1081,7 +1081,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelAskFail)
   BOOST_CHECK(dc.verify_bid(1250, 1, 100));
 
   // Cancel a filled order
-  BOOST_CHECK(cancel_and_verify(order_book, &ask0, impl::os_complete));
+  BOOST_CHECK(cancel_and_verify(order_book, &ask0, simple::os_complete));
 
   // Verify depth
   dc.reset();
@@ -1154,7 +1154,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelBidRestore)
   BOOST_CHECK(dc.verify_ask(1250, 1,  500));
 
   // Cancel a bid level (erase)
-  BOOST_CHECK(cancel_and_verify(order_book, &bid3, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid3, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1162,8 +1162,8 @@ BOOST_AUTO_TEST_CASE(TestBboCancelBidRestore)
   BOOST_CHECK(dc.verify_ask(1250, 1,  500));
   
   // Cancel common bid levels (not erased)
-  BOOST_CHECK(cancel_and_verify(order_book, &bid7, impl::os_cancelled));
-  BOOST_CHECK(cancel_and_verify(order_book, &bid4, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid7, simple::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid4, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1171,9 +1171,9 @@ BOOST_AUTO_TEST_CASE(TestBboCancelBidRestore)
   BOOST_CHECK(dc.verify_ask(1250, 1,  500));
 
   // Cancel the best bid level (erased)
-  BOOST_CHECK(cancel_and_verify(order_book, &bid1, impl::os_cancelled));
-  BOOST_CHECK(cancel_and_verify(order_book, &bid0, impl::os_cancelled));
-  BOOST_CHECK(cancel_and_verify(order_book, &bid2, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid1, simple::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid0, simple::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &bid2, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1246,7 +1246,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelAskRestore)
   BOOST_CHECK(dc.verify_ask(1250, 1,  500));
 
   // Cancel an ask level (erase)
-  BOOST_CHECK(cancel_and_verify(order_book, &ask1, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &ask1, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1254,8 +1254,8 @@ BOOST_AUTO_TEST_CASE(TestBboCancelAskRestore)
   BOOST_CHECK(dc.verify_ask(1250, 1,  500));
 
   // Cancel common ask levels (not erased)
-  BOOST_CHECK(cancel_and_verify(order_book, &ask2, impl::os_cancelled));
-  BOOST_CHECK(cancel_and_verify(order_book, &ask6, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &ask2, simple::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &ask6, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1263,7 +1263,7 @@ BOOST_AUTO_TEST_CASE(TestBboCancelAskRestore)
   BOOST_CHECK(dc.verify_ask(1250, 1,  500));
 
   // Cancel the best ask level (erased)
-  BOOST_CHECK(cancel_and_verify(order_book, &ask0, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, &ask0, simple::os_cancelled));
 
   // Verify depth
   dc.reset();
@@ -1615,7 +1615,7 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecreaseCancel)
 
   // Replace size - cancel
   BOOST_CHECK(replace_and_verify(
-      order_book, &ask0, -175, PRICE_UNCHANGED, impl::os_cancelled)); 
+      order_book, &ask0, -175, PRICE_UNCHANGED, simple::os_cancelled)); 
 
   // Verify orders
   BOOST_CHECK_EQUAL(125, ask0.order_qty());
@@ -1628,7 +1628,7 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecreaseCancel)
 
   // Replace size - reduce level
   BOOST_CHECK(replace_and_verify(
-      order_book, &bid1, -100, PRICE_UNCHANGED, impl::os_accepted)); 
+      order_book, &bid1, -100, PRICE_UNCHANGED, simple::os_accepted)); 
 
   // Verify orders
   BOOST_CHECK_EQUAL(300, bid1.order_qty());
@@ -1641,7 +1641,7 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecreaseCancel)
 
   // Replace size - cancel and erase level
   BOOST_CHECK(replace_and_verify(
-      order_book, &bid1, -200, PRICE_UNCHANGED, impl::os_cancelled)); 
+      order_book, &bid1, -200, PRICE_UNCHANGED, simple::os_cancelled)); 
 
   // Verify orders
   BOOST_CHECK_EQUAL(100, bid1.order_qty());
@@ -1695,7 +1695,7 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecreaseTooMuch)
   // Verify ask0 state
   BOOST_CHECK_EQUAL(0, ask0.open_qty());
   BOOST_CHECK_EQUAL(200, ask0.order_qty());
-  BOOST_CHECK_EQUAL(impl::os_cancelled, ask0.state());
+  BOOST_CHECK_EQUAL(simple::os_cancelled, ask0.state());
 
   // Verify depth unchanged
   dc.reset();

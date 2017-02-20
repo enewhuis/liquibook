@@ -8,12 +8,12 @@
 #include "ut_utils.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
-#include "impl/simple_order.h"
+#include "simple/simple_order.h"
 
 namespace liquibook {
 
 using book::OrderBook;
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 
 typedef SimpleOrder* OrderPtr;
 typedef OrderBook<OrderPtr> TypedOrderBook;

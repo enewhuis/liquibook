@@ -1,7 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "impl/simple_order_book.h"
+#include "simple/simple_order_book.h"
 #include "book/types.h"
 #include <book/clock_gettime.h>
 
@@ -12,9 +12,9 @@
 using namespace liquibook;
 using namespace liquibook::book;
 
-typedef impl::SimpleOrderBook<5> FullDepthOrderBook;
-typedef impl::SimpleOrderBook<1> BboOrderBook;
-typedef book::OrderBook<impl::SimpleOrder*> NoDepthOrderBook;
+typedef simple::SimpleOrderBook<5> FullDepthOrderBook;
+typedef simple::SimpleOrderBook<1> BboOrderBook;
+typedef book::OrderBook<simple::SimpleOrder*> NoDepthOrderBook;
 
 void build_histogram(timespec* timestamps, int count) {
   timespec* prev = nullptr;
@@ -82,7 +82,7 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders,
 template <class TypedOrderBook>
 bool build_and_run_test(uint32_t num_to_try, bool dry_run = false) {
   TypedOrderBook order_book;
-  impl::SimpleOrder** orders = new impl::SimpleOrder*[num_to_try + 1];
+  simple::SimpleOrder** orders = new simple::SimpleOrder*[num_to_try + 1];
   timespec* timestamps = new timespec[num_to_try + 1];
   
   for (uint32_t i = 0; i < num_to_try; ++i) {
@@ -113,7 +113,7 @@ bool build_and_run_test(uint32_t num_to_try, bool dry_run = false) {
     Price price = (rand() % 10) + delta;
     
     Quantity qty = ((rand() % 10) + 1) * 100;
-    orders[i] = new impl::SimpleOrder(is_buy, price, qty);
+    orders[i] = new simple::SimpleOrder(is_buy, price, qty);
   }
   orders[num_to_try] = nullptr; // Final null
   

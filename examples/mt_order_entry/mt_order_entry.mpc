@@ -1,7 +1,7 @@
 // Copyright (c) 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-project(*) : liquibook_book, liquibook_impl, liquibook_exe {
+project(*) : liquibook_book, liquibook_simple, liquibook_exe {
   requires += example_manual
   exename = *
 }

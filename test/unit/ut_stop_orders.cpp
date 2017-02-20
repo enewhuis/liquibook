@@ -8,14 +8,14 @@
 #include "ut_utils.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
-#include "impl/simple_order.h"
+#include "simple/simple_order.h"
 
 namespace liquibook {
 
 using book::DepthLevel;
 using book::OrderBook;
 using book::OrderTracker;
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 
 namespace
 {
@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE(TestStopOrdersOffMarketNoTrade)
   BOOST_CHECK(add_and_verify(book, &order3, expectNoMatch));
   
   // Orders were accepted, but not traded
-  BOOST_CHECK_EQUAL(impl::os_accepted, order2.state());
-  BOOST_CHECK_EQUAL(impl::os_accepted, order3.state());
+  BOOST_CHECK_EQUAL(simple::os_accepted, order2.state());
+  BOOST_CHECK_EQUAL(simple::os_accepted, order3.state());
 }
 
 BOOST_AUTO_TEST_CASE(TestStopMarketOrdersOnMarketTradeImmediately)

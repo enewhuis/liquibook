@@ -7,7 +7,7 @@
 #include "book/order.h"
 #include "book/types.h"
 
-namespace liquibook { namespace impl {
+namespace liquibook { namespace simple {
 
 enum OrderState {
   os_new,

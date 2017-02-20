@@ -8,8 +8,8 @@
 #include "ut_utils.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
-#include "impl/simple_order.h"
-#include "impl/simple_order_book.h"
+#include "simple/simple_order.h"
+#include "simple/simple_order_book.h"
 #include <memory>
 
 namespace liquibook {
@@ -17,7 +17,7 @@ namespace liquibook {
 using book::DepthLevel;
 using book::OrderBook;
 using book::OrderTracker;
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 
 
 typedef std::shared_ptr<SimpleOrder> SimpleOrderPtr;
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(TestSharedCancelBid)
   BOOST_CHECK_EQUAL(2, order_book.asks().size());
 
   // Cancel bid
-  BOOST_CHECK(cancel_and_verify(order_book, bid0, impl::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(order_book, bid0, simple::os_cancelled));
 
   // Verify sizes
   BOOST_CHECK_EQUAL(0, order_book.bids().size());

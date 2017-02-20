@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-namespace liquibook { namespace impl {
+namespace liquibook { namespace simple {
 
 uint32_t SimpleOrder::last_order_id_(0);
 

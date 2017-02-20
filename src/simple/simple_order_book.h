@@ -7,7 +7,7 @@
 #include "book/depth_order_book.h"
 #include <iostream>
 
-namespace liquibook { namespace impl {
+namespace liquibook { namespace simple {
 
 // @brief binding of DepthOrderBook template with SimpleOrder* order pointer.
 template <int SIZE = 5>

@@ -9,7 +9,7 @@
 
 namespace liquibook {
 
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 typedef FillCheck<SimpleOrder*> SimpleFillCheck;
 
 namespace {
@@ -886,7 +886,7 @@ BOOST_AUTO_TEST_CASE(TestReplaceAonBidSmallerMatch)
   {
     SimpleFillCheck fc2(&ask0, qty1, prc1 * qty1);
     BOOST_CHECK(replace_and_verify(
-        order_book, &bid1, -(int32_t)qty1, PRICE_UNCHANGED, impl::os_complete, qty1));
+        order_book, &bid1, -(int32_t)qty1, PRICE_UNCHANGED, simple::os_complete, qty1));
   }
 
   // Verify depth
@@ -933,7 +933,7 @@ BOOST_AUTO_TEST_CASE(TestReplaceAonBidPriceMatch)
     SimpleFillCheck fc1(&ask0, qty1, prc1 * qty1);
     SimpleFillCheck fc2(&ask1, qty1, prc2 * qty1);
     BOOST_CHECK(replace_and_verify(
-        order_book, &bid1, qtyNone, prc2, impl::os_complete, qty2));
+        order_book, &bid1, qtyNone, prc2, simple::os_complete, qty2));
   }
 
   // Verify depth
@@ -978,7 +978,7 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidLargerMatchAon)
   {
     SimpleFillCheck fc2(&ask0, qty2, qty2 * prc1);
     BOOST_CHECK(replace_and_verify(
-        order_book, &bid1, qty1, PRICE_UNCHANGED, impl::os_complete, qty2));
+        order_book, &bid1, qty1, PRICE_UNCHANGED, simple::os_complete, qty2));
   }
 
   // Verify depth

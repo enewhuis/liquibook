@@ -8,14 +8,14 @@
 #include "ut_utils.h"
 #include "changed_checker.h"
 #include "book/order_book.h"
-#include "impl/simple_order.h"
+#include "simple/simple_order.h"
 
 namespace liquibook {
 
 using book::DepthLevel;
 using book::OrderBook;
 using book::OrderTracker;
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 
 namespace
 {

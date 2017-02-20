@@ -1,5 +1,5 @@
 
-project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_impl, liquibook_exe {
+project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_simple, liquibook_exe {
   requires += example_pubsub
   Source_Files {
     publisher_main.cpp
@@ -13,7 +13,7 @@ project(depth_feed_publisher) : QuickFASTApplication, liquibook_book, liquibook_
   exename = *
 }
 
-project(depth_feed_subscriber) : QuickFASTApplication, liquibook_book, liquibook_impl, liquibook_exe {
+project(depth_feed_subscriber) : QuickFASTApplication, liquibook_book, liquibook_simple, liquibook_exe {
   requires += example_pubsub
   Source_Files {
     subscriber_main.cpp
