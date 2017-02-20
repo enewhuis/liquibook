@@ -4,8 +4,8 @@
 #pragma once
 
 #define LIQUIBOOK_ORDER_KNOWS_CONDITIONS
-#include "book/order.h"
-#include "book/types.h"
+#include <book/order.h>
+#include <book/types.h>
 
 namespace liquibook { namespace simple {
 

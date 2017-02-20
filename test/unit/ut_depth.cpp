@@ -5,7 +5,7 @@
 #define BOOST_TEST_NO_MAIN LiquibookTest
 #include <boost/test/unit_test.hpp>
 
-#include "book/depth.h"
+#include <book/depth.h>
 #include "changed_checker.h"
 #include <iostream>
 

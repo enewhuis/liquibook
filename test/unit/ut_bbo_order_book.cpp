@@ -5,11 +5,11 @@
 #define BOOST_TEST_NO_MAIN LiquibookTest
 #include <boost/test/unit_test.hpp>
 
-#include "book/depth_constants.h"
+#include <book/depth_constants.h>
+#include <book/order_book.h>
+#include <simple/simple_order.h>
+#include <simple/simple_order_book.h>
 #include "changed_checker.h"
-#include "book/order_book.h"
-#include "simple/simple_order.h"
-#include "simple/simple_order_book.h"
 #include "depth_check.h"
 #include "ut_utils.h"
 

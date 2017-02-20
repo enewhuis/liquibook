@@ -7,8 +7,8 @@
 
 #include "ut_utils.h"
 #include "changed_checker.h"
-#include "book/order_book.h"
-#include "simple/simple_order.h"
+#include <book/order_book.h>
+#include <simple/simple_order.h>
 
 namespace liquibook {
 
