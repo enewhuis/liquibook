@@ -146,7 +146,7 @@ MPC expects to find:
 If you prefer not to install boost you can edit the liquibook.features file to change the appropriate line to say `boost=0`  This will disable building the unit tests.
 
 ### QuickFAST
-The publish and subscribe example program uses QuickFAST.  If you want to run this example program, please see the [QuickFAST web site] (https://github.com/objectcomputing/quickfast" to download and build this library.
+The publish and subscribe example program uses QuickFAST.  If you want to run this example program, please see the [QuickFAST web site] (https://github.com/objectcomputing/quickfast) to download and build this library.
 
 Set the environment variable $QUICKFAST_ROOT to point to the location where you installed and build QuickFAST.
 
