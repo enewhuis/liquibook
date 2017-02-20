@@ -3,7 +3,7 @@
 // See the file license.txt for licensing information.
 #include <simple/simple_order_book.h>
 #include <book/types.h>
-#include <book/clock_gettime.h>
+#include "clock_gettime.h"
 
 #include <iostream>
 #include <stdexcept>

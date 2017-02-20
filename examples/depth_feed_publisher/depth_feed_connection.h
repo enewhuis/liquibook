@@ -1,8 +1,8 @@
 #ifndef example_depth_feed_connection_h
 #define example_depth_feed_connection_h
 
-#include "book\asio_safe_include.h"
-#include "book\sleep.h"
+#include "asio_safe_include.h"
+#include "sleep.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
