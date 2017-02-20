@@ -11,10 +11,10 @@ An order matching engine is the heart of every financial exchange,
 and may be used in many other circumstances including trading non-financial assets, serving as a test-bed for trading algorithms, etc.
 
 In addition to the order matching process itself, Liquibook can be configured
-to maintain an "order book" that records the number of open orders and total quantity
+to maintain an "depth book" that records the number of open orders and total quantity
 represented by those orders at individual price levels.  
 
-#### Example of an order book
+#### Example of an depth book
 * Symbol XYZ: 
   * Buy Side: 
     * $53.20 per share: 1203 orders; 150,398 shares.
@@ -69,8 +69,8 @@ The notifications generated include:
   * Security changed
     * Triggered by any event that effects a security
       * Does not include rejected requests.
-  * Notification of changes in the order book (if enabled)
-    * Order book changed
+  * Notification of changes in the depth book (if enabled)
+    * Depth book changed
     * Best Bid or Best Offer (BBO) changed.
 
 
