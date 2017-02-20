@@ -38,4 +38,35 @@ public:
   virtual bool immediate_or_cancel() const;
 };
 
+inline
+bool
+Order::is_limit() const 
+{
+  return (price() > 0);
+}
+
+inline
+Price
+Order::stop_price() const
+{
+  // default to not a stop order
+  return 0;
+}
+
+inline
+bool
+Order::all_or_none() const
+{
+  // default to normal
+  return false;
+}
+
+inline
+bool
+Order::immediate_or_cancel() const
+{
+  // default to normal
+  return false;
+}
+
 } }

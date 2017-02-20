@@ -11,6 +11,5 @@ project {
     Debug::runtime_library = MultiThreadedDebugDLL
     Release::runtime_library = MultiThreadedDLL
   }
-
 }
 
