@@ -75,9 +75,12 @@ The notifications generated include:
 
 
 ## Performance
-* Liquibook is written in C++ using modern, high-performance techniques.
-  * Benchmark testing (with source included in this repository) show sustained rates of  
+* Liquibook is written in C++ using modern, high-performance techniques. This repository includes
+the source of a test program that can be used to measure Liquibook performance.
+  * Benchmark testing with this program shows sustained rates of  
 __2.0 million__ to __2.5 million__ inserts per second. 
+
+As always, the results of this type of performance test can vary depending on the hardware and operating system on which you run the test, so use these numbers as a rough order-of-magnitude estimate of the type of performance your application can expect from Liquibook. 
 
 ## Works with Your Design
 * Allows an application to use smart or regular pointers to orders.
@@ -86,9 +89,7 @@ __2.0 million__ to __2.5 million__ inserts per second.
 * Compatible with existing identifiers for securities, accounts, exchanges, orders, fills
 
 ##Example
-This repository contains two complete example programs.  These programs can be used to evaluate Liquibook to see if it meets your needs.  
-They can also be used as models for your application or even incorporated directly into your application thanks to the
-liberal license under which Liquibook is distributed.
+This repository contains two complete example programs.  These programs can be used to evaluate Liquibook to see if it meets your needs. They can also be used as models for your application or even incorporated directly into your application thanks to the liberal license under which Liquibook is distributed.
 
 The examples are:
 * Depth feed publisher and subscriber
@@ -101,24 +102,34 @@ The examples are:
   * Displays the notifications received from Liquibook to the console or to a log file.
   * [Detailed instructions are in the README_ORDER_ENTRY.md file.] ( README_ORDER_ENTRY.md)
 
+# Building Liquibook
+The good news is you don't need to build Liquibook.  The core of Liquibook is a header-only library, so you can simply
+add Liquibook/src to your include path then `#include <book/order_book.h>` to your source, and Liquibook will be available
+to be used in your application.
+
+However, this repository includes tests and example programs for Liquibook.  These programs need to be compiled and built in order to run them.  The remainder of this section describes how to do this.
+
 ## Dependencies
 Liquibook has no runtime dependencies.  It will run in any environment that can run C++ programs.
 
-To build Liquibook from source you need to create makefiles (for linux, et al.) or Project and Solution files for Windows Visual Studio.
+To build the Liquibook test and example programs from source you need to create makefiles (for linux, et al.) or Project and Solution files for Windows Visual Studio.
+
 Liquibook uses MPC to create these platform-dependent files from a common build definition:
 * [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds.
 
-If you wish to build the unit tests for Liquibook (strongly recommend) you will also need the boost test library:
+If you wish to build the unit tests for Liquibook (strongly recommended), you will also need the boost test library:
 * [BOOST](http://www.boost.org/) (optional) for unit testing.
 
 One of the example programs (publish and subscribe to market data) uses QuickFAST to encode and decode market data messages.  If you wish to run this example you need QuickFAST:
 * [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example depth feed publisher/subscriber.
 
+QuickFAST his its own dependencies which are described on its web page.
+
 ## Submodule Note
 The Assertive test framework was used in previous versions, but it is no longer needed.  
 If you have imported this submodule to support previous versions, you may delete the liquibook/test/unit/assertiv directory.
 
-## Getting ready to build
+## Getting ready to build the tests and example programs.
 
 ### Boost Test
 If you want to run the Liquibook unit tests (highly recommended!) you should install and/or build boost test before trying to build Liquibook.  Boost test is used in the multifile-test mode rather than simple header-only mode so the compiled boost test library must be available.
@@ -159,11 +170,11 @@ $ make all
 </pre>
 
 ### Output from build
-* The Liquibook libraries will be in $LIQUIBOOK_ROOT/lib
+* The Liquibook test and example libraries will be in $LIQUIBOOK_ROOT/lib
 * The Liquibook example programs will be in $LIQUIBOOK_ROOT/bin
 * The Liquibook test programs will be in $LIQUIBOOK_ROOT/bin/test
 
-## Building Liquibook with Visual Studio
+## Building Liquibook examples and test programs with Visual Studio
 
 Use the following commands to set up the build environment and create Visual Studio project and solution files.
 Note if you are using MinGW or other linux-on-Windows techniques, follow the Linux instructions; however, OCI does not normally test this.
@@ -171,7 +182,8 @@ Note if you are using MinGW or other linux-on-Windows techniques, follow the Lin
 <pre>
 > cd liquibook
 > copy winenv.bat w.bat #optional if you want to keep the original
-                        # note that single character batch file names are ignored in .getignore so the customized
+                        # note that single character batch file names are ignored in 
+                        # .getignore so the customized
                         # file will not be checked into the git repository (a good thing.)
 > edit w.bat            # edit is your choice of text editor
                         # follow the instructions in the file itself.
@@ -185,4 +197,13 @@ Then:
 
 ## For any platform
 
-See other [build notes](BUILD_NOTES.md).
+Liquibook should work on any platform with a modern C++ compiler (supporting at least C++11.)  
+
+The MPC program used to create the build files and the Boost library used in the tests and some of the examples support a wide variety of platforms.  
+
+See the [MPC documentation](https://www.ociweb.com/products/mpc) for details about using MPC in your enviornment.
+
+See the [Boost website](http://www.boost.org/) for details about using Boost in your environment.
+
+# For More Help
+If you need more help getting your Liquibook-based application up and running quickly, feel free to contact [Object Computing, Inc.](mailto::sales@ociweb.com) to learn how we can help.
