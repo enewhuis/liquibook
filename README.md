@@ -117,13 +117,15 @@ To build the Liquibook test and example programs from source you need to create 
 Liquibook uses MPC to create these platform-dependent files from a common build definition:
 * [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds.
 
-If you wish to build the unit tests for Liquibook (strongly recommended), you will also need the boost test library:
+  MPC itself is written in perl, so your environment needs a working Perl compiler.  Most linux systems already have this. If you need a Perl compiler on Windows, OCI recommends [Active State Perl V5.x or later](http://www.activestate.com/)
+
+If you wish to build the unit tests for Liquibook, you will also need the boost test library:
 * [BOOST](http://www.boost.org/) (optional) for unit testing.
 
 One of the example programs (publish and subscribe to market data) uses QuickFAST to encode and decode market data messages.  If you wish to run this example you need QuickFAST:
 * [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example depth feed publisher/subscriber.
 
-QuickFAST his its own dependencies which are described on its web page.
+  QuickFAST his its own dependencies which are described on its web page.
 
 ## Submodule Note
 The Assertive test framework was used in previous versions, but it is no longer needed.  
