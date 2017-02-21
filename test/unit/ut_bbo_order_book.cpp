@@ -1547,7 +1547,7 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecrease)
   BOOST_CHECK(dc.verify_ask(1252, 2, 500));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bbo_changed(1, 1));
+  BOOST_CHECK(cc.verify_bbo_changed(true, true));
   cc.reset();
 
   // Replace size
@@ -1564,7 +1564,7 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecrease)
   BOOST_CHECK(dc.verify_ask(1252, 2, 350));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bbo_changed(0, 1));
+  BOOST_CHECK(cc.verify_bbo_changed(false, true));
 }
 
 BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecreaseCancel)

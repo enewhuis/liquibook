@@ -1756,8 +1756,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeIncrease)
   BOOST_CHECK(dc.verify_ask(1252, 1, 300));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, false, false, false));
   cc.reset();
 
   // Replace size
@@ -1765,8 +1765,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeIncrease)
   BOOST_CHECK(replace_and_verify(order_book, &ask0, 50));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 0, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(0, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, false, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(false, true, false, false, false));
   cc.reset();
 
   // Verify orders
@@ -1803,8 +1803,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecrease)
   BOOST_CHECK(dc.verify_ask(1252, 2, 500));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true,false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, false, false, false, false));
   cc.reset();
 
   // Replace size
@@ -1822,8 +1822,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecrease)
   BOOST_CHECK(dc.verify_ask(1252, 2, 350));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(0, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(false, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true,false, false, false, false));
   cc.reset();
 }
 
@@ -1852,8 +1852,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecreaseCancel)
   BOOST_CHECK(dc.verify_bid(1249, 1, 700));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 1, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, true, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, false, false, false, false));
   cc.reset();
 
   // Partial Fill existing book
@@ -1868,8 +1868,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecreaseCancel)
   }
 
   // TODO: don't insert when when inbound will be filled
-  BOOST_CHECK(cc.verify_bid_changed(0, 0, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(false, false, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, false, false, false, false));
   cc.reset();
 
   // Ask matching best bid
@@ -1879,8 +1879,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecreaseCancel)
     BOOST_CHECK(add_and_verify(order_book, &cross_ask, true, true));
   }
 
-  BOOST_CHECK(cc.verify_bid_changed(1, 0, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(0, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, false, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(false, false, false, false, false));
 
   // Verify quantity
   BOOST_CHECK_EQUAL(175, ask0.open_qty());
@@ -2050,8 +2050,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidPriceChange)
   BOOST_CHECK(dc.verify_ask(1253, 1, 300));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, false, false, false));
   cc.reset();
 
   // Replace price increase 1250 -> 1251
@@ -2076,8 +2076,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidPriceChange)
   BOOST_CHECK(dc.verify_ask(1253, 1, 300));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(0, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(false, false, false, false, false));
   cc.reset();
 
   // Replace price decrease 1251 -> 1250
@@ -2104,8 +2104,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidPriceChange)
   BOOST_CHECK(dc.verify_ask(1253, 1, 300));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(0, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(false, false, false, false, false));
 }
 
 BOOST_AUTO_TEST_CASE(TestReplaceAskPriceChange)
@@ -2125,8 +2125,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceAskPriceChange)
   BOOST_CHECK(add_and_verify(order_book, &ask1, false));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, false, false, false));
   cc.reset();
 
   // Verify depth
@@ -2140,8 +2140,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceAskPriceChange)
   BOOST_CHECK(replace_and_verify(order_book, &ask1, SIZE_UNCHANGED, 1253));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(0, 0, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(false, false, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, false, false, false));
   cc.reset();
 
   // Verify price change in book
@@ -2501,8 +2501,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidMatch)
   BOOST_CHECK(dc.verify_ask(1254, 1, 200));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, false, false, false));
   cc.reset();
 
   // Replace price increase new best 1250 -> 1252
@@ -2528,8 +2528,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidMatch)
   BOOST_CHECK(dc.verify_ask(1254, 1, 200));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 1, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(0, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, true, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(false, false, false, false, false));
   cc.reset();
 
   // Match - complete
@@ -2560,8 +2560,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceBidMatch)
   BOOST_CHECK(dc.verify_ask(1254, 1, 200));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 1, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 0, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, true, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, false, false, false, false));
 }
 
 BOOST_AUTO_TEST_CASE(TestReplaceAskMatch)
@@ -2587,8 +2587,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceAskMatch)
   BOOST_CHECK(dc.verify_ask(1254, 1, 200));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 0, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, false, false, false));
   cc.reset();
 
   // Replace price decrease new best 1254 -> 1252
@@ -2614,8 +2614,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceAskMatch)
   BOOST_CHECK(dc.verify_ask(1253, 1, 300));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(0, 0, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 1, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(false, false, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, true, false, false));
   cc.reset();
 
   // Match - complete
@@ -2648,8 +2648,8 @@ BOOST_AUTO_TEST_CASE(TestReplaceAskMatch)
   BOOST_CHECK(dc.verify_ask(1252, 1, 200));
 
   // Verify changed stamps
-  BOOST_CHECK(cc.verify_bid_changed(1, 1, 0, 0, 0));
-  BOOST_CHECK(cc.verify_ask_changed(1, 1, 1, 0, 0));
+  BOOST_CHECK(cc.verify_bid_changed(true, true, false, false, false));
+  BOOST_CHECK(cc.verify_ask_changed(true, true, true, false, false));
 }
 
 } // namespace
