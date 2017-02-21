@@ -1867,7 +1867,6 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecreaseCancel)
     BOOST_CHECK(add_and_verify(order_book, &cross_bid, true, true));
   }
 
-  // TODO: don't insert when when inbound will be filled
   BOOST_CHECK(cc.verify_bid_changed(false, false, false, false, false));
   BOOST_CHECK(cc.verify_ask_changed(true, false, false, false, false));
   cc.reset();

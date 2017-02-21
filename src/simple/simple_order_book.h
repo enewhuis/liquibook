@@ -43,9 +43,9 @@ SimpleOrderBook<SIZE>::perform_callback(SimpleCallback& cb)
       // Increment fill ID once
       ++fill_id_;
       // Update the orders
-      book::Cost fill_cost = cb.fill_qty * cb.fill_price;
-      cb.matched_order->fill(cb.fill_qty, fill_cost, fill_id_);
-      cb.order->fill(cb.fill_qty, fill_cost, fill_id_);
+      book::Cost fill_cost = cb.quantity * cb.price;
+      cb.matched_order->fill(cb.quantity, fill_cost, fill_id_);
+      cb.order->fill(cb.quantity, fill_cost, fill_id_);
       break;
     }
     case SimpleCallback::cb_order_cancel:
@@ -53,7 +53,7 @@ SimpleOrderBook<SIZE>::perform_callback(SimpleCallback& cb)
       break;
     case SimpleCallback::cb_order_replace:
       // Modify the order itself
-      cb.order->replace(cb.repl_size_delta, cb.repl_new_price);
+      cb.order->replace(cb.delta, cb.price);
       break;
     default:
       // Nothing

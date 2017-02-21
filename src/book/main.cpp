@@ -19,7 +19,7 @@ int main(int, const char**)
       << " (" << Version::RELEASE_DATE << ")\n";
     std::cout << "Liquibook is a header-only library.\n\n";
     std::cout << "This executable is a placeholder to make the book header files visible in\n";
-    std::cout << "Visual Studio.  It also forces the compiler to do syntax checking of the header\n";
+    std::cout << "Visual Studio.  It also lets the compiler to do syntax checking of the header\n";
     std::cout << "files at build time." << std::endl;
     return 0;
 }

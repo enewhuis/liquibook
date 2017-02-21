@@ -78,10 +78,10 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
       if (cb.order->is_limit()) {
         // If the order is completely filled on acceptance, do not modify 
         // depth unnecessarily
-        if (cb.accept_match_qty == cb.order->order_qty()) {
+        if (cb.quantity == cb.order->order_qty()) {
           // Don't tell depth about this order - it's going away immediately.
           // Instead tell Depth about future fills to ignore
-          depth_.ignore_fill_qty(cb.accept_match_qty, cb.order->is_buy());
+          depth_.ignore_fill_qty(cb.quantity, cb.order->is_buy());
         } else {
           // Add to bid or ask depth
           depth_.add_order(cb.order->price(), 
@@ -95,20 +95,20 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
       // If the matched order is a limit order
       if (cb.matched_order->is_limit()) {
         bool matched_order_filled = 
-                 (cb.fill_flags & DobCallback::ff_matched_filled) != 0;
+                 (cb.flags & DobCallback::ff_matched_filled) != 0;
         // Inform the depth
         depth_.fill_order(cb.matched_order->price(), 
-                          cb.fill_qty,
+                          cb.quantity,
                           matched_order_filled,
                           cb.matched_order->is_buy());
       }
       // If the inbound order is a limit order
       if (cb.order->is_limit()) {
         bool inbound_order_filled = 
-                 cb.fill_flags & DobCallback::ff_inbound_filled;
+                 cb.flags & DobCallback::ff_inbound_filled;
         // Inform the depth
         depth_.fill_order(cb.order->price(), 
-                          cb.fill_qty,
+                          cb.quantity,
                           inbound_order_filled,
                           cb.order->is_buy());
       }
@@ -119,7 +119,7 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
       if (cb.order->is_limit()) {
         // If the close erases a level
         depth_.close_order(cb.order->price(), 
-                           cb.cxl_open_qty, 
+                           cb.quantity, 
                            cb.order->is_buy());
       }
       break;
@@ -127,11 +127,11 @@ DepthOrderBook<OrderPtr, SIZE>::perform_callback(DobCallback& cb)
     case DobCallback::cb_order_replace:
     {
       // Remember current values
-      Quantity current_qty = cb.repl_curr_open_qty;
-      Quantity new_qty = current_qty + cb.repl_size_delta;
+      Quantity current_qty = cb.quantity;
+      Quantity new_qty = current_qty + cb.delta;
 
       // Notify the depth
-      depth_.replace_order(cb.order->price(), cb.repl_new_price, 
+      depth_.replace_order(cb.order->price(), cb.price, 
                            current_qty, new_qty, cb.order->is_buy());
       break;
     }

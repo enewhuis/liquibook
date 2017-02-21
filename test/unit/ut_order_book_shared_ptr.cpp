@@ -30,16 +30,16 @@ class SharedPtrOrderBook : public OrderBook<SimpleOrderPtr>
         cb.order->accept();
         break;
       case TypedCallback::cb_order_fill: {
-        Cost fill_cost = cb.fill_price * cb.fill_qty;
-        cb.order->fill(cb.fill_qty, fill_cost, 0);
-        cb.matched_order->fill(cb.fill_qty, fill_cost, 0);
+        Cost fill_cost = cb.price * cb.quantity;
+        cb.order->fill(cb.quantity, fill_cost, 0);
+        cb.matched_order->fill(cb.quantity, fill_cost, 0);
         break;
       }
       case TypedCallback::cb_order_cancel:
         cb.order->cancel();
         break;
       case TypedCallback::cb_order_replace:
-        cb.order->replace(cb.repl_size_delta, cb.repl_new_price);
+        cb.order->replace(cb.delta, cb.price);
         break;
       default:
         // Nothing
