@@ -25,7 +25,6 @@ bool add_and_verify(OrderBook& order_book,
 {
   const bool matched = order_book.add(order, conditions);
   if (matched == match_expected) {
-    order_book.perform_callbacks();
     if (complete_expected) {
       // State should be complete
       return simple::os_complete == order->state();
@@ -48,7 +47,6 @@ bool cancel_and_verify(OrderBook& order_book,
                        simple::OrderState expected_state)
 {
   order_book.cancel(order);
-  order_book.perform_callbacks();
   return expected_state == order->state();
 }
 
@@ -68,7 +66,6 @@ bool replace_and_verify(OrderBook& order_book,
 
   // Perform
   order_book.replace(order, size_change, new_price);
-  order_book.perform_callbacks();
 
   // Verify
   bool correct = true;

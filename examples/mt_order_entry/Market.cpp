@@ -315,7 +315,6 @@ Market::doAdd(const  std::string & side, const std::vector<std::string> & tokens
 
     orders_[orderId] = order;
     book->add(order, conditions);
-    book->perform_callbacks();
     return true;
 }
 
@@ -332,7 +331,6 @@ Market::doCancel(const std::vector<std::string> & tokens, size_t position)
     }
     out() << "Requesting Cancel: " << *order << std::endl;
     book->cancel(order);
-    book->perform_callbacks();
     return true;
 }
 
@@ -440,7 +438,6 @@ Market::doModify(const std::vector<std::string> & tokens, size_t position)
         out() << " PRICE " << price;
     }
     out() << std::endl;
-    book->perform_callbacks();
     return true;
 }
 

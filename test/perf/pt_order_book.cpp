@@ -22,7 +22,6 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders, clock_t end) {
   TypedOrder** pp_order = orders;
   do {
     order_book.add(*pp_order);
-    order_book.perform_callbacks();
     ++pp_order;
     if (*pp_order == nullptr) {
       return -1;

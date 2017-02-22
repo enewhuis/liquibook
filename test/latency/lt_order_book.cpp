@@ -63,7 +63,6 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders,
       throw std::runtime_error("clock_gettime() failed");
     }
     order_book.add(*pp_order);
-    order_book.perform_callbacks();
     ++pp_order;
     ++timestamp;
     if (*pp_order == nullptr) {

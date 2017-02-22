@@ -1690,7 +1690,6 @@ BOOST_AUTO_TEST_CASE(TestBboReplaceSizeDecreaseTooMuch)
 
   // Replace size - not enough left
   order_book.replace(&ask0, -150, PRICE_UNCHANGED);
-  order_book.perform_callbacks();
 
   // Verify ask0 state
   BOOST_CHECK_EQUAL(0, ask0.open_qty());

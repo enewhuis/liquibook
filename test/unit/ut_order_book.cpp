@@ -1976,7 +1976,6 @@ BOOST_AUTO_TEST_CASE(TestReplaceSizeDecreaseTooMuch)
 
   // Replace size - not enough left
   BOOST_CHECK( ! order_book.replace(&ask0, -150, PRICE_UNCHANGED));
-  order_book.perform_callbacks();
 
   // Verify change
   BOOST_CHECK_EQUAL(simple::os_cancelled, ask0.state());
