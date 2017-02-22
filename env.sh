@@ -31,6 +31,10 @@ if [ -z "$LIQUIBOOK_ROOT" ]; then
   export LIQUIBOOK_ROOT=`$READLINK -f $SOURCE_DIR`
     fi
 fi
+if [ -z "$QUICKFAST_ROOT" ]; then
+  export QUICKFAST_ROOT=`pwd`/noQuickFAST
+  echo QuickFAST support disabled
+fi
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIQUIBOOK_ROOT/lib
 # CIAO is not used, set so MPC does not give warning
 export CIAO_ROOT=/dev/null
