@@ -14,7 +14,6 @@ namespace liquibook { namespace book {
   typedef uint32_t Cost;
   typedef uint32_t FillId;
   typedef uint32_t ChangeId;
-  typedef uint32_t TransId;
   typedef uint32_t OrderConditions;
 
   enum OrderCondition {
