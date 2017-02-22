@@ -12,7 +12,7 @@ namespace liquibook { namespace book {
 
 /// @brief Implementation of order book child class, that incorporates
 ///        aggregate depth tracking.  
-template <class OrderPtr = Order*, int SIZE = 5>
+template <typename OrderPtr, int SIZE = 5>
 class DepthOrderBook : public OrderBook<OrderPtr> {
 public:
   typedef Depth<SIZE> DepthTracker;

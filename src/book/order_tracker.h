@@ -9,7 +9,7 @@ namespace liquibook { namespace book {
 
 /// @brief Tracker of an order's state, to keep inside the OrderBook.  
 ///   Kept separate from the order itself.
-template <class OrderPtr = Order*>
+template <typename OrderPtr>
 class OrderTracker {
 public:
   /// @brief construct

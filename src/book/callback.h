@@ -36,7 +36,7 @@ class OrderBook;
 //     - order replace reject
 
 /// @brief notification from OrderBook of an event
-template <class OrderPtr = Order*>
+template <typename OrderPtr>
 class Callback {
 public:
   typedef OrderBook<OrderPtr > TypedOrderBook;

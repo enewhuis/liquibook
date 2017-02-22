@@ -46,7 +46,7 @@ class OrderBookListener;
 /// @brief The limit order book of a security.  Template implementation allows
 ///        user to supply common or smart pointers, and to provide a different
 ///        Order class completely (as long as interface is obeyed).
-template <class OrderPtr = Order*>
+template <typename OrderPtr>
 class OrderBook {
 public:
   typedef OrderTracker<OrderPtr > Tracker;
