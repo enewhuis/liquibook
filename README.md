@@ -10,6 +10,9 @@ trading between parties who are otherwise unknown to each other.
 An order matching engine is the heart of every financial exchange, 
 and may be used in many other circumstances including trading non-financial assets, serving as a test-bed for trading algorithms, etc.
 
+A typical Liquibook-based application might look something like this:
+![Market Application](doc/Images/MarketApplication.png)
+
 In addition to the order matching process itself, Liquibook can be configured
 to maintain an "depth book" that records the number of open orders and total quantity
 represented by those orders at individual price levels.  
@@ -206,6 +209,14 @@ The MPC program used to create the build files and the Boost library used in the
 See the [MPC documentation](https://www.ociweb.com/products/mpc) for details about using MPC in your enviornment.
 
 See the [Boost website](http://www.boost.org/) for details about using Boost in your environment.
+
+# Discussing Liquibook
+For questions and discussion of Liquibook, or other Financial offerings from OCI, visit the [Object Computing Financial users mailing] list(https://groups.google.com/forum/#!forum/quickfast_users)
+
+### List Rules:
+* Normal mailing list rules apply on the list. Discussions should be civil and on-topic. Offensive messages, off-topic chatter, and spam will not be tolerated.
+* Messages from new members will be moderated due to the high volume of spam postings that are sent to this (and any) mailing list. For practical purposes this means there may be a delay before your first message to the list is published. Once you have established your identity your messages will be posted immediately.
+* Messages on the list must be posted in English. It is acceptable to have the message in another language as well, but an English translation must appear first.
 
 # For More Help
 If you need more help getting your Liquibook-based application up and running quickly, feel free to contact [Object Computing, Inc.](mailto::sales@ociweb.com) to learn how we can help.
