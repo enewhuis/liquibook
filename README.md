@@ -210,5 +210,13 @@ See the [MPC documentation](https://www.ociweb.com/products/mpc) for details abo
 
 See the [Boost website](http://www.boost.org/) for details about using Boost in your environment.
 
+# Discussing Liquibook
+For questions and discussion of Liquibook, or other Financial offerings from OCI, visit the [Object Computing Financial users mailing] list(https://groups.google.com/forum/#!forum/quickfast_users)
+
+### List Rules:
+* Normal mailing list rules apply on the list. Discussions should be civil and on-topic. Offensive messages, off-topic chatter, and spam will not be tolerated.
+* Messages from new members will be moderated due to the high volume of spam postings that are sent to this (and any) mailing list. For practical purposes this means there may be a delay before your first message to the list is published. Once you have established your identity your messages will be posted immediately.
+* Messages on the list must be posted in English. It is acceptable to have the message in another language as well, but an English translation must appear first.
+
 # For More Help
 If you need more help getting your Liquibook-based application up and running quickly, feel free to contact [Object Computing, Inc.](mailto::sales@ociweb.com) to learn how we can help.
