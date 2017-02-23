@@ -211,7 +211,7 @@ See the [MPC documentation](https://www.ociweb.com/products/mpc) for details abo
 See the [Boost website](http://www.boost.org/) for details about using Boost in your environment.
 
 # Discussing Liquibook
-For questions and discussion of Liquibook, or other Financial offerings from OCI, visit the [Object Computing Financial users mailing] list(https://groups.google.com/forum/#!forum/quickfast_users)
+For questions and discussion of Liquibook, or other Financial offerings from OCI, visit the [Object Computing Financial users mailing list](https://groups.google.com/forum/#!forum/quickfast_users)
 
 ### List Rules:
 * Normal mailing list rules apply on the list. Discussions should be civil and on-topic. Offensive messages, off-topic chatter, and spam will not be tolerated.
