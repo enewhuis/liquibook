@@ -10,6 +10,9 @@ trading between parties who are otherwise unknown to each other.
 An order matching engine is the heart of every financial exchange, 
 and may be used in many other circumstances including trading non-financial assets, serving as a test-bed for trading algorithms, etc.
 
+A typical Liquibook-based application might look something like this:
+![Market Application](doc/Images/MarketApplication.png)
+
 In addition to the order matching process itself, Liquibook can be configured
 to maintain an "depth book" that records the number of open orders and total quantity
 represented by those orders at individual price levels.  
