@@ -1,5 +1,4 @@
-#ifndef example_depth_feed_connection_h
-#define example_depth_feed_connection_h
+#pragma once
 
 #include "asio_safe_include.h"
 #include "sleep.h"
@@ -161,5 +160,3 @@ namespace liquibook { namespace examples {
     static int port_from_args(int argc, const char* argv[]);
   };
 } } // End namespace
-
-#endif

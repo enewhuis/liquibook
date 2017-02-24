@@ -75,7 +75,7 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders,
   if (status) {
     throw std::runtime_error("clock_gettime() failed");
   }
-  return (pp_order - orders);
+  return int(pp_order - orders);
 }
 
 template <class TypedOrderBook>
@@ -122,7 +122,7 @@ bool build_and_run_test(uint32_t num_to_try, bool dry_run = false) {
   }
   delete [] orders;
   std::cout << " - complete!" << std::endl;
-  uint32_t remain = order_book.bids().size() + order_book.asks().size();
+  uint32_t remain = uint32_t(order_book.bids().size() + order_book.asks().size());
   if (!dry_run) {
     std::cout << "Building histogram" << std::endl;
     build_histogram(timestamps, num_to_try);

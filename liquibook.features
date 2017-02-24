@@ -3,10 +3,11 @@
 // See the file license.txt for licensing information.
 // This file defines MPC features for the liquibook project
 
-example_pubsub=0
+example_pubsub=1
 example_manual=1
 
 // BOOST IS NEEDED BY THE  unit tests
 boost=1
 // QUICKFAST IS NEEDED BY THE PUBLISH/SUBSUBSCRIBE example
-QuickFAST=0
+QuickFAST=1
+
