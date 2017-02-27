@@ -30,31 +30,39 @@ void generate_orders(examples::Exchange& exchange,
 
 int main(int argc, const char* argv[])
 {
-  // Feed connection
-  examples::DepthFeedConnection connection(argc, argv);
+  try
+  {
+    // Feed connection
+    examples::DepthFeedConnection connection(argc, argv);
 
-  // Open connection in background thread
-  connection.accept();
-  boost::function<void ()> acceptor(
-      boost::bind(&examples::DepthFeedConnection::run, &connection));
-  boost::thread acceptor_thread(acceptor);
+    // Open connection in background thread
+    connection.accept();
+    boost::function<void ()> acceptor(
+        boost::bind(&examples::DepthFeedConnection::run, &connection));
+    boost::thread acceptor_thread(acceptor);
   
-  // Create feed publisher
-  examples::DepthFeedPublisher feed;
-  feed.set_connection(&connection);
+    // Create feed publisher
+    examples::DepthFeedPublisher feed;
+    feed.set_connection(&connection);
 
-  // Create exchange
-  examples::Exchange exchange(&feed, &feed);
+    // Create exchange
+    examples::Exchange exchange(&feed, &feed);
 
-  // Create securities
-  SecurityVector securities;
-  create_securities(securities);
+    // Create securities
+    SecurityVector securities;
+    create_securities(securities);
 
-  // Populate exchange with securities
-  populate_exchange(exchange, securities);
+    // Populate exchange with securities
+    populate_exchange(exchange, securities);
   
-  // Generate random orders
-  generate_orders(exchange, securities);
+    // Generate random orders
+    generate_orders(exchange, securities);
+  }
+  catch (const std::exception & ex)
+  {
+    std::cerr << "Exception caught at main level: " << ex.what() << std::endl;
+    return -1;
+  }
 
   return 0;
 }
