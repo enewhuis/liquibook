@@ -33,29 +33,34 @@ if test "$LIQUIBOOK_ROOT" = ""; then
     fi
 fi
 
+if test "$MPC_ROOT" == ""; then
+    echo Set MPC_ROOT variable
+fi
+
 if test "$QUICKFAST_ROOT" == "";  then
-  export QUICKFAST_ROOT=`pwd`/noQuickFAST
-  echo QuickFAST support disabled
+    echo QuickFAST support disabled
+    export QUICKFAST_ROOT=`pwd`/noQuickFAST
+    echo Set QUICKFAST_ROOT variable to configure QuickFAST
+else
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$QUICKFAST_ROOT/lib
 fi
 
 if test "$BOOST_VERSION" = ""; then
-  echo Please export BOOST_VERSION, and BOOST_CFG
-  echo you can also set BOOST_ROOT if it is not /usr/boost/BOOST_VERSION
-else
-  if test "$BOOST_ROOT" = ""; then
-    export BOOST_ROOT=/usr/boost/$BOOST_VERSION
-  fi
-  if test "$BOOST_ROOT_LIB" = ""; then
-    export BOOST_ROOT_LIB=$BOOST_ROOT/lib
-  fi
-  if test "$BOOST_CFG" = ""; then  
-    export BOOST_CFG=-gcc62-mt-1_63
-  fi
-  if test "$BOOST_STATIC_LIB_PREFIX" = ""; then
-    export BOOST_STATIC_LIB_PREFIX=
-  fi
+    export BOOST_VERSION=""
+fi
+if test "$BOOST_ROOT" = ""; then
+  export BOOST_ROOT=/usr
+fi
+if test "$BOOST_ROOT_LIB" = ""; then
+  export BOOST_ROOT_LIB=$BOOST_ROOT/lib/x86_64-linux-gnu
+fi
+if test "$BOOST_CFG" = ""; then
+  export BOOST_CFG=
+fi
+if test "$BOOST_STATIC_LIB_PREFIX" = ""; then
+  export BOOST_STATIC_LIB_PREFIX=
 fi
 
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIQUIBOOK_ROOT/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIQUIBOOK_ROOT/lib
 # CIAO is not used, set so MPC does not give warning
 export CIAO_ROOT=/dev/null
