@@ -5,4 +5,8 @@ project {
   } else {
     exeout = $(LIQUIBOOK_ROOT)/bin
   }
+
+  specific(make) {
+    genflags += --std=c++11
+  }
 }

@@ -2,6 +2,10 @@ project {
   includes += $(LIQUIBOOK_ROOT)/src
   libpaths += $(LIQUIBOOK_ROOT)/lib
 
+  specific(make) {
+    genflags += --std=c++11
+  }
+
   // Force use of Visual C++ DLL runtime libraries
   specific(vc71,vc8,vc9) {
     Debug::runtime_library = 3
