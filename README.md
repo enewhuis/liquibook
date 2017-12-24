@@ -91,7 +91,7 @@ As always, the results of this type of performance test can vary depending on th
   * Requires a trivial interface which can be added to or wrapped around an existing Order object.
 * Compatible with existing identifiers for securities, accounts, exchanges, orders, fills
 
-##Example
+## Example
 This repository contains two complete example programs.  These programs can be used to evaluate Liquibook to see if it meets your needs. They can also be used as models for your application or even incorporated directly into your application thanks to the liberal license under which Liquibook is distributed.
 
 The examples are:
@@ -103,7 +103,7 @@ The examples are:
   * Allows orders and other requests to be read from the console or submitted by a script (text file)
   * Submits these to Liquibook.
   * Displays the notifications received from Liquibook to the console or to a log file.
-  * [Detailed instructions are in the README_ORDER_ENTRY.md file.] ( README_ORDER_ENTRY.md)
+  * [Detailed instructions are in the README_ORDER_ENTRY.md file.]( README_ORDER_ENTRY.md)
 
 # Building Liquibook
 The good news is you don't need to build Liquibook.  The core of Liquibook is a header-only library, so you can simply
@@ -151,7 +151,7 @@ MPC expects to find:
 If you prefer not to install boost you can edit the liquibook.features file to change the appropriate line to say `boost=0`  This will disable building the unit tests.
 
 ### QuickFAST
-The publish and subscribe example program uses QuickFAST.  If you want to run this example program, please see the [QuickFAST web site] (https://github.com/objectcomputing/quickfast) to download and build this library.
+The publish and subscribe example program uses QuickFAST.  If you want to run this example program, please see the [QuickFAST web site](https://github.com/objectcomputing/quickfast) to download and build this library.
 
 Set the environment variable $QUICKFAST_ROOT to point to the location where you installed and build QuickFAST.
 
