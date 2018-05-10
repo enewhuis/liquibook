@@ -86,7 +86,7 @@ public:
   /// @brief inequality compare key to a price
   bool operator !=(Price rhs) const
   {
-    return ! price_ == rhs;
+    return ! (price_ == rhs);
   }
 
   /// @brief greater than compare key to a price
@@ -107,7 +107,7 @@ public:
   /// Assumes both prices are on the same side.
   bool operator >=(Price rhs) const
   {
-    return *this > rhs || *this == rhs;
+    return !(*this < rhs);
   }
 
   /// @brief less than compare order map keys
