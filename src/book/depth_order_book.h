@@ -43,7 +43,7 @@ public:
   virtual void on_fill(const OrderPtr& order, 
     const OrderPtr& matched_order, 
     Quantity fill_qty, 
-    Cost fill_cost,
+    Price fill_price,
     bool inbound_order_filled,
     bool matched_order_filled);
 
@@ -114,7 +114,7 @@ void
 DepthOrderBook<OrderPtr, SIZE>::on_fill(const OrderPtr& order, 
   const OrderPtr& matched_order, 
   Quantity quantity, 
-  Cost fill_cost,
+  Price fill_price,
   bool inbound_order_filled,
   bool matched_order_filled)
 {
