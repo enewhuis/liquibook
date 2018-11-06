@@ -13,10 +13,10 @@ public:
   /// @param book the order book of the fill (not defined whether this is before
   ///      or after fill)
   /// @param qty the quantity of this fill
-  /// @param cost the cost of this fill (qty * price)
+  /// @param price the price of this fill
   virtual void on_trade(const OrderBook* book,
                         Quantity qty,
-                        Cost cost) = 0;
+                        Price price) = 0;
 };
 
 } }

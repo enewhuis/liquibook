@@ -20,11 +20,11 @@ public:
   /// @param order the inbound order
   /// @param matched_order the matched order
   /// @param fill_qty the quantity of this fill
-  /// @param fill_cost the cost of this fill (qty * price)
+  /// @param fill_price the price of this fill
   virtual void on_fill(const OrderPtr& order, 
                        const OrderPtr& matched_order, 
                        Quantity fill_qty, 
-                       Cost fill_cost) = 0;
+                       Price fill_price) = 0;
 
   /// @brief callback for an order cancellation
   virtual void on_cancel(const OrderPtr& order) = 0;

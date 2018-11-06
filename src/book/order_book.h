@@ -240,11 +240,11 @@ protected:
   /// @param order the inbound order
   /// @param matched_order the matched order
   /// @param fill_qty the quantity of this fill
-  /// @param fill_cost the cost of this fill (qty * price)
+  /// @param fill_price the price of this fill
   virtual void on_fill(const OrderPtr& order, 
     const OrderPtr& matched_order, 
     Quantity fill_qty, 
-    Cost fill_cost,
+    Price fill_price,
     bool inbound_order_filled,
     bool matched_order_filled){}
 
@@ -273,10 +273,10 @@ protected:
   /// @param book the order book of the fill (not defined whether this is before
   ///      or after fill)
   /// @param qty the quantity of this fill
-  /// @param cost the cost of this fill (qty * price)
+  /// @param price the price of this fill
   virtual void on_trade(const OrderBook* book,
     Quantity qty,
-    Cost cost){}
+    Price price){}
   // End of TradeListener Interface
   ///////////////////////////////
   // BookListener Interface
@@ -1155,22 +1155,21 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
   {
     case TypedCallback::cb_order_fill: 
     {
-      Cost fill_cost = cb.price * cb.quantity;
       bool inbound_filled = (cb.flags & (TypedCallback::ff_inbound_filled | TypedCallback::ff_both_filled)) != 0;
       bool matched_filled = (cb.flags & (TypedCallback::ff_matched_filled | TypedCallback::ff_both_filled)) != 0;
       on_fill(cb.order, cb.matched_order, 
-        cb.quantity, fill_cost,
+        cb.quantity, cb.price,
         inbound_filled,
         matched_filled);
       if(order_listener_)
       {
         order_listener_->on_fill(cb.order, cb.matched_order, 
-                                cb.quantity, fill_cost);
+                                cb.quantity, cb.price);
       }
-      on_trade(this, cb.quantity, fill_cost);
+      on_trade(this, cb.quantity, cb.price);
       if(trade_listener_)
       {
-        trade_listener_->on_trade(this, cb.quantity, fill_cost);
+        trade_listener_->on_trade(this, cb.quantity, cb.price);
       }
       break;
     }
