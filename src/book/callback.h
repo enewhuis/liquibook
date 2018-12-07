@@ -82,7 +82,7 @@ public:
   /// @brief create a new replace callback
   static Callback<OrderPtr> replace(const OrderPtr& order,
                                     const Quantity& curr_open_qty,
-                                    const int32_t& size_delta,
+                                    const int64_t& size_delta,
                                     const Price& new_price);
   /// @brief create a new replace reject callback
   static Callback<OrderPtr> replace_reject(const OrderPtr& order,
@@ -95,7 +95,7 @@ public:
   Quantity quantity;
   Price price;
   uint8_t flags;
-  int32_t delta;
+  int64_t delta;
   const char* reject_reason;
 };
 
@@ -181,7 +181,7 @@ template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::replace(
   const OrderPtr& order,
   const Quantity& curr_open_qty,
-  const int32_t& size_delta,
+  const int64_t& size_delta,
   const Price& new_price)
 {
   // TODO save the order open qty

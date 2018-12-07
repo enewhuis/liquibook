@@ -37,7 +37,7 @@ public:
   /// @param size_delta the change to order quantity
   /// @param new_price the updated order price
   virtual void on_replace(const OrderPtr& order,
-                          const int32_t& size_delta,
+                          const int64_t& size_delta,
                           Price new_price) = 0;
 
   /// @brief callback for an order replace rejection
