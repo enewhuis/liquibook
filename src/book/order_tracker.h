@@ -16,7 +16,7 @@ public:
   OrderTracker(const OrderPtr& order, OrderConditions conditions = 0);
 
   /// @brief modify the order quantity
-  void change_qty(int32_t delta);
+  void change_qty(int64_t delta);
 
   /// @brief fill an order
   /// @param qty the number of shares filled in this fill
@@ -43,12 +43,12 @@ public:
   /// @ brief is this order marked immediate or cancel?
   bool immediate_or_cancel() const;
 
-  Quantity reserve(int32_t reserved);
+  Quantity reserve(int64_t reserved);
 
 private:
   OrderPtr order_;
   Quantity open_qty_;
-  int32_t reserved_;
+  int64_t reserved_;
   OrderConditions conditions_;
 };
 
@@ -75,7 +75,7 @@ OrderTracker<OrderPtr>::OrderTracker(
 
 template <class OrderPtr>
 Quantity
-OrderTracker<OrderPtr>::reserve(int32_t reserved)
+OrderTracker<OrderPtr>::reserve(int64_t reserved)
 {
   reserved_ += reserved;
   return open_qty_  - reserved_;
@@ -83,7 +83,7 @@ OrderTracker<OrderPtr>::reserve(int32_t reserved)
 
 template <class OrderPtr>
 void
-OrderTracker<OrderPtr>::change_qty(int32_t delta)
+OrderTracker<OrderPtr>::change_qty(int64_t delta)
 {
   if ((delta < 0 && 
       (int)open_qty_ < std::abs(delta))) {

@@ -101,7 +101,7 @@ public:
   /// @param new_price the new order price, or PRICE_UNCHANGED
   /// @return true if the replace resulted in a fill
   virtual bool replace(const OrderPtr& order, 
-                       int32_t size_delta = SIZE_UNCHANGED,
+                       int64_t size_delta = SIZE_UNCHANGED,
                        Price new_price = PRICE_UNCHANGED);
 
   /// @brief Set the current market price
@@ -195,7 +195,7 @@ protected:
   /// @return the number of units traded (zero if unsuccessful).
   Quantity create_trade(Tracker& inbound_tracker, 
                     Tracker& current_tracker,
-                    Quantity max_quantity = UINT32_MAX);
+                    Quantity max_quantity = QUANTITY_MAX);
 
   /// @brief find an order in a container
   /// @param order is the the order we are looking for
@@ -512,7 +512,7 @@ template <class OrderPtr>
 bool
 OrderBook<OrderPtr>::replace(
   const OrderPtr& order, 
-  int32_t size_delta,
+  int64_t size_delta,
   Price new_price)
 {
   bool matched = false;

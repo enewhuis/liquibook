@@ -351,7 +351,7 @@ Market::doModify(const std::vector<std::string> & tokens, size_t position)
     //////////////////////////
     // OPTIONS: PRICE (price) ; QUANTITY (delta)
 
-    int32_t quantityChange = liquibook::book::SIZE_UNCHANGED;
+    int64_t quantityChange = liquibook::book::SIZE_UNCHANGED;
     liquibook::book::Price price = liquibook::book::PRICE_UNCHANGED;
 
     bool go = false;
@@ -686,7 +686,7 @@ void Market::on_cancel_reject(const OrderPtr& order, const char* reason)
 }
 
 void Market::on_replace(const OrderPtr& order, 
-    const int32_t& size_delta, 
+    const int64_t& size_delta, 
     liquibook::book::Price new_price)
 {
     order->onReplaced(size_delta, new_price);
