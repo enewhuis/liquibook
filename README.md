@@ -43,7 +43,7 @@ Liquibook is aware of the following order properties.
 * Immediate or Cancel flag to specify that after all trades that can be made against existing orders on the market have been made, the remainder of the order should be canceled.
   * Note combining All or None and Immediate or Cancel produces an order commonly described as Fill or Kill.
 
-The only required propoerties are side, quantity and price.  Default values are available for the other properties.
+The only required properties are side, quantity and price.  Default values are available for the other properties.
 
 The application can define addtional properties on the order object as necessary.  These properties will have no impact on the behavior of Liquibook.
  
@@ -161,7 +161,7 @@ If you do not plan to run this example program, set the environment variable QUI
 
 ## Building Liquibook on Linux
 
-The env.sh script uses the readlink program which is present on most Linix/Unix systems. 
+The env.sh script uses the readlink program which is present on most Linux/Unix systems. 
 If you don't have readlink, set the $LIQUIBOOK_ROOT environment variable the directory containing liquibook before running env.sh
 
 Open a shell and type:
