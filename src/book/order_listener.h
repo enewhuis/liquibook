@@ -13,6 +13,9 @@ public:
   /// @brief callback for an order accept
   virtual void on_accept(const OrderPtr& order) = 0;
 
+  /// @brief callback for triggered STOP order
+  virtual void on_trigger_stop(const OrderPtr& order) {}
+
   /// @brief callback for an order reject
   virtual void on_reject(const OrderPtr& order, const char* reason) = 0;
 

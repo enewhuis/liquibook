@@ -44,9 +44,12 @@ public:
   enum CbType {
     cb_unknown,
     cb_order_accept,
+    cb_order_accept_stop,
+    cb_order_trigger_stop,
     cb_order_reject,
     cb_order_fill,
     cb_order_cancel,
+    cb_order_cancel_stop,
     cb_order_cancel_reject,
     cb_order_replace,
     cb_order_replace_reject,
@@ -64,6 +67,10 @@ public:
 
   /// @brief create a new accept callback
   static Callback<OrderPtr> accept(const OrderPtr& order);
+  /// @brief create a new accept callback
+  static Callback<OrderPtr> accept_stop(const OrderPtr& order);
+  /// @brief create a new accept callback
+  static Callback<OrderPtr> trigger_stop(const OrderPtr& order);
   /// @brief create a new reject callback
   static Callback<OrderPtr> reject(const OrderPtr& order,
                                    const char* reason);
@@ -76,6 +83,8 @@ public:
   /// @brief create a new cancel callback
   static Callback<OrderPtr> cancel(const OrderPtr& order,
                                    const Quantity& open_qty);
+  /// @brief create a new cancel callback
+  static Callback<OrderPtr> cancel_stop(const OrderPtr& order);
   /// @brief create a new cancel reject callback
   static Callback<OrderPtr> cancel_reject(const OrderPtr& order,
                                           const char* reason);
@@ -123,6 +132,26 @@ Callback<OrderPtr> Callback<OrderPtr>::accept(
 }
 
 template <class OrderPtr>
+Callback<OrderPtr> Callback<OrderPtr>::accept_stop(
+  const OrderPtr& order)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_order_accept_stop;
+  result.order = order;
+  return result;
+}
+
+template <class OrderPtr>
+Callback<OrderPtr> Callback<OrderPtr>::trigger_stop(
+  const OrderPtr& order)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_order_trigger_stop;
+  result.order = order;
+  return result;
+}
+
+template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::reject(
   const OrderPtr& order,
   const char* reason)
@@ -162,6 +191,16 @@ Callback<OrderPtr> Callback<OrderPtr>::cancel(
   result.type = cb_order_cancel;
   result.order = order;
   result.quantity = open_qty;
+  return result;
+}
+
+template <class OrderPtr>
+Callback<OrderPtr> Callback<OrderPtr>::cancel_stop(
+  const OrderPtr& order)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_order_cancel_stop;
+  result.order = order;
   return result;
 }
 
