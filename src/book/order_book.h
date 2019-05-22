@@ -232,6 +232,8 @@ protected:
   // Order Listener interface
   /// @brief callback for an order accept
   virtual void on_accept(const OrderPtr& order, Quantity quantity){}
+  virtual void on_accept_stop(const OrderPtr& order){}
+  virtual void on_trigger_stop(const OrderPtr& order){}
 
   /// @brief callback for an order reject
   virtual void on_reject(const OrderPtr& order, const char* reason){}
@@ -250,6 +252,9 @@ protected:
 
   /// @brief callback for an order cancellation
   virtual void on_cancel(const OrderPtr& order, Quantity quantity){}
+
+  /// @brief callback for a STOP cancellation
+  virtual void on_cancel_stop(const OrderPtr& order){}
 
   /// @brief callback for an order cancel rejection
   virtual void on_cancel_reject(const OrderPtr& order, const char* reason){}
@@ -407,15 +412,16 @@ OrderBook<OrderPtr>::add(const OrderPtr& order, OrderConditions conditions)
   }
   else 
   {
-    size_t accept_cb_index = callbacks_.size();
-    callbacks_.push_back(TypedCallback::accept(order));
     Tracker inbound(order, conditions);
     if(inbound.ptr()->stop_price() != 0 && add_stop_order(inbound))
     {
       // The order has been added to stops
+      callbacks_.push_back(TypedCallback::accept_stop(order));
     }
     else
     {
+      size_t accept_cb_index = callbacks_.size();
+      callbacks_.push_back(TypedCallback::accept(order));
       matched = submit_order(inbound);
       // Note the filled qty in the accept callback
       callbacks_[accept_cb_index].quantity = inbound.filled_qty();
@@ -444,6 +450,7 @@ void
 OrderBook<OrderPtr>::cancel(const OrderPtr& order)
 {
   bool found = false;
+  bool foundStop = false;
   Quantity open_qty;
   // If the cancel is a buy order
   if (order->is_buy()) {
@@ -455,6 +462,13 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
       bids_.erase(bid);
       found = true;
     }
+    else if (order->stop_price()) {
+      find_in_stop_orders(order, bid);
+      if (bid != stopBids_.end()) {
+        stopBids_.erase(bid);
+        foundStop = true;
+      }
+    }
   // Else the cancel is a sell order
   } else {
     typename TrackerMap::iterator ask;
@@ -465,45 +479,25 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
       asks_.erase(ask);
       found = true;
     }
+    else if (order->stop_price()) {
+      find_in_stop_orders(order, ask);
+      if (ask != stopAsks_.end()) {
+        stopAsks_.erase(ask);
+        foundStop = true;
+      }
+    }
   } 
   // If the cancel was found, issue callback
   if (found) {
     callbacks_.push_back(TypedCallback::cancel(order, open_qty));
     callbacks_.push_back(TypedCallback::book_update(this));
-  } else {
-    if( order->stop_price() )
-    {
-      if (order->is_buy()) {
-        typename TrackerMap::iterator bid;
-        find_in_stop_orders(order, bid);
-        if (bid != stopBids_.end()) {
-          open_qty = bid->second.open_qty();
-          // Remove from container for cancel
-          stopBids_.erase(bid);
-          found = true;
-        }
-        //Cancel a sell stop order.
-      } else {
-        typename TrackerMap::iterator ask;
-        find_in_stop_orders(order, ask);
-        if (ask != stopAsks_.end()) {
-          open_qty = ask->second.open_qty();
-          // Remove from container for cancel
-          stopAsks_.erase(ask);
-          found = true;
-        }
-      }
-      if (found) {
-        callbacks_.push_back(TypedCallback::cancel(order, open_qty));
-        callbacks_.push_back(TypedCallback::book_update(this));
-      }
-    }
   }
-
-  if(!found)
-  {
-    callbacks_.push_back(
-        TypedCallback::cancel_reject(order, "not found"));
+  else if (foundStop) {
+    callbacks_.push_back(TypedCallback::cancel_stop(order));
+    callbacks_.push_back(TypedCallback::book_update(this));
+  }
+  else {
+    callbacks_.push_back(TypedCallback::cancel_reject(order, "not found"));
   }
   callback_now();
 }
@@ -613,7 +607,7 @@ OrderBook<OrderPtr>::check_stop_orders(bool side, Price price, TrackerMap & stop
   while(pos != stops.end())
   {
     auto here = pos++;
-    if(until < here->first)
+    if(until > here->first)
     {
       break;
     }
@@ -632,6 +626,7 @@ OrderBook<OrderPtr>::submit_pending_orders()
   {
     Tracker & tracker = *pos;
     submit_order(tracker);
+    callbacks_.push_back(TypedCallback::trigger_stop(tracker.ptr()));
   }
 }
 
@@ -1180,6 +1175,20 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
         order_listener_->on_accept(cb.order);
       }
       break;
+    case TypedCallback::cb_order_accept_stop:
+      on_accept_stop(cb.order);
+      if(order_listener_)
+      {
+        order_listener_->on_accept(cb.order);
+      }
+      break;
+    case TypedCallback::cb_order_trigger_stop:
+      on_trigger_stop(cb.order);
+      if(order_listener_)
+      {
+        order_listener_->on_trigger_stop(cb.order);
+      }
+      break;
     case TypedCallback::cb_order_reject:
       on_reject(cb.order, cb.reject_reason);
       if(order_listener_)
@@ -1189,6 +1198,13 @@ OrderBook<OrderPtr>::perform_callback(TypedCallback& cb)
       break;
     case TypedCallback::cb_order_cancel:
       on_cancel(cb.order, cb.quantity);
+      if(order_listener_)
+      {
+        order_listener_->on_cancel(cb.order);
+      }
+      break;
+    case TypedCallback::cb_order_cancel_stop:
+      on_cancel_stop(cb.order);
       if(order_listener_)
       {
         order_listener_->on_cancel(cb.order);

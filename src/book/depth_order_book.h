@@ -39,6 +39,8 @@ public:
   // Implement virtual callback methods
   // needed to maintain depth book.
   virtual void on_accept(const OrderPtr& order, Quantity quantity);
+  virtual void on_accept_stop(const OrderPtr& order);
+  virtual void on_trigger_stop(const OrderPtr& order);
 
   virtual void on_fill(const OrderPtr& order, 
     const OrderPtr& matched_order, 
@@ -48,6 +50,7 @@ public:
     bool matched_order_filled);
 
   virtual void on_cancel(const OrderPtr& order, Quantity quantity);
+  virtual void on_cancel_stop(const OrderPtr& order);
 
   virtual void on_replace(const OrderPtr& order,
     Quantity current_qty, 
@@ -89,7 +92,7 @@ void
 DepthOrderBook<OrderPtr, SIZE>::on_accept(const OrderPtr& order, Quantity quantity)
 {
   // If the order is a limit order
-  if (order->is_limit()) 
+  if (order->is_limit())
   {
     // If the order is completely filled on acceptance, do not modify 
     // depth unnecessarily
@@ -107,6 +110,20 @@ DepthOrderBook<OrderPtr, SIZE>::on_accept(const OrderPtr& order, Quantity quanti
         order->is_buy());
     }
   }
+}
+
+template <class OrderPtr, int SIZE> 
+void 
+DepthOrderBook<OrderPtr, SIZE>::on_accept_stop(const OrderPtr& order)
+{
+}
+
+template <class OrderPtr, int SIZE> 
+void 
+DepthOrderBook<OrderPtr, SIZE>::on_trigger_stop(const OrderPtr& order)
+{
+  // Add to depth
+  depth_.add_order(order->price(), order->order_qty(), order->is_buy());
 }
 
 template <class OrderPtr, int SIZE> 
@@ -147,6 +164,13 @@ DepthOrderBook<OrderPtr, SIZE>::on_cancel(const OrderPtr& order, Quantity quanti
       quantity, 
       order->is_buy());
   }
+}
+
+template <class OrderPtr, int SIZE> 
+void 
+DepthOrderBook<OrderPtr, SIZE>::on_cancel_stop(const OrderPtr& order)
+{
+  // nothing to do for STOP until triggered/submitted
 }
 
 template <class OrderPtr, int SIZE> 
