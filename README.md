@@ -1,6 +1,6 @@
 # Liquibook
 
-Open source order matching engine from [OCI](http://ociweb.com)
+Open source order matching engine from [OCI](https://objectcomputing.com/)
 
 Liquibook provides the low-level components that make up an order matching engine. 
 
@@ -97,7 +97,7 @@ This repository contains two complete example programs.  These programs can be u
 The examples are:
 * Depth feed publisher and subscriber
   * Generates orders that are submitted to Liquibook and publishes the resulting market data.
-  * Uses OCI's [QuickFAST](https://www.ociweb.com/products/quickfast/) to publish the market data
+  * Uses [QuickFAST](https://github.com/objectcomputing/quickfast) to publish the market data
 
 * Manual Order Entry
   * Allows orders and other requests to be read from the console or submitted by a script (text file)
@@ -118,7 +118,7 @@ Liquibook has no runtime dependencies.  It will run in any environment that can 
 To build the Liquibook test and example programs from source you need to create makefiles (for linux, et al.) or Project and Solution files for Windows Visual Studio.
 
 Liquibook uses MPC to create these platform-dependent files from a common build definition:
-* [MPC](http://www.ociweb.com/products/mpc) for cross-platform builds.
+* [MPC](https://github.com/objectcomputing/MPC) for cross-platform builds.
 
   MPC itself is written in perl, so your environment needs a working Perl compiler.  Most linux systems already have this. If you need a Perl compiler on Windows, OCI recommends [Active State Perl V5.x or later](http://www.activestate.com/)
 
@@ -126,7 +126,7 @@ If you wish to build the unit tests for Liquibook, you will also need the boost 
 * [BOOST](http://www.boost.org/) (optional) for unit testing.
 
 One of the example programs (publish and subscribe to market data) uses QuickFAST to encode and decode market data messages.  If you wish to run this example you need QuickFAST:
-* [QuickFAST](https://www.ociweb.com/products/quickfast/) (optional) for building the example depth feed publisher/subscriber.
+* [QuickFAST](https://github.com/objectcomputing/quickfast) (optional) for building the example depth feed publisher/subscriber.
 
   QuickFAST his its own dependencies which are described on its web page.
 
@@ -206,17 +206,6 @@ Liquibook should work on any platform with a modern C++ compiler (supporting at 
 
 The MPC program used to create the build files and the Boost library used in the tests and some of the examples support a wide variety of platforms.  
 
-See the [MPC documentation](https://www.ociweb.com/products/mpc) for details about using MPC in your enviornment.
+See the [MPC documentation](https://github.com/objectcomputing/MPC) for details about using MPC in your enviornment.
 
 See the [Boost website](http://www.boost.org/) for details about using Boost in your environment.
-
-# Discussing Liquibook
-For questions and discussion of Liquibook, or other Financial offerings from OCI, visit the [Object Computing Financial users mailing list](https://groups.google.com/forum/#!forum/quickfast_users)
-
-### List Rules:
-* Normal mailing list rules apply on the list. Discussions should be civil and on-topic. Offensive messages, off-topic chatter, and spam will not be tolerated.
-* Messages from new members will be moderated due to the high volume of spam postings that are sent to this (and any) mailing list. For practical purposes this means there may be a delay before your first message to the list is published. Once you have established your identity your messages will be posted immediately.
-* Messages on the list must be posted in English. It is acceptable to have the message in another language as well, but an English translation must appear first.
-
-# For More Help
-If you need more help getting your Liquibook-based application up and running quickly, feel free to contact [Object Computing, Inc.](mailto::sales@ociweb.com) to learn how we can help.
