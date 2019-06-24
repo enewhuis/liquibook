@@ -86,7 +86,7 @@ public:
   /// @brief inequality compare key to a price
   bool operator !=(Price rhs) const
   {
-    return ! price_ == rhs;
+    return !( price_ == rhs );
   }
 
   /// @brief greater than compare key to a price
