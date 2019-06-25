@@ -128,4 +128,23 @@ BOOST_AUTO_TEST_CASE(TestStopMarketOrdersTradeWhenStopPriceReached)
   }
   BOOST_CHECK_EQUAL(prc53, book.market_price());
 }
+
+BOOST_AUTO_TEST_CASE(TestStopOrdersCancelBeforeTrigger)
+{
+  SimpleOrderBook book;
+  book.set_market_price(prc55);
+
+  SimpleOrder bid(sideBuy, prcMkt, q100, prc56);
+  SimpleOrder ask(sideSell, prcMkt, q100, prc54);
+  BOOST_CHECK(add_and_verify(book, &bid, expectNoMatch));
+  BOOST_CHECK(add_and_verify(book, &ask, expectNoMatch));
+  
+  // Orders were accepted, but not traded
+  BOOST_CHECK_EQUAL(simple::os_accepted, bid.state());
+  BOOST_CHECK_EQUAL(simple::os_accepted, ask.state());
+  // Cancel bid and ask
+  BOOST_CHECK(cancel_and_verify(book, &bid, simple::os_cancelled));
+  BOOST_CHECK(cancel_and_verify(book, &ask, simple::os_cancelled));
+}
+
 } // namespace

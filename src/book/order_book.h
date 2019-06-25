@@ -199,10 +199,17 @@ protected:
 
   /// @brief find an order in a container
   /// @param order is the the order we are looking for
-  /// @param sideMap contains the container where we will look
   /// @param[OUT] result will point to the entry in the container if we find a match
   /// @returns true: match, false: no match
   bool find_on_market(
+    const OrderPtr& order,
+    typename TrackerMap::iterator& result);
+
+  /// @brief find stop order in a container.
+  /// @param order is the the stop order we are looking for
+  /// @param[OUT] result will point to the entry in the container if we find a match
+  /// @returns true: match, false: no match
+  bool find_in_stop_orders(
     const OrderPtr& order,
     typename TrackerMap::iterator& result);
 
@@ -464,6 +471,37 @@ OrderBook<OrderPtr>::cancel(const OrderPtr& order)
     callbacks_.push_back(TypedCallback::cancel(order, open_qty));
     callbacks_.push_back(TypedCallback::book_update(this));
   } else {
+    if( order->stop_price() )
+    {
+      if (order->is_buy()) {
+        typename TrackerMap::iterator bid;
+        find_in_stop_orders(order, bid);
+        if (bid != stopBids_.end()) {
+          open_qty = bid->second.open_qty();
+          // Remove from container for cancel
+          stopBids_.erase(bid);
+          found = true;
+        }
+        //Cancel a sell stop order.
+      } else {
+        typename TrackerMap::iterator ask;
+        find_in_stop_orders(order, ask);
+        if (ask != stopAsks_.end()) {
+          open_qty = ask->second.open_qty();
+          // Remove from container for cancel
+          stopAsks_.erase(ask);
+          found = true;
+        }
+      }
+      if (found) {
+        callbacks_.push_back(TypedCallback::cancel(order, open_qty));
+        callbacks_.push_back(TypedCallback::book_update(this));
+      }
+    }
+  }
+
+  if(!found)
+  {
     callbacks_.push_back(
         TypedCallback::cancel_reject(order, "not found"));
   }
@@ -621,6 +659,31 @@ OrderBook<OrderPtr>::find_on_market(
       return true;
     } 
     else if (key < result->first) 
+    {
+      // exit early if result is beyond the matching prices
+      result = sideMap.end();
+      return false;
+    }
+  }
+  return false;
+}
+
+template <class OrderPtr>
+bool
+OrderBook<OrderPtr>::find_in_stop_orders(
+  const OrderPtr& order,
+  typename TrackerMap::iterator& result)
+{
+  const ComparablePrice key(order->is_buy(), order->stop_price());
+  TrackerMap & sideMap = order->is_buy() ? stopBids_ : stopAsks_;
+
+  for (result = sideMap.find(key); result != sideMap.end(); ++result) {
+    // If this is the correct bid
+    if (result->second.ptr() == order)
+    {
+      return true;
+    }
+    else if (key < result->first)
     {
       // exit early if result is beyond the matching prices
       result = sideMap.end();
