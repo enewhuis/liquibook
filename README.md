@@ -1,6 +1,6 @@
 # Liquibook
 
-Open source order matching engine from [OCI](https://objectcomputing.com/)
+Open source order matching engine
 
 Liquibook provides the low-level components that make up an order matching engine. 
 
