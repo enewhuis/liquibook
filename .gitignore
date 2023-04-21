@@ -51,3 +51,4 @@ Release
 
 #a place to hide documents that should not go into the repo:
 doc/NotGitWorthy/
+/cmake-build-debug/

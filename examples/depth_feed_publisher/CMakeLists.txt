@@ -1,0 +1,30 @@
+add_executable(depth_feed_publisher)
+
+find_package(XercesC COMPONENTS sax ...)
+find_package(Boost COMPONENTS date_time filesystem system thread ...)
+
+target_sources(depth_feed_publisher
+        PRIVATE
+        publisher_main.cpp
+        depth_feed_connection.cpp
+        depth_feed_publisher.cpp
+        template_consumer.cpp
+        example_order_book.cpp
+        exchange.cpp
+        order.cpp)
+
+target_include_directories(depth_feed_publisher
+        PRIVATE
+        ../../src
+        ${QUICKFAST_SRC}/src)
+
+target_compile_definitions(depth_feed_publisher
+        PUBLIC
+        BOOST_BIND_GLOBAL_PLACEHOLDERS
+        ASIOSERVICE_FWD_H)
+
+target_link_libraries(depth_feed_publisher
+        PUBLIC
+        ${Boost_LIBRARIES}
+        ${XercesC_LIBRARIES}
+        ${QUICKFAST_BUILD}/src/libQuickFAST.a)

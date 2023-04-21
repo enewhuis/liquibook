@@ -1,0 +1,1 @@
+add_subdirectory(depth_feed_publisher)
