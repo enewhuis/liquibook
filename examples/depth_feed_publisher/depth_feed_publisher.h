@@ -22,8 +22,11 @@ namespace liquibook { namespace examples {
 class DepthFeedPublisher : public ExampleOrderBook::TypedDepthListener,
                            public ExampleOrderBook::TypedTradeListener,
                            public TemplateConsumer {
+private:
+  typedef std::function<void (book::Quantity, book::Cost)> On_Trade_Func;
+  On_Trade_Func On_Trade_Callback;
 public:
-  DepthFeedPublisher();
+  DepthFeedPublisher(On_Trade_Func on_trade_callback);
   void set_connection(DepthFeedConnection* connection);
 
   virtual void on_trade(

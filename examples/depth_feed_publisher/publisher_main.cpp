@@ -36,10 +36,10 @@ int main(int argc, const char* argv[])
     examples::DepthFeedConnection connection(argc, argv);
 
     // Open connection in background thread
-    connection.accept();
     boost::function<void ()> acceptor(
         boost::bind(&examples::DepthFeedConnection::run, &connection));
     boost::thread acceptor_thread(acceptor);
+    connection.accept();
   
     // Create feed publisher
     examples::DepthFeedPublisher feed;
