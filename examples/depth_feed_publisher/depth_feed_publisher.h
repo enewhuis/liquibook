@@ -37,6 +37,8 @@ public:
   virtual void on_depth_change(
       const book::DepthOrderBook<OrderPtr>* order_book,
       const book::DepthOrderBook<OrderPtr>::DepthTracker* tracker);
+  DepthFeedPublisher();
+
 private:
   DepthFeedConnection* connection_;
 

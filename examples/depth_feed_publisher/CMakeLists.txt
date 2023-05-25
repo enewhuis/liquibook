@@ -1,4 +1,4 @@
-find_package(XercesC COMPONENTS sax ...)
+find_package(XercesC COMPONENTS sax util ...)
 find_package(Boost COMPONENTS date_time filesystem system thread ...)
 
 #Publisher StaticLib

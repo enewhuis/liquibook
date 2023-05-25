@@ -19,6 +19,9 @@ using namespace QuickFAST::Messages;
 DepthFeedPublisher::DepthFeedPublisher(On_Trade_Func on_trade_callback)
     : connection_(NULL), On_Trade_Callback(on_trade_callback) {}
 
+DepthFeedPublisher::DepthFeedPublisher()
+    : connection_(NULL), On_Trade_Callback(nullptr) {}
+
 void DepthFeedPublisher::set_connection(DepthFeedConnection *connection) {
   connection_ = connection;
 }
@@ -34,6 +37,8 @@ void DepthFeedPublisher::on_trade(const book::OrderBook<OrderPtr> *order_book,
   build_trade_message(message, exob->symbol(), qty, cost);
 
   connection_->send_trade(message);
+
+  On_Trade_Callback(qty, cost);
 }
 
 void DepthFeedPublisher::on_depth_change(
