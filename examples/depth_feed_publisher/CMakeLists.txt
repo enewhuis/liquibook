@@ -76,4 +76,4 @@ target_link_libraries(depth_feed_subscriber
         PUBLIC
         ${Boost_LIBRARIES}
         ${XercesC_LIBRARIES}
-        ${QUICKFAST_BUILD}/src/libQuickFAST.a)
+        QuickFAST)
