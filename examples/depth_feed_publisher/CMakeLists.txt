@@ -2,7 +2,7 @@ find_package(XercesC COMPONENTS sax util ...)
 find_package(Boost COMPONENTS date_time filesystem system thread ...)
 
 #Publisher StaticLib
-add_library(depth_feed_publisher_lib)
+add_library(depth_feed_publisher_lib STATIC)
 
 target_sources(depth_feed_publisher_lib
         PRIVATE
@@ -27,7 +27,7 @@ target_link_libraries(depth_feed_publisher_lib
         PUBLIC
         ${Boost_LIBRARIES}
         ${XercesC_LIBRARIES}
-        ${QUICKFAST_BUILD}/src/libQuickFAST.a)
+        QuickFAST)
 
 #Publisher
 add_executable(depth_feed_publisher)
