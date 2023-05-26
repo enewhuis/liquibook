@@ -2,7 +2,7 @@
 
 namespace liquibook { namespace examples {
 
-const uint8_t Order::precision_(100);
+const uint8_t Order::precision_(1);
 
 Order::Order(bool buy, const double& price, book::Quantity qty)
 : is_buy_(buy),

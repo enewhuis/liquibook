@@ -230,7 +230,7 @@ DepthFeedSubscriber::handle_trade_message(
     return false;
   }
 
-  double price = (double) cost / (qty * Order::precision_);
+  double price = (double) cost;
   std::cout << timestamp
             << " Got trade msg " << seq_num 
             << " for symbol " << symbol 
