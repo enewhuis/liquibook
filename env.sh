@@ -14,7 +14,7 @@ if test "$LIQUIBOOK_ROOT" = ""; then
     if (( $? != 0 )); then
       echo "greadlink does not exist or an error occurred"
       UNAME=`uname`
-      if [[ $UNAME == "Darwin" ]]; then
+      if [[ $UNAME = "Darwin" ]]; then
             echo "You are running on a Mac OSX system."
             echo "Consider installing homebrew."
             echo "Then install coreutils."
@@ -33,7 +33,7 @@ if test "$LIQUIBOOK_ROOT" = ""; then
     fi
 fi
 
-if test "$QUICKFAST_ROOT" == "";  then
+if test "$QUICKFAST_ROOT" = "";  then
   export QUICKFAST_ROOT=`pwd`/noQuickFAST
   echo QuickFAST support disabled
 fi
