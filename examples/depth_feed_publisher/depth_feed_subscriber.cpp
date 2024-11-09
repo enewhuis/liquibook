@@ -88,7 +88,7 @@ DepthFeedSubscriber::log_depth(book::Depth<5>& depth)
   printf("----------BID----------    ----------ASK----------\n");
   while (bid || ask) {
     if (bid && bid->order_count()) {
-      printf("%8.2f %9d [%2d]", 
+      printf("%8.2f %9ld [%2d]",
              (double)bid->price() / Order::precision_,
              bid->aggregate_qty(), bid->order_count());
       if (bid == depth.last_bid_level()) {
@@ -103,7 +103,7 @@ DepthFeedSubscriber::log_depth(book::Depth<5>& depth)
     }
 
     if (ask && ask->order_count()) {
-      printf("    %8.2f %9d [%2d]\n",
+      printf("    %8.2f %9ld [%2d]\n",
              (double)ask->price() / Order::precision_,
              ask->aggregate_qty(), ask->order_count());
       if (ask == depth.last_ask_level()) {

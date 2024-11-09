@@ -18,7 +18,7 @@ namespace liquibook { namespace examples {
   typedef std::deque<WorkingBufferPtr> WorkingBuffers;
   typedef boost::array<unsigned char, 128> Buffer;
   typedef boost::shared_ptr<Buffer> BufferPtr;
-  typedef boost::function<bool (BufferPtr, size_t)> MessageHandler;
+  typedef boost::function<bool (BufferPtr&, size_t)> MessageHandler;
   typedef boost::function<void ()> ResetHandler;
   typedef boost::function<void (const boost::system::error_code& error,
                                 std::size_t bytes_transferred)> SendHandler;
