@@ -1,0 +1,10 @@
+project (liquibook): liquibook_exe {
+  exename = *
+  Header_files {
+    *.h
+  }
+  Source_Files {
+    *.cpp
+  }
+}
+

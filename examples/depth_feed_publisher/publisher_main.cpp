@@ -30,31 +30,39 @@ void generate_orders(examples::Exchange& exchange,
 
 int main(int argc, const char* argv[])
 {
-  // Feed connection
-  examples::DepthFeedConnection connection(argc, argv);
+  try
+  {
+    // Feed connection
+    examples::DepthFeedConnection connection(argc, argv);
 
-  // Open connection in background thread
-  connection.accept();
-  boost::function<void ()> acceptor(
-      boost::bind(&examples::DepthFeedConnection::run, &connection));
-  boost::thread acceptor_thread(acceptor);
+    // Open connection in background thread
+    connection.accept();
+    boost::function<void ()> acceptor(
+        boost::bind(&examples::DepthFeedConnection::run, &connection));
+    boost::thread acceptor_thread(acceptor);
   
-  // Create feed publisher
-  examples::DepthFeedPublisher feed;
-  feed.set_connection(&connection);
+    // Create feed publisher
+    examples::DepthFeedPublisher feed;
+    feed.set_connection(&connection);
 
-  // Create exchange
-  examples::Exchange exchange(&feed, &feed);
+    // Create exchange
+    examples::Exchange exchange(&feed, &feed);
 
-  // Create securities
-  SecurityVector securities;
-  create_securities(securities);
+    // Create securities
+    SecurityVector securities;
+    create_securities(securities);
 
-  // Populate exchange with securities
-  populate_exchange(exchange, securities);
+    // Populate exchange with securities
+    populate_exchange(exchange, securities);
   
-  // Generate random orders
-  generate_orders(exchange, securities);
+    // Generate random orders
+    generate_orders(exchange, securities);
+  }
+  catch (const std::exception & ex)
+  {
+    std::cerr << "Exception caught at main level: " << ex.what() << std::endl;
+    return -1;
+  }
 
   return 0;
 }
@@ -175,7 +183,7 @@ void
 generate_orders(examples::Exchange& exchange, const SecurityVector& securities) {
   time_t now;
   time(&now);
-  std::srand(now);
+  std::srand(uint32_t(now));
 
   size_t num_securities = securities.size();
   while (true) {
@@ -183,9 +191,9 @@ generate_orders(examples::Exchange& exchange, const SecurityVector& securities) 
     size_t index = std::rand() % num_securities;
     const SecurityInfo& sec = securities[index];
     // side
-    bool is_buy = std::rand() % 2;
+    bool is_buy = (std::rand() % 2) != 0;
     // price
-    uint32_t price_base = sec.ref_price * 100;
+    uint32_t price_base = uint32_t(sec.ref_price * 100);
     uint32_t delta_range = price_base / 50;  // +/- 2% of base
     int32_t delta = std::rand() % delta_range;
     delta -= (delta_range / 2);

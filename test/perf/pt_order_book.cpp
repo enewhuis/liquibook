@@ -1,8 +1,8 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "impl/simple_order_book.h"
-#include "book/types.h"
+#include <simple/simple_order_book.h>
+#include <book/types.h>
 
 #include <iostream>
 #include <stdexcept>
@@ -12,9 +12,9 @@
 using namespace liquibook;
 using namespace liquibook::book;
 
-typedef impl::SimpleOrderBook<5> FullDepthOrderBook;
-typedef impl::SimpleOrderBook<1> BboOrderBook;
-typedef book::OrderBook<impl::SimpleOrder*> NoDepthOrderBook;
+typedef simple::SimpleOrderBook<5> FullDepthOrderBook;
+typedef simple::SimpleOrderBook<1> BboOrderBook;
+typedef book::OrderBook<simple::SimpleOrder*> NoDepthOrderBook;
 
 template <class TypedOrderBook, class TypedOrder>
 int run_test(TypedOrderBook& order_book, TypedOrder** orders, clock_t end) {
@@ -22,21 +22,20 @@ int run_test(TypedOrderBook& order_book, TypedOrder** orders, clock_t end) {
   TypedOrder** pp_order = orders;
   do {
     order_book.add(*pp_order);
-    order_book.perform_callbacks();
     ++pp_order;
-    if (*pp_order == NULL) {
+    if (*pp_order == nullptr) {
       return -1;
     }
     ++count;
   } while (clock() < end);
-  return (pp_order - orders);
+  return int(pp_order - orders);
 }
 
 template <class TypedOrderBook>
 bool build_and_run_test(uint32_t dur_sec, uint32_t num_to_try) {
   std::cout << "trying run of " << num_to_try << " orders";
   TypedOrderBook order_book;
-  impl::SimpleOrder** orders = new impl::SimpleOrder*[num_to_try + 1];
+  simple::SimpleOrder** orders = new simple::SimpleOrder*[num_to_try + 1];
   
   for (uint32_t i = 0; i <= num_to_try; ++i) {
     bool is_buy((i % 2) == 0);
@@ -66,9 +65,9 @@ bool build_and_run_test(uint32_t dur_sec, uint32_t num_to_try) {
     Price price = (rand() % 10) + delta;
     
     Quantity qty = ((rand() % 10) + 1) * 100;
-    orders[i] = new impl::SimpleOrder(is_buy, price, qty);
+    orders[i] = new simple::SimpleOrder(is_buy, price, qty);
   }
-  orders[num_to_try] = NULL; // Final null
+  orders[num_to_try] = nullptr; // Final null
   
   clock_t start = clock();
   clock_t stop = start + (dur_sec * CLOCKS_PER_SEC);
@@ -83,7 +82,7 @@ bool build_and_run_test(uint32_t dur_sec, uint32_t num_to_try) {
     std::cout << "Inserted " << count << " orders in " << dur_sec << " seconds"
               << ", or " << count / dur_sec << " insertions per sec"
               << std::endl;
-    uint32_t remain = order_book.bids().size() + order_book.asks().size();
+    uint32_t remain = uint32_t(order_book.bids().size() + order_book.asks().size());
     std::cout << "Run matched " << count - remain << " orders" << std::endl;
     return true;
   } else {

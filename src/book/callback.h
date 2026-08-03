@@ -1,10 +1,8 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef callback_h
-#define callback_h
+#pragma once
 
-#include "order.h"
 #include "types.h"
 
 namespace liquibook { namespace book {
@@ -38,7 +36,7 @@ class OrderBook;
 //     - order replace reject
 
 /// @brief notification from OrderBook of an event
-template <class OrderPtr = Order*>
+template <typename OrderPtr>
 class Callback {
 public:
   typedef OrderBook<OrderPtr > TypedOrderBook;
@@ -46,9 +44,12 @@ public:
   enum CbType {
     cb_unknown,
     cb_order_accept,
+    cb_order_accept_stop,
+    cb_order_trigger_stop,
     cb_order_reject,
     cb_order_fill,
     cb_order_cancel,
+    cb_order_cancel_stop,
     cb_order_cancel_reject,
     cb_order_replace,
     cb_order_replace_reject,
@@ -65,99 +66,100 @@ public:
   Callback();
 
   /// @brief create a new accept callback
-  static Callback<OrderPtr> accept(const OrderPtr& order,
-                                   const TransId& trans_id);
+  static Callback<OrderPtr> accept(const OrderPtr& order);
+  /// @brief create a new accept callback
+  static Callback<OrderPtr> accept_stop(const OrderPtr& order);
+  /// @brief create a new accept callback
+  static Callback<OrderPtr> trigger_stop(const OrderPtr& order);
   /// @brief create a new reject callback
   static Callback<OrderPtr> reject(const OrderPtr& order,
-                                   const char* reason,
-                                   const TransId& trans_id);
+                                   const char* reason);
   /// @brief create a new fill callback
   static Callback<OrderPtr> fill(const OrderPtr& inbound_order,
                                  const OrderPtr& matched_order,
                                  const Quantity& fill_qty,
                                  const Price& fill_price,
-                                 FillFlags fill_flags,
-                                 const TransId& trans_id);
+                                 FillFlags fill_flags);
   /// @brief create a new cancel callback
   static Callback<OrderPtr> cancel(const OrderPtr& order,
-                                   const Quantity& open_qty,
-                                   const TransId& trans_id);
+                                   const Quantity& open_qty);
+  /// @brief create a new cancel callback
+  static Callback<OrderPtr> cancel_stop(const OrderPtr& order);
   /// @brief create a new cancel reject callback
   static Callback<OrderPtr> cancel_reject(const OrderPtr& order,
-                                          const char* reason,
-                                          const TransId& trans_id);
+                                          const char* reason);
   /// @brief create a new replace callback
   static Callback<OrderPtr> replace(const OrderPtr& order,
                                     const Quantity& curr_open_qty,
-                                    const int32_t& size_delta,
-                                    const Price& new_price,
-                                    const TransId& trans_id);
+                                    const int64_t& size_delta,
+                                    const Price& new_price);
   /// @brief create a new replace reject callback
   static Callback<OrderPtr> replace_reject(const OrderPtr& order,
-                                           const char* reason,
-                                           const TransId& trans_id);
+                                           const char* reason);
 
-  static Callback<OrderPtr> book_update(const TypedOrderBook* book,
-                                        const TransId& trans_id);
+  static Callback<OrderPtr> book_update(const TypedOrderBook* book = nullptr);
   CbType type;
   OrderPtr order;
-  const TypedOrderBook* order_book;  // In case the cb is handled externally
-  OrderPtr matched_order; // fill
-  TransId trans_id;
-  union {
-    struct { // Accept
-      Quantity accept_match_qty;
-    };
-    struct { // Fill
-      Quantity fill_qty;
-      Price fill_price;
-      uint8_t fill_flags;
-    };
-    struct { // Cancel
-      Quantity cxl_open_qty;
-    };
-    struct { // Replace
-      Quantity repl_curr_open_qty; // Open qty of order before replace
-      int32_t repl_size_delta;
-      Price repl_new_price;
-    };
-    const char* reject_reason;
-  };
+  OrderPtr matched_order;
+  Quantity quantity;
+  Price price;
+  uint8_t flags;
+  int64_t delta;
+  const char* reject_reason;
 };
 
 template <class OrderPtr>
 Callback<OrderPtr>::Callback()
 : type(cb_unknown),
-  order_book(0),
-  trans_id(0),
-  fill_qty(0),
-  fill_price(0)
+  order(nullptr),
+  matched_order(nullptr),
+  quantity(0),
+  price(0),
+  flags(0),
+  delta(0),
+  reject_reason(nullptr)
 {
 }
 
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::accept(
-  const OrderPtr& order,
-  const TransId& trans_id)
+  const OrderPtr& order)
 {
   Callback<OrderPtr> result;
   result.type = cb_order_accept;
   result.order = order;
-  result.trans_id = trans_id;
+  return result;
+}
+
+template <class OrderPtr>
+Callback<OrderPtr> Callback<OrderPtr>::accept_stop(
+  const OrderPtr& order)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_order_accept_stop;
+  result.order = order;
+  return result;
+}
+
+template <class OrderPtr>
+Callback<OrderPtr> Callback<OrderPtr>::trigger_stop(
+  const OrderPtr& order)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_order_trigger_stop;
+  result.order = order;
   return result;
 }
 
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::reject(
   const OrderPtr& order,
-  const char* reason,
-  const TransId& trans_id)
+  const char* reason)
 {
   Callback<OrderPtr> result;
   result.type = cb_order_reject;
   result.order = order;
   result.reject_reason = reason;
-  result.trans_id = trans_id;
   return result;
 }
 
@@ -167,46 +169,50 @@ Callback<OrderPtr> Callback<OrderPtr>::fill(
   const OrderPtr& matched_order,
   const Quantity& fill_qty,
   const Price& fill_price,
-  FillFlags fill_flags,
-  const TransId& trans_id)
+  FillFlags fill_flags)
 {
   Callback<OrderPtr> result;
   result.type = cb_order_fill;
   result.order = inbound_order;
   result.matched_order = matched_order;
-  result.fill_qty = fill_qty;
-  result.fill_price = fill_price;
-  result.fill_flags = fill_flags;
-  result.trans_id = trans_id;
+  result.quantity = fill_qty;
+  result.price = fill_price;
+  result.flags = fill_flags;
   return result;
 }
 
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::cancel(
   const OrderPtr& order,
-  const Quantity& open_qty,
-  const TransId& trans_id)
+  const Quantity& open_qty)
 {
   // TODO save the open qty
   Callback<OrderPtr> result;
   result.type = cb_order_cancel;
   result.order = order;
-  result.cxl_open_qty = open_qty;
-  result.trans_id = trans_id;
+  result.quantity = open_qty;
+  return result;
+}
+
+template <class OrderPtr>
+Callback<OrderPtr> Callback<OrderPtr>::cancel_stop(
+  const OrderPtr& order)
+{
+  Callback<OrderPtr> result;
+  result.type = cb_order_cancel_stop;
+  result.order = order;
   return result;
 }
 
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::cancel_reject(
   const OrderPtr& order,
-  const char* reason,
-  const TransId& trans_id)
+  const char* reason)
 {
   Callback<OrderPtr> result;
   result.type = cb_order_cancel_reject;
   result.order = order;
   result.reject_reason = reason;
-  result.trans_id = trans_id;
   return result;
 }
 
@@ -214,47 +220,38 @@ template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::replace(
   const OrderPtr& order,
   const Quantity& curr_open_qty,
-  const int32_t& size_delta,
-  const Price& new_price,
-  const TransId& trans_id)
+  const int64_t& size_delta,
+  const Price& new_price)
 {
   // TODO save the order open qty
   Callback<OrderPtr> result;
   result.type = cb_order_replace;
   result.order = order;
-  result.repl_curr_open_qty = curr_open_qty;
-  result.repl_size_delta = size_delta;
-  result.repl_new_price = new_price;
-  result.trans_id = trans_id;
+  result.quantity = curr_open_qty;
+  result.delta = size_delta;
+  result.price = new_price;
   return result;
 }
 
 template <class OrderPtr>
 Callback<OrderPtr> Callback<OrderPtr>::replace_reject(
   const OrderPtr& order,
-  const char* reason,
-  const TransId& trans_id)
+  const char* reason)
 {
   Callback<OrderPtr> result;
   result.type = cb_order_replace_reject;
   result.order = order;
   result.reject_reason = reason;
-  result.trans_id = trans_id;
   return result;
 }
 
 template <class OrderPtr>
 Callback<OrderPtr>
-Callback<OrderPtr>::book_update(const OrderBook<OrderPtr>* book,
-                                const TransId& trans_id)
+Callback<OrderPtr>::book_update(const OrderBook<OrderPtr>* book)
 {
   Callback<OrderPtr> result;
   result.type = cb_book_update;
-  result.order_book = book;
-  result.trans_id = trans_id;
   return result;
 }
 
 } }
-
-#endif

@@ -158,7 +158,7 @@ DepthFeedPublisher::time_stamp()
 {
   time_t now;
   time(&now);
-  return now;
+  return (uint32_t) now;
 }
 
 } } // End namespace

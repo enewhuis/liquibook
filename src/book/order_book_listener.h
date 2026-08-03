@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef order_book_listener_h
-#define order_book_listener_h
+#pragma once
 
 #include "order_book.h"
 
@@ -14,8 +13,11 @@ class OrderBookListener {
 public:
   /// @brief callback for change anywhere in order book
   virtual void on_order_book_change(const OrderBook* book) = 0;
+
+#ifdef SWIG_BUILD
+  virtual ~OrderBookListener() {};
+#endif
+
 };
 
 } }
-
-#endif

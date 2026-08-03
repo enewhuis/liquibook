@@ -1,0 +1,107 @@
+name: Build and Publish Python Wheels
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # Install CMake and SWIG consistently on all platforms using pip
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade cmake swig
+          swig -version
+          cmake --version
+
+      # Clean previous build artifacts (Linux/macOS)
+      - name: Clean previous build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: rm -rf build/ python/*.cxx python/*.py
+
+      # Clean previous build artifacts (Windows)
+      - name: Clean previous build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          if (Test-Path build) { Remove-Item -Recurse -Force build }
+          Get-ChildItem python -Filter *.cxx -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+          Get-ChildItem python -Filter *.py -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+        shell: pwsh
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*"
+          CIBW_SKIP: "*-win32"
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/
+
+  gather_wheels:
+    name: Gather wheels from all platforms
+    runs-on: ubuntu-latest
+    needs: build_wheels
+    steps:
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist/
+
+      - name: Merge wheels into one folder
+        run: |
+          mkdir -p merged_dist
+          find dist -type f -name "*.whl" -exec cp {} merged_dist/ \;
+          find dist -type f -name "*.tar.gz" -exec cp {} merged_dist/ \;
+
+      - name: Upload merged wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-wheels
+          path: merged_dist/
+
+  pypi-publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: gather_wheels
+    permissions:
+      contents: read
+
+    environment:
+      name: pypi
+
+    steps:
+      - name: Retrieve merged wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: merged-wheels
+          path: dist/
+
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages-dir: dist/

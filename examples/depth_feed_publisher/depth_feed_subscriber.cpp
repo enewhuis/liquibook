@@ -40,7 +40,6 @@ DepthFeedSubscriber::handle_message(BufferPtr& bp, size_t bytes_transferred)
   // Examine message contents
   uint64_t seq_num, msg_type, timestamp;
   const QuickFAST::StringBuffer* string_buffer;
-  size_t bids_length, asks_length;
   std::string symbol;
   if (!msg.getUnsignedInteger(id_seq_num_, ValueType::UINT32, seq_num)) {
     std::cout << "Could not get seq num from msg" << std::endl;
@@ -164,7 +163,7 @@ DepthFeedSubscriber::handle_depth_message(
         }
 
         book::DepthLevel& level = depth.bids()[level_num];
-        level.set(price, aggregate_qty, order_count);
+        level.set(book::Price(price), book::Quantity(aggregate_qty), uint32_t(order_count));
 
       } else {
         std::cout << "Failed to get bid " << i << std::endl;
@@ -200,7 +199,7 @@ DepthFeedSubscriber::handle_depth_message(
         }
 
         book::DepthLevel& level = depth.asks()[level_num];
-        level.set(price, aggregate_qty, order_count);
+        level.set(book::Price(price), book::Quantity(aggregate_qty), uint32_t(order_count));
 
       } else {
         std::cout << "Failed to get ask " << i << std::endl;

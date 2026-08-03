@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef bbo_listener_h
-#define bbo_listener_h
+#pragma once
 
 namespace liquibook { namespace book {
 
@@ -14,8 +13,9 @@ public:
   virtual void on_bbo_change(
       const OrderBook* book, 
       const typename OrderBook::DepthTracker* depth) = 0;
+#ifdef SWIG_BUILD
+  virtual ~BboListener() {};
+#endif
 };
 
 } }
-
-#endif

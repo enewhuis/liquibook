@@ -1,16 +1,19 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#include "assertiv/assertiv.h"
+
+#define BOOST_TEST_NO_MAIN LiquibookTest
+#include <boost/test/unit_test.hpp>
+
 #include "ut_utils.h"
 #include "changed_checker.h"
-#include "book/order_book.h"
-#include "impl/simple_order.h"
+#include <book/order_book.h>
+#include <simple/simple_order.h>
 
 namespace liquibook {
 
 using book::OrderBook;
-using impl::SimpleOrder;
+using simple::SimpleOrder;
 
 typedef SimpleOrder* OrderPtr;
 typedef OrderBook<OrderPtr> TypedOrderBook;
@@ -30,8 +33,8 @@ public:
 
   void reset()
   {
-    quantities_.erase(quantities_.begin(), quantities_.end());
-    costs_.erase(costs_.begin(), costs_.end());
+    quantities_.clear();
+    costs_.clear();
   }
   std::vector<Quantity> quantities_;
   std::vector<Cost> costs_;
@@ -76,13 +79,13 @@ public:
 
   void reset()
   {
-    accepts_.erase(accepts_.begin(), accepts_.end());
-    rejects_.erase(rejects_.begin(), rejects_.end());
-    fills_.erase(fills_.begin(), fills_.end());
-    cancels_.erase(cancels_.begin(), cancels_.end());
-    cancel_rejects_.erase(cancel_rejects_.begin(), cancel_rejects_.end());
-    replaces_.erase(replaces_.begin(), replaces_.end());
-    replace_rejects_.erase(replace_rejects_.begin(), replace_rejects_.end());
+    accepts_.clear();
+    rejects_.clear();
+    fills_.clear();
+    cancels_.clear();
+    cancel_rejects_.clear();
+    replaces_.clear();
+    replace_rejects_.clear();
   }
 
   typedef std::vector<const SimpleOrder*> OrderVector;
@@ -95,7 +98,7 @@ public:
   OrderVector replace_rejects_;
 };
 
-TEST(TestOrderCallbacks)
+BOOST_AUTO_TEST_CASE(TestOrderCallbacks)
 {
   SimpleOrder order0(false, 3250, 100);
   SimpleOrder order1(true,  3250, 800);
@@ -108,49 +111,41 @@ TEST(TestOrderCallbacks)
   order_book.set_order_listener(&listener);
   // Add order, should be accepted
   order_book.add(&order0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.accepts_.size());
+  BOOST_CHECK_EQUAL(1, listener.accepts_.size());
   listener.reset();
   // Add matching order, should be accepted, followed by a fill
   order_book.add(&order1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.accepts_.size());
-  ASSERT_EQ(1, listener.fills_.size());
+  BOOST_CHECK_EQUAL(1, listener.accepts_.size());
+  BOOST_CHECK_EQUAL(1, listener.fills_.size());
   listener.reset();
   // Add invalid order, should be rejected
   order_book.add(&order2);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.rejects_.size());
+  BOOST_CHECK_EQUAL(1, listener.rejects_.size());
   listener.reset();
   // Cancel only valid order, should be cancelled
   order_book.cancel(&order1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.cancels_.size());
+  BOOST_CHECK_EQUAL(1, listener.cancels_.size());
   listener.reset();
   // Cancel filled order, should be rejected
   order_book.cancel(&order0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.cancel_rejects_.size());
+  BOOST_CHECK_EQUAL(1, listener.cancel_rejects_.size());
   listener.reset();
   // Add a new order and replace it, should be replaced
   order_book.add(&order3);
   order_book.replace(&order3, 0, 3250);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.accepts_.size());
-  ASSERT_EQ(1, listener.replaces_.size());
+  BOOST_CHECK_EQUAL(1, listener.accepts_.size());
+  BOOST_CHECK_EQUAL(1, listener.replaces_.size());
   listener.reset();
   // Add matching order, should be accepted, followed by a fill
   order_book.add(&order4);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.accepts_.size());
-  ASSERT_EQ(1, listener.fills_.size());
+  BOOST_CHECK_EQUAL(1, listener.accepts_.size());
+  BOOST_CHECK_EQUAL(1, listener.fills_.size());
   listener.reset();
   // Replace matched order, with too large of a size decrease, replace
   // should be rejected
   order_book.replace(&order3, -500);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.replaces_.size());
-  ASSERT_EQ(1, listener.replace_rejects_.size());
+  BOOST_CHECK_EQUAL(0, listener.replaces_.size());
+  BOOST_CHECK_EQUAL(1, listener.replace_rejects_.size());
 }
 
 class OrderBookCbListener : public OrderBookListener<TypedOrderBook>
@@ -164,14 +159,14 @@ public:
 
   void reset()
   {
-    changes_.erase(changes_.begin(), changes_.end());
+    changes_.clear();
   }
 
   typedef std::vector<const TypedOrderBook*> OrderBookVector;
   OrderBookVector changes_;
 };
 
-TEST(TestOrderBookCallbacks)
+BOOST_AUTO_TEST_CASE(TestOrderBookCallbacks)
 {
   SimpleOrder order0(false, 3250, 100);
   SimpleOrder order1(true,  3250, 800);
@@ -184,45 +179,37 @@ TEST(TestOrderBookCallbacks)
   order_book.set_order_book_listener(&listener);
   // Add order, should be accepted
   order_book.add(&order0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   // Add matching order, should be accepted, followed by a fill
   order_book.add(&order1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   // Add invalid order, should be rejected
   order_book.add(&order2);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());  // NO CHANGE
   listener.reset();
   // Cancel only valid order, should be cancelled
   order_book.cancel(&order1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   // Cancel filled order, should be rejected
   order_book.cancel(&order0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());  // NO CHANGE
   listener.reset();
   // Add a new order and replace it, should be replaced
   order_book.add(&order3);
   order_book.replace(&order3, 0, 3250);
-  order_book.perform_callbacks();
-  ASSERT_EQ(2, listener.changes_.size());
+  BOOST_CHECK_EQUAL(2, listener.changes_.size());
   listener.reset();
   // Add matching order, should be accepted, followed by a fill
   order_book.add(&order4);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   // Replace matched order, with too large of a size decrease, replace
   // should be rejected
   order_book.replace(&order3, -500);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());  // NO CHANGE
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());  // NO CHANGE
 }
 
 class DepthCbListener 
@@ -237,13 +224,14 @@ public:
 
   void reset()
   {
-    changes_.erase(changes_.begin(), changes_.end());
+    changes_.clear();
+
   }
   typedef std::vector<const TypedDepthOrderBook*> OrderBooks;
   OrderBooks changes_;
 };
 
-TEST(TestDepthCallbacks)
+BOOST_AUTO_TEST_CASE(TestDepthCallbacks)
 {
   SimpleOrder buy0(true, 3250, 100);
   SimpleOrder buy1(true, 3249, 800);
@@ -269,37 +257,28 @@ TEST(TestDepthCallbacks)
   order_book.add(&buy2);
   order_book.add(&buy3);
   order_book.add(&buy4);
-  order_book.perform_callbacks();
-  ASSERT_EQ(5, listener.changes_.size());
+  BOOST_CHECK_EQUAL(5, listener.changes_.size());
   listener.reset();
 
   // Add buy orders past end, should be accepted, but not affect depth
   order_book.add(&buy5);
   order_book.add(&buy6);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
 
   // Add sell orders, should be accepted and affect depth
   order_book.add(&sell5);
-  order_book.perform_callbacks();
   order_book.add(&sell4);
-  order_book.perform_callbacks();
   order_book.add(&sell3);
-  order_book.perform_callbacks();
   order_book.add(&sell2);
-  order_book.perform_callbacks();
   order_book.add(&sell1);
-  order_book.perform_callbacks();
   order_book.add(&sell0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(6, listener.changes_.size());
+  BOOST_CHECK_EQUAL(6, listener.changes_.size());
   listener.reset();
 
   // Add sell order past end, should be accepted, but not affect depth
   order_book.add(&sell6);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
 }
 
@@ -315,14 +294,14 @@ class BboCbListener
 
   void reset()
   {
-    changes_.erase(changes_.begin(), changes_.end());
+    changes_.clear();
   }
 
   typedef std::vector<const TypedDepthOrderBook*> OrderBooks;
   OrderBooks changes_;
 };
 
-TEST(TestBboCallbacks)
+BOOST_AUTO_TEST_CASE(TestBboCallbacks)
 {
   SimpleOrder buy0(true, 3250, 100);
   SimpleOrder buy1(true, 3249, 800);
@@ -344,72 +323,57 @@ TEST(TestBboCallbacks)
   order_book.set_bbo_listener(&listener);
   // Add buy orders, should be accepted
   order_book.add(&buy0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   order_book.add(&buy1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
   order_book.add(&buy2);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
   order_book.add(&buy3);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
   order_book.add(&buy4);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
-  order_book.perform_callbacks();
 
   // Add buy orders past end, should be accepted, but not affect depth
   order_book.add(&buy5);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
   order_book.add(&buy6);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
 
   // Add sell orders, should be accepted and affect bbo
   order_book.add(&sell2);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   order_book.add(&sell1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   order_book.add(&sell0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.changes_.size());
+  BOOST_CHECK_EQUAL(1, listener.changes_.size());
   listener.reset();
   // Add sell orders worse than best bid, should not effect bbo
   order_book.add(&sell5);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
   order_book.add(&sell4);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
   order_book.add(&sell3);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
 
   // Add sell order past end, should be accepted, but not affect depth
   order_book.add(&sell6);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.changes_.size());
+  BOOST_CHECK_EQUAL(0, listener.changes_.size());
   listener.reset();
 }
 
-TEST(TestTradeCallbacks) 
+BOOST_AUTO_TEST_CASE(TestTradeCallbacks) 
 {
   SimpleOrder order0(false, 3250, 100);
   SimpleOrder order1(true,  3250, 800);
@@ -422,49 +386,41 @@ TEST(TestTradeCallbacks)
   order_book.set_trade_listener(&listener);
   // Add order, should be accepted
   order_book.add(&order0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(0, listener.quantities_.size());
   listener.reset();
   // Add matching order, should result in a trade
   order_book.add(&order1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.quantities_.size());
-  ASSERT_EQ(1, listener.costs_.size());
-  ASSERT_EQ(100, listener.quantities_[0]);
-  ASSERT_EQ(100 * 3250, listener.costs_[0]);
+  BOOST_CHECK_EQUAL(1, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(1, listener.costs_.size());
+  BOOST_CHECK_EQUAL(100, listener.quantities_[0]);
+  BOOST_CHECK_EQUAL(100 * 3250, listener.costs_[0]);
   listener.reset();
   // Add invalid order, should be rejected
   order_book.add(&order2);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(0, listener.quantities_.size());
   listener.reset();
   // Cancel only valid order, should be cancelled
   order_book.cancel(&order1);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(0, listener.quantities_.size());
   listener.reset();
   // Cancel filled order, should be rejected
   order_book.cancel(&order0);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(0, listener.quantities_.size());
   listener.reset();
   // Add a new order and replace it, should be replaced
   order_book.add(&order3);
   order_book.replace(&order3, 0, 3250);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(0, listener.quantities_.size());
   listener.reset();
   // Add matching order, should be accepted, followed by a fill
   order_book.add(&order4);
-  order_book.perform_callbacks();
-  ASSERT_EQ(1, listener.quantities_.size());
-  ASSERT_EQ(1, listener.costs_.size());
+  BOOST_CHECK_EQUAL(1, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(1, listener.costs_.size());
   listener.reset();
   // Replace matched order, with too large of a size decrease, replace
   // should be rejected
   order_book.replace(&order3, -500);
-  order_book.perform_callbacks();
-  ASSERT_EQ(0, listener.quantities_.size());
+  BOOST_CHECK_EQUAL(0, listener.quantities_.size());
 }
 
 } // namespace liquibook

@@ -1,10 +1,9 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef depth_level_h
-#define depth_level_h
+#pragma once
 
-#include "types.h"
+#include "depth_constants.h"
 
 namespace liquibook { namespace book {
 
@@ -20,7 +19,7 @@ public:
   /// @brief get price
   const Price& price() const;
   /// @brief get count
-  uint32_t order_count() const;
+  uint64_t order_count() const;
   /// @brief get aggregate quantity
   Quantity aggregate_qty() const;
   /// @brief is this level part of the excess
@@ -47,7 +46,7 @@ public:
   /// @param last_change the last change ID (optional)
   void set(Price price, 
            Quantity qty,
-           uint32_t order_count,
+           uint64_t order_count,
            ChangeId last_change = 0);
 
   /// @brief cancel or fill an order, decrease count and quantity
@@ -67,7 +66,7 @@ public:
 
 private:
   Price price_;
-  uint32_t order_count_;
+  uint64_t order_count_;
   Quantity aggregate_qty_;
   bool is_excess_;
 public:
@@ -80,6 +79,122 @@ DepthLevel::changed_since(ChangeId last_published_change) const
   return last_change_ > last_published_change;
 }
 
+inline
+DepthLevel::DepthLevel()
+  : price_(INVALID_LEVEL_PRICE),
+  order_count_(0),
+  aggregate_qty_(0)
+{
+}
+
+inline
+DepthLevel&
+DepthLevel::operator=(const DepthLevel& rhs)
+{
+  price_ = rhs.price_;
+  order_count_ = rhs.order_count_;
+  aggregate_qty_ = rhs.aggregate_qty_;
+  if (rhs.price_ != INVALID_LEVEL_PRICE) {
+    last_change_ = rhs.last_change_;
+  }
+
+  // Do not copy is_excess_
+
+  return *this;
+}
+
+inline
+const Price&
+DepthLevel::price() const
+{
+  return price_;
+}
+
+inline
+void
+DepthLevel::init(Price price, bool is_excess)
+{
+  price_ = price;
+  order_count_ = 0;
+  aggregate_qty_ = 0;
+  is_excess_ = is_excess;
+}
+
+inline
+uint64_t
+DepthLevel::order_count() const
+{
+  return order_count_;
+}
+
+inline
+Quantity
+DepthLevel::aggregate_qty() const
+{
+  return aggregate_qty_;
+}
+
+inline
+void
+DepthLevel::add_order(Quantity qty)
+{
+  // Increment/increase
+  ++order_count_;
+  aggregate_qty_ += qty;
+}
+
+inline
+bool
+DepthLevel::close_order(Quantity qty)
+{
+  bool empty = false;
+  // If this is the last order, reset the level
+  if (order_count_ == 0) {
+    throw std::runtime_error("DepthLevel::close_order "
+      "order count too low");
+  } else if (order_count_ == 1) {
+    order_count_ = 0;
+    aggregate_qty_ = 0;
+    empty = true;
+    // Else, decrement/decrease
+  } else {
+    --order_count_;
+    if (aggregate_qty_ >= qty) {
+      aggregate_qty_ -= qty;
+    } else {
+      throw std::runtime_error("DepthLevel::close_order "
+        "level quantity too low");
+    }
+  }
+  return empty;
+}
+
+inline
+void
+DepthLevel::set(Price price, 
+  Quantity qty,
+  uint64_t order_count,
+  ChangeId last_change)
+{
+  price_ = price;
+  aggregate_qty_ = qty;
+  order_count_ = order_count;
+  last_change_ = last_change;
+}
+
+inline
+void
+DepthLevel::increase_qty(Quantity qty)
+{
+  aggregate_qty_ += qty;
+}
+
+inline
+void
+DepthLevel::decrease_qty(Quantity qty)
+{
+  aggregate_qty_ -= qty;
+}
+
 } }
 
-#endif

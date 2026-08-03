@@ -26,7 +26,7 @@ Order::order_qty() const
 book::Price
 Order::price() const
 {
-  return price_ * precision_;
+  return book::Price(price_ * precision_);
 }
 
 } } // End namespace

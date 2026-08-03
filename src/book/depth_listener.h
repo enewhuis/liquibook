@@ -1,8 +1,7 @@
 // Copyright (c) 2012, 2013 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef depth_listener_h
-#define depth_listener_h
+#pragma once
 
 #include "order_book.h"
 
@@ -17,8 +16,11 @@ public:
   virtual void on_depth_change(
       const OrderBook* book,
       const typename OrderBook::DepthTracker* depth) = 0;
+
+#ifdef SWIG_BUILD
+  virtual ~DepthListener() {};
+#endif
 };
 
 } }
 
-#endif

@@ -1,11 +1,10 @@
-// Copyright (c) 2012, 2013 Object Computing, Inc.
+// Copyright (c) 2012 - 2017 Object Computing, Inc.
 // All rights reserved.
 // See the file license.txt for licensing information.
-#ifndef depth_h
-#define depth_h
+#pragma once
 
+#include "depth_constants.h"
 #include "depth_level.h"
-#include "types.h"
 #include <stdexcept>
 #include <map>
 #include <cmath>
@@ -13,34 +12,36 @@
 #include <functional>
 
 namespace liquibook { namespace book {
-
 /// @brief container of limit order data aggregated by price.  Designed so that
 ///    the depth levels themselves are easily copyable with a single memcpy
 ///    when used with a separate callback thread.
+///
+/// TODO: Fix the bid and ask methods to behave like a normal iterator (i.e. begin(), back(), and end()
+
 template <int SIZE=5> 
 class Depth {
 public:
   /// @brief construct
   Depth();
 
-  /// @brief get the first bid level
+  /// @brief get the first bid level (const)
   const DepthLevel* bids() const;
-  /// @brief get the last bid level
+  /// @brief get the last bid level (const)
   const DepthLevel* last_bid_level() const;
-  /// @brief get the first ask level
+  /// @brief get the first ask level (const)
   const DepthLevel* asks() const;
-  /// @brief get the last ask level
+  /// @brief get the last ask level (const)
   const DepthLevel* last_ask_level() const;
-  /// @brief get one past the last ask level
+  /// @brief get one past the last ask level (const)
   const DepthLevel* end() const;
 
-  /// @brief get the first bid level
+  /// @brief get the first bid level (mutable)
   DepthLevel* bids();
-  /// @brief get the last bid level
+  /// @brief get the last bid level (mutable)
   DepthLevel* last_bid_level();
-  /// @brief get the first ask level
+  /// @brief get the first ask level (mutable)
   DepthLevel* asks();
-  /// @brief get the last ask level
+  /// @brief get the last ask level (mutable)
   DepthLevel* last_ask_level();
 
   /// @brief add an order
@@ -75,7 +76,7 @@ public:
   /// @param price the price level of the order
   /// @param qty_delta the change in open quantity of the order (+ or -)
   /// @param is_bid indicator of bid or ask
-  void change_qty_order(Price price, int32_t qty_delta, bool is_bid);
+  void change_qty_order(Price price, int64_t qty_delta, bool is_bid);
 
   /// @brief replace a order
   /// @param current_price the current price level of the order
@@ -109,7 +110,7 @@ public:
   /// @brief what was the ID of the last published change?
   ChangeId last_published_change() const;
 
-  /// @beief note the ID of last published change
+  /// @brief note the ID of last published change
   void published();
 
 private:
@@ -128,7 +129,7 @@ private:
   /// @param price the price to find
   /// @param is_bid indicator of bid or ask
   /// @param should_create should a level for the price be created, if necessary
-  /// @return the level, or NULL if not found and full
+  /// @return the level, or nullptr if not found and full
   DepthLevel* find_level(Price price, bool is_bid, bool should_create = true);
 
   /// @brief insert a new level before this level and shift down
@@ -268,7 +269,7 @@ Depth<SIZE>::fill_order(
   } else if (filled) {
     close_order(price, fill_qty, is_bid);
   } else {
-    change_qty_order(price, -(int32_t)fill_qty, is_bid);
+    change_qty_order(price, -(int64_t)fill_qty, is_bid);
   }
 }
 
@@ -292,7 +293,7 @@ Depth<SIZE>::close_order(Price price, Quantity open_qty, bool is_bid)
 
 template <int SIZE> 
 inline void
-Depth<SIZE>::change_qty_order(Price price, int32_t qty_delta, bool is_bid)
+Depth<SIZE>::change_qty_order(Price price, int64_t qty_delta, bool is_bid)
 {
   DepthLevel* level = find_level(price, is_bid, false);
   if (level && qty_delta) {
@@ -318,7 +319,7 @@ Depth<SIZE>::replace_order(
   bool erased = false;
   // If the price is unchanged, modify this level only
   if (current_price == new_price) {
-    int32_t qty_delta = ((int32_t)new_qty) - current_qty;
+    int64_t qty_delta = ((int64_t)new_qty) - current_qty;
     // Only change order qty.  If this closes order, a cancel callback will
     // also be fired
     change_qty_order(current_price, qty_delta, is_bid);
@@ -572,5 +573,3 @@ Depth<SIZE>::published()
 }
 
 } }
-
-#endif

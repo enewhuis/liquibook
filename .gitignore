@@ -2,18 +2,52 @@
 *.slo
 *.lo
 *.o
+*.obj
+*.iobj
 
 # Compiled Dynamic libraries
 *.so
 *.dylib
+*.dll
 
 # Compiled Static libraries
 *.lai
 *.la
 *.a
+*.lib
+lib/
+
+# Compiled executables
+*.exe
+/bin
+/Output
 
 Makefile*
 .depend*
+*.sln
+make
 
 # Artifacts
 *.swp
+
+#visual studio work files
+*vcproj*
+*vcxproj*
+Debug
+Release
+*.pdb
+*.ipdb
+*.ilk
+.vs/
+*.VC.*
+
+# test output files
+*.log
+
+#helper/customized commands
+# (use single letter names and don't add to repo)
+?.cmd
+?.bat
+
+#a place to hide documents that should not go into the repo:
+doc/NotGitWorthy/
