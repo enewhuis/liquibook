@@ -1067,4 +1067,37 @@ BOOST_AUTO_TEST_CASE(TestReplaceAsk)
   cc.reset();
 }
 
+// A fill at a price that has no level in the depth (for example a triggered stop order, which is never
+// added to the depth) must change nothing. find_level() used to return its past-the-end pointer here,
+// which for bids is the first ask level and for asks is one past the levels array.
+BOOST_AUTO_TEST_CASE(TestFillBidPriceNotInDepth)
+{
+  SizedDepth depth;
+  depth.add_order(990, 100, true);
+  depth.add_order(1000, 100, false);
+  ChangedChecker cc(depth);
+  book::ChangeId before = depth.last_change();
+  depth.fill_order(980, 10, false, true);
+  const DepthLevel* first_bid = depth.bids();
+  BOOST_CHECK(verify_level(first_bid, 990, 1, 100));
+  const DepthLevel* first_ask = depth.asks();
+  BOOST_CHECK(verify_level(first_ask, 1000, 1, 100));
+  BOOST_CHECK_EQUAL(before, depth.last_change());
+}
+
+BOOST_AUTO_TEST_CASE(TestFillAskPriceNotInDepth)
+{
+  SizedDepth depth;
+  depth.add_order(990, 100, true);
+  depth.add_order(1000, 100, false);
+  book::ChangeId before = depth.last_change();
+  depth.fill_order(1010, 10, false, false);
+  const DepthLevel* first_ask = depth.asks();
+  BOOST_CHECK(verify_level(first_ask, 1000, 1, 100));
+  BOOST_CHECK_EQUAL(before, depth.last_change());
+  // The members after the levels must be intact: a fully filled order may still be ignored.
+  BOOST_CHECK_NO_THROW(depth.ignore_fill_qty(5, false));
+  BOOST_CHECK_NO_THROW(depth.ignore_fill_qty(5, true));
+}
+
 } // namespace
