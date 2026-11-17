@@ -404,6 +404,9 @@ Depth<SIZE>::find_level(Price price, bool is_bid, bool should_create)
   }
   // If level was not found
   if (level == past_end) {
+    // past_end is not a level of this side (it is the first ask level, or one past the array):
+    // return nullptr unless an excess level is found or created below.
+    level = nullptr;
     if (is_bid) {
       // Search in excess bid levels
       BidLevelMap::iterator find_result = excess_bid_levels_.find(price);
