@@ -3,10 +3,10 @@
 // See the file license.txt for licensing information.
 #pragma once
 
+#include <simple/simple_order.h>  // enable order-supplied conditions before including the book
 #include "depth_check.h"
 #include <book/order_book.h>
 #include <simple/simple_order_book.h>
-#include <simple/simple_order.h>
 
 
 using namespace liquibook::book;

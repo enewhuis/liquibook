@@ -64,11 +64,11 @@ OrderTracker<OrderPtr>::OrderTracker(
 #if defined(LIQUIBOOK_ORDER_KNOWS_CONDITIONS)
   if(order->all_or_none())
   {
-    conditions |= oc_all_or_none;
+    conditions_ |= oc_all_or_none;
   }
   if(order->immediate_or_cancel())
   {
-    conditions |= oc_immediate_or_cancel;
+    conditions_ |= oc_immediate_or_cancel;
   }
 #endif
 }

@@ -15,6 +15,33 @@ typedef FillCheck<SimpleOrder*> SimpleFillCheck;
 OrderConditions IOC(oc_immediate_or_cancel);
 OrderConditions FOK(oc_all_or_none | oc_immediate_or_cancel);
 
+BOOST_AUTO_TEST_CASE(TestIocFromOrderCancelsUnfilledRemainder)
+{
+  SimpleOrderBook order_book;
+  SimpleOrder ask(false, 1250, 40);
+  SimpleOrder bid(true, 1250, 100, 0, oc_immediate_or_cancel);
+
+  BOOST_CHECK(!order_book.add(&ask));
+  BOOST_CHECK(order_book.add(&bid));
+  BOOST_CHECK_EQUAL(bid.filled_qty(), 40);
+  BOOST_CHECK_EQUAL(bid.state(), simple::os_cancelled);
+  BOOST_CHECK(order_book.bids().empty());
+}
+
+BOOST_AUTO_TEST_CASE(TestAonFromOrderCombinesWithExplicitIoc)
+{
+  SimpleOrderBook order_book;
+  SimpleOrder ask(false, 1250, 40);
+  SimpleOrder bid(true, 1250, 100, 0, oc_all_or_none);
+
+  BOOST_CHECK(!order_book.add(&ask));
+  BOOST_CHECK(!order_book.add(&bid, oc_immediate_or_cancel));
+  BOOST_CHECK_EQUAL(ask.open_qty(), 40);
+  BOOST_CHECK_EQUAL(bid.filled_qty(), 0);
+  BOOST_CHECK_EQUAL(bid.state(), simple::os_cancelled);
+  BOOST_CHECK(order_book.bids().empty());
+}
+
 BOOST_AUTO_TEST_CASE(TestIocBidNoMatch)
 {
   SimpleOrderBook order_book;
